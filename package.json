@@ -1,0 +1,42 @@
+{
+  "name": "strapi-plugin-permalinks",
+  "version": "0.0.0",
+  "description": "Enable permalinks for content types that need a complete URL.",
+  "strapi": {
+    "name": "Permalinks",
+    "description": "Enable permalinks for content types that need a complete URL.",
+    "kind": "plugin"
+  },
+  "author": {
+    "name": "Matt Milburn"
+  },
+  "maintainers": [
+    {
+      "name": "Matt Milburn"
+    }
+  ],
+  "homepage": "https://github.com/mattmilburn/strapi-plugin-permalinks#readme",
+  "bugs": {
+    "url": "https://github.com/mattmilburn/strapi-plugin-permalinks/issues"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattmilburn/strapi-plugin-permalinks.git"
+  },
+  "engines": {
+    "node": ">=12.x. <=16.x.x",
+    "npm": ">=6.0.0"
+  },
+  "keywords": [
+    "strapi",
+    "plugin",
+    "permalinks",
+    "nested",
+    "slug",
+    "url"
+  ]
+}
