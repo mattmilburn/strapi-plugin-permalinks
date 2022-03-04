@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "Enable permalinks for content types that need a complete URL.",
   "strapi": {
-    "name": "Permalinks",
+    "displayName": "Permalinks",
+    "name": "permalinks",
     "description": "Enable permalinks for content types that need a complete URL.",
     "kind": "plugin"
   },
