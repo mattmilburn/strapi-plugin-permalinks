@@ -16,12 +16,7 @@ export default {
     } );
   },
 
-  bootstrap( app ) {
-    app.injectContentManagerComponent( 'editView', 'informations', {
-      name: pluginId,
-      Component: Injector,
-    } );
-  },
+  bootstrap() {},
 
   async registerTrads( { locales } ) {
     const importedTrads = await Promise.all(
