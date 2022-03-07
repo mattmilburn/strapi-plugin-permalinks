@@ -1,12 +1,17 @@
 import { prefixPluginTranslations } from '@strapi/helper-plugin';
 
 import { getTrad, pluginId, pluginName } from './utils';
-import { Initializer, Injector } from './components';
+import { Initializer, InputUID } from './components';
 import reducers from './reducers';
 
 export default {
   register( app ) {
     app.addReducers( reducers );
+
+    app.addFields( {
+      type: 'uid',
+      Component: InputUID,
+    } );
 
     app.registerPlugin( {
       id: pluginId,
