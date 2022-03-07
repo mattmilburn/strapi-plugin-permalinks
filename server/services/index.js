@@ -1,3 +1,7 @@
 'use strict';
 
-module.exports = {};
+const permalinks = require( './permalinks' );
+
+module.exports = {
+  'permalinks': permalinks,
+};

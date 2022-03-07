@@ -1,3 +1,7 @@
 'use strict';
 
-module.exports = {};
+const admin = require( './admin-api' );
+
+module.exports = {
+  'admin-api': admin,
+};
