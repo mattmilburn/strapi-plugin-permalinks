@@ -11,15 +11,15 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { UID_REGEX } from '../../constants';
-import { useDebounce } from '../../hooks';
+import { PERMALINK_REGEX } from '../../constants';
 import { axiosInstance } from '../../utils';
+import useDebounce from '../InputUID/useDebounce';
 import {
   EndActionWrapper,
   FieldActionWrapper,
   TextValidation,
   LoadingWrapper,
-} from './styled';
+} from '../InputUID/endActionStyle';
 
 const PermalinkUID = ( {
   attribute,
@@ -129,7 +129,7 @@ const PermalinkUID = ( {
   useEffect( () => {
     if (
       debouncedValue &&
-      debouncedValue.trim().match( UID_REGEX ) &&
+      debouncedValue.trim().match( PERMALINK_REGEX ) &&
       debouncedValue !== initialValue &&
       ! value
     ) {
