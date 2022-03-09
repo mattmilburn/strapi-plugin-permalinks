@@ -1,27 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { useIntl } from 'react-intl';
-import { get } from 'lodash';
-import { TextInput, Typography } from '@strapi/design-system';
 import { useCMEditViewDataManager } from '@strapi/helper-plugin';
-import {
-  CheckCircle,
-  ExclamationMarkCircle,
-  Loader,
-  Refresh,
-} from '@strapi/icons';
-
-import { UID_REGEX } from '../../constants';
-import { useDebounce } from '../../hooks';
+import { useIntl } from 'react-intl';
+import get from 'lodash/get';
+import { TextInput } from '@strapi/design-system/TextInput';
+import { Typography } from '@strapi/design-system/Typography';
+import Refresh from '@strapi/icons/Refresh';
+import CheckCircle from '@strapi/icons/CheckCircle';
+import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
+import Loader from '@strapi/icons/Loader';
 import { axiosInstance } from '../../utils';
+import useDebounce from './useDebounce';
+import UID_REGEX from './regex';
 import {
   EndActionWrapper,
   FieldActionWrapper,
   TextValidation,
   LoadingWrapper,
-} from './styled';
+} from './endActionStyle';
 
-const InputUID = ( {
+const InputUID = ({
   attribute,
   contentTypeUID,
   description,
@@ -34,19 +32,19 @@ const InputUID = ( {
   value,
   placeholder,
   required,
-} ) => {
+}) => {
   const { modifiedData, initialData, layout } = useCMEditViewDataManager();
-  const [ isLoading, setIsLoading ] = useState( false );
-  const [ availability, setAvailability ] = useState( null );
-  const debouncedValue = useDebounce( value, 300 );
+  const [isLoading, setIsLoading] = useState(false);
+  const [availability, setAvailability] = useState(null);
+  const debouncedValue = useDebounce(value, 300);
   const generateUid = useRef();
-  const initialValue = initialData[ name ];
+  const initialValue = initialData[name];
   const { formatMessage } = useIntl();
-  const createdAtName = get( layout, [ 'options', 'timestamps', 0 ] );
-  const isCreation = ! initialData[ createdAtName ];
-  const debouncedTargetFieldValue = useDebounce( modifiedData[attribute.targetField ], 300 );
-  const [ isCustomized, setIsCustomized ] = useState( false );
-  const [ regenerateLabel, setRegenerateLabel ] = useState( null );
+  const createdAtName = get(layout, ['options', 'timestamps', 0]);
+  const isCreation = !initialData[createdAtName];
+  const debouncedTargetFieldValue = useDebounce(modifiedData[attribute.targetField], 300);
+  const [isCustomized, setIsCustomized] = useState(false);
+  const [regenerateLabel, setRegenerateLabel] = useState(null);
 
   const label = intlLabel.id
     ? formatMessage(
@@ -69,224 +67,214 @@ const InputUID = ( {
       )
     : '';
 
-  generateUid.current = async ( shouldSetInitialValue = false ) => {
-    setIsLoading( true );
-
-    const requestURL = getRequestUrl( '/content-manager/uid/generate' );
-
+  generateUid.current = async (shouldSetInitialValue = false) => {
+    setIsLoading(true);
+    const requestURL = '/content-manager/uid/generate';
     try {
       const {
         data: { data },
-      } = await axiosInstance.post( requestURL, {
+      } = await axiosInstance.post(requestURL, {
         contentTypeUID,
         field: name,
         data: modifiedData,
-      } );
-
-      onChange( {
-        target: {
-          name,
-          value: data,
-          type: 'text',
-        }
-      }, shouldSetInitialValue );
-
-      setIsLoading( false );
-    } catch ( err ) {
-      console.error( { err } );
-
-      setIsLoading( false );
+      });
+      onChange({ target: { name, value: data, type: 'text' } }, shouldSetInitialValue);
+      setIsLoading(false);
+    } catch (err) {
+      console.error({ err });
+      setIsLoading(false);
     }
   };
 
   const checkAvailability = async () => {
-    setIsLoading( true );
+    setIsLoading(true);
 
-    const requestURL = getRequestUrl( '/content-manager/uid/check-availability' );
+    const requestURL = '/content-manager/uid/check-availability';
 
-    if ( ! value ) {
+    if (!value) {
       return;
     }
 
     try {
-      const { data } = await axiosInstance.post( requestURL, {
+      const { data } = await axiosInstance.post(requestURL, {
         contentTypeUID,
         field: name,
         value: value ? value.trim() : '',
-      } );
+      });
 
-      setAvailability( data );
-      setIsLoading( false );
-    } catch ( err ) {
-      console.error( { err } );
+      setAvailability(data);
 
-      setIsLoading( false );
+      setIsLoading(false);
+    } catch (err) {
+      console.error({ err });
+      setIsLoading(false);
     }
   };
 
+  // // FIXME: we need to find a better way to autofill the input when it is required.
   useEffect(() => {
-    if ( ! value && attribute.required ) {
-      generateUid.current( true );
+    if (!value && attribute.required) {
+      generateUid.current(true);
     }
-  }, [] );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  useEffect( () => {
+  useEffect(() => {
     if (
       debouncedValue &&
-      debouncedValue.trim().match( UID_REGEX ) &&
-      debouncedValue !== initialValue &&
-      ! value
+      debouncedValue.trim().match(UID_REGEX) &&
+      debouncedValue !== initialValue
     ) {
       checkAvailability();
     }
-    if ( ! debouncedValue ) {
-      setAvailability( null );
+    if (!debouncedValue) {
+      setAvailability(null);
     }
-  }, [ debouncedValue, initialValue ] );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedValue, initialValue]);
 
   useEffect(() => {
     let timer;
 
-    if ( availability && availability.isAvailable ) {
-      timer = setTimeout( () => {
-        setAvailability( null );
-      }, 4000 );
+    if (availability && availability.isAvailable) {
+      timer = setTimeout(() => {
+        setAvailability(null);
+      }, 4000);
     }
 
     return () => {
-      if ( timer ) {
-        clearTimeout( timer );
+      if (timer) {
+        clearTimeout(timer);
       }
     };
-  }, [ availability ] );
+  }, [availability]);
 
-  useEffect( () => {
+  useEffect(() => {
     if (
-      ! isCustomized &&
+      !isCustomized &&
       isCreation &&
       debouncedTargetFieldValue &&
-      modifiedData[ attribute.targetField ] &&
-      ! value
+      modifiedData[attribute.targetField] &&
+      !value
     ) {
-      generateUid.current( true );
+      generateUid.current(true);
     }
-  }, [ debouncedTargetFieldValue, isCustomized, isCreation ] );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedTargetFieldValue, isCustomized, isCreation]);
 
   const handleGenerateMouseEnter = () => {
     setRegenerateLabel(
-      formatMessage( {
+      formatMessage({
         id: 'content-manager.components.uid.regenerate',
         defaultMessage: 'Regenerate',
-      } )
+      })
     );
   };
 
   const handleGenerateMouseLeave = () => {
-    setRegenerateLabel( null );
+    setRegenerateLabel(null);
   };
 
   const handleChange = e => {
-    if ( e.target.value && isCreation ) {
-      setIsCustomized( true );
+    if (e.target.value && isCreation) {
+      setIsCustomized(true);
     }
 
-    onChange( e );
+    onChange(e);
   };
 
-  const formattedError = error
-    ? formatMessage( { id: error, defaultMessage: error } )
-    : undefined;
+  const formattedError = error ? formatMessage({ id: error, defaultMessage: error }) : undefined;
 
   return (
     <TextInput
-      disabled={ disabled }
-      error={ formattedError }
+      disabled={disabled}
+      error={formattedError}
       endAction={
         <EndActionWrapper>
-          { availability && availability.isAvailable && ! regenerateLabel && (
+          {availability && availability.isAvailable && !regenerateLabel && (
             <TextValidation alignItems="center" justifyContent="flex-end">
               <CheckCircle />
               <Typography textColor="success600" variant="pi">
-                { formatMessage( {
+                {formatMessage({
                   id: 'content-manager.components.uid.available',
                   defaultMessage: 'Available',
-                } ) }
+                })}
               </Typography>
             </TextValidation>
-          ) }
-          { availability && ! availability.isAvailable && ! regenerateLabel && (
+          )}
+          {availability && !availability.isAvailable && !regenerateLabel && (
             <TextValidation notAvailable alignItems="center" justifyContent="flex-end">
               <ExclamationMarkCircle />
               <Typography textColor="danger600" variant="pi">
-                { formatMessage( {
+                {formatMessage({
                   id: 'content-manager.components.uid.unavailable',
                   defaultMessage: 'Unavailable',
-                } ) }
+                })}
               </Typography>
             </TextValidation>
-          ) }
-          { regenerateLabel && (
+          )}
+          {regenerateLabel && (
             <TextValidation alignItems="center" justifyContent="flex-end">
               <Typography textColor="primary600" variant="pi">
-                { regenerateLabel }
+                {regenerateLabel}
               </Typography>
             </TextValidation>
-          ) }
+          )}
           <FieldActionWrapper
-            onClick={ () => generateUid.current() }
+            onClick={() => generateUid.current()}
             label="regenerate"
-            onMouseEnter={ handleGenerateMouseEnter }
-            onMouseLeave={ handleGenerateMouseLeave }
+            onMouseEnter={handleGenerateMouseEnter}
+            onMouseLeave={handleGenerateMouseLeave}
           >
-            { isLoading ? (
+            {isLoading ? (
               <LoadingWrapper>
                 <Loader />
               </LoadingWrapper>
             ) : (
               <Refresh />
-            ) }
+            )}
           </FieldActionWrapper>
         </EndActionWrapper>
       }
-      hint={ hint }
-      label={ label }
-      labelAction={ labelAction }
-      name={ name }
-      onChange={ handleChange }
-      placeholder={ formattedPlaceholder }
-      value={ value ?? '' }
-      required={ required }
+      hint={hint}
+      label={label}
+      labelAction={labelAction}
+      name={name}
+      onChange={handleChange}
+      placeholder={formattedPlaceholder}
+      value={value || ''}
+      required={required}
     />
   );
 };
 
 InputUID.propTypes = {
-  attribute: PropTypes.shape( {
+  attribute: PropTypes.shape({
     targetField: PropTypes.string,
     required: PropTypes.bool,
-  } ).isRequired,
+  }).isRequired,
   contentTypeUID: PropTypes.string.isRequired,
-  description: PropTypes.shape( {
+  description: PropTypes.shape({
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
-  } ),
+  }),
   disabled: PropTypes.bool,
   error: PropTypes.string,
-  intlLabel: PropTypes.shape( {
+  intlLabel: PropTypes.shape({
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
-  } ).isRequired,
+  }).isRequired,
   labelAction: PropTypes.element,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.string,
-  placeholder: PropTypes.shape( {
+  placeholder: PropTypes.shape({
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
-  } ),
+  }),
   required: PropTypes.bool,
 };
 
