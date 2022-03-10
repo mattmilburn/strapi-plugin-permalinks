@@ -44,9 +44,10 @@ const PermalinkUID = ( {
   const { formatMessage } = useIntl();
   const createdAtName = get( layout, [ 'options', 'timestamps', 0 ] );
   const isCreation = ! initialData[ createdAtName ];
-  const debouncedTargetFieldValue = useDebounce( modifiedData[attribute.targetField ], 300 );
+  const debouncedTargetFieldValue = useDebounce( modifiedData[ attribute.targetField ], 300 );
   const [ isCustomized, setIsCustomized ] = useState( false );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
+  const parent = attribute?.permalink?.parent;
 
   const label = intlLabel.id
     ? formatMessage(
