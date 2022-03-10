@@ -11,8 +11,8 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { PERMALINK_REGEX } from '../../constants';
 import { axiosInstance } from '../../utils';
+import UID_REGEX from '../InputUID/regex';
 import useDebounce from '../InputUID/useDebounce';
 import {
   EndActionWrapper,
@@ -47,7 +47,8 @@ const PermalinkUID = ( {
   const debouncedTargetFieldValue = useDebounce( modifiedData[ attribute.targetField ], 300 );
   const [ isCustomized, setIsCustomized ] = useState( false );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
-  const parent = attribute?.permalink?.parent;
+  const targetRelation = attribute?.permalink?.targetRelation;
+  const targetRelationValue = targetRelation && modifiedData[ targetRelation ];
 
   const label = intlLabel.id
     ? formatMessage(
@@ -130,7 +131,7 @@ const PermalinkUID = ( {
   useEffect( () => {
     if (
       debouncedValue &&
-      debouncedValue.trim().match( PERMALINK_REGEX ) &&
+      debouncedValue.trim().match( UID_REGEX ) &&
       debouncedValue !== initialValue &&
       ! value
     ) {
@@ -140,7 +141,7 @@ const PermalinkUID = ( {
     if ( ! debouncedValue ) {
       setAvailability( null );
     }
-  }, [ debouncedValue, initialValue ] );
+  }, [ debouncedValue, initialValue, targetRelationValue ] );
 
   useEffect( () => {
     let timer;
@@ -168,7 +169,7 @@ const PermalinkUID = ( {
     ) {
       generateUid.current( true );
     }
-  }, [ debouncedTargetFieldValue, isCustomized, isCreation ] );
+  }, [ debouncedTargetFieldValue, isCustomized, isCreation, targetRelationValue ] );
 
   const handleGenerateMouseEnter = () => {
     setRegenerateLabel(
