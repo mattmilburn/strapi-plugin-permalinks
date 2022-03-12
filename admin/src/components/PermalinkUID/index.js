@@ -11,7 +11,7 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { axiosInstance } from '../../utils';
+import { axiosInstance, getPermalink } from '../../utils';
 import UID_REGEX from '../InputUID/regex';
 import useDebounce from '../InputUID/useDebounce';
 import {
@@ -49,6 +49,7 @@ const PermalinkUID = ( {
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
   const targetRelation = attribute?.permalink?.targetRelation;
   const targetRelationValue = targetRelation && modifiedData[ targetRelation ];
+  const initialRelationValue = initialData[ targetRelation ];
 
   const label = intlLabel.id
     ? formatMessage(
@@ -80,7 +81,10 @@ const PermalinkUID = ( {
       } = await axiosInstance.post( '/content-manager/uid/generate', {
         contentTypeUID,
         field: name,
-        data: modifiedData,
+        data: {
+          ...modifiedData,
+          [ name ]: getPermalink( modifiedData, name, targetRelation ),
+        }
       } );
 
       onChange( {
@@ -107,10 +111,12 @@ const PermalinkUID = ( {
     }
 
     try {
+      const valueWithFullPath = value ? value.trim() : '';
+
       const { data } = await axiosInstance.post( '/content-manager/uid/check-availability', {
         contentTypeUID,
         field: name,
-        value: value ? value.trim() : '',
+        value: getPermalink( modifiedData, name, targetRelation ),
       } );
 
       setAvailability( data );
@@ -141,7 +147,7 @@ const PermalinkUID = ( {
     if ( ! debouncedValue ) {
       setAvailability( null );
     }
-  }, [ debouncedValue, initialValue, targetRelationValue ] );
+  }, [ debouncedValue, initialValue ] );
 
   useEffect( () => {
     let timer;
@@ -169,7 +175,13 @@ const PermalinkUID = ( {
     ) {
       generateUid.current( true );
     }
-  }, [ debouncedTargetFieldValue, isCustomized, isCreation, targetRelationValue ] );
+  }, [ debouncedTargetFieldValue, isCustomized, isCreation ] );
+
+  useEffect( () => {
+    if ( targetRelationValue && targetRelationValue !== initialRelationValue ) {
+      // @TODO - Update field value.
+    }
+  }, [ targetRelationValue, initialRelationValue ] );
 
   const handleGenerateMouseEnter = () => {
     setRegenerateLabel(
