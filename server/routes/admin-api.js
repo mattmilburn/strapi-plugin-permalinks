@@ -11,5 +11,13 @@ module.exports = {
         policies: [ 'admin::isAuthenticatedAdmin' ],
       },
     },
+    {
+      method: 'GET',
+      path: '/ancestors-path/:uid/:id',
+      handler: 'permalinks.ancestorsPath',
+      config: {
+        policies: [ 'admin::isAuthenticatedAdmin' ],
+      },
+    },
   ],
 };

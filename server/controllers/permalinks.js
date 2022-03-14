@@ -12,4 +12,17 @@ module.exports = {
 
     ctx.send( { config } );
   },
+
+  async ancestorsPath( ctx ) {
+    const { uid, id } = ctx.request.params;
+    const pluginService = getService( 'permalinks' );
+    const entity = await pluginService.getEntity( uid, id );
+
+    if ( ! entity ) {
+      return ctx.notFound();
+    }
+
+    // @TODO - Use field name from config.
+    ctx.send( { path: entity.slug } );
+  },
 };
