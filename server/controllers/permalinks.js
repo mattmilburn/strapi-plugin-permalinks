@@ -14,15 +14,13 @@ module.exports = {
   },
 
   async ancestorsPath( ctx ) {
-    const { uid, id } = ctx.request.params;
-    const pluginService = getService( 'permalinks' );
-    const entity = await pluginService.getEntity( uid, id );
+    const { id, field, uid } = ctx.request.params;
+    const entity = await getService( 'permalinks' ).getEntity( uid, id );
 
     if ( ! entity ) {
       return ctx.notFound();
     }
 
-    // @TODO - Use field name from config.
-    ctx.send( { path: entity.slug } );
+    ctx.send( { path: entity[ field ] } );
   },
 };

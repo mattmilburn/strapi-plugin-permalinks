@@ -133,7 +133,7 @@ const PermalinkUID = ( {
 
   const updateAncestorsPath = async () => {
     try {
-      const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}`;
+      const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}/${name}`;
 
       const { data } = await axiosInstance.get( endpoint );
       const { path } = data;

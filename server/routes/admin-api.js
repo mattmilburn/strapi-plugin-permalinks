@@ -13,7 +13,7 @@ module.exports = {
     },
     {
       method: 'GET',
-      path: '/ancestors-path/:uid/:id',
+      path: '/ancestors-path/:uid/:id/:field',
       handler: 'permalinks.ancestorsPath',
       config: {
         policies: [ 'admin::isAuthenticatedAdmin' ],
