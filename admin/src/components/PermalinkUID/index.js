@@ -11,7 +11,7 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { axiosInstance, getPermalink, pluginId } from '../../utils';
+import { axiosInstance, getPermalink, getPermalinkSlug, pluginId } from '../../utils';
 import UID_REGEX from '../InputUID/regex';
 import useDebounce from '../InputUID/useDebounce';
 import {
@@ -49,6 +49,7 @@ const PermalinkUID = ( {
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
 
   // Vars for handling permalink.
+  const [ slug, setSlug ] = useState( initialValue );
   const [ ancestorsPath, setAncestorsPath ] = useState( null );
   const targetRelation = attribute?.permalink?.targetRelation;
   const targetRelationValue = targetRelation && modifiedData[ targetRelation ];
@@ -90,12 +91,13 @@ const PermalinkUID = ( {
         }
       } );
 
+      // @TODO - Sanitize `data` here to remove ancestors path.
       onChange( {
         target: {
           name,
           value: data,
           type: 'text',
-        }
+        },
       }, shouldSetInitialValue );
 
       setIsLoading( false );
@@ -135,9 +137,19 @@ const PermalinkUID = ( {
 
       const { data } = await axiosInstance.get( endpoint );
       const { path } = data;
+      const newSlug = `${path}~${getPermalinkSlug( value )}`;
 
       setAncestorsPath( path );
+      setSlug( newSlug );
       setIsLoading( false );
+
+      handleChange( {
+        target: {
+          name,
+          value: newSlug,
+          type: 'text',
+        },
+      } );
     } catch ( err ) {
       console.error( { err } );
 
@@ -201,6 +213,14 @@ const PermalinkUID = ( {
 
     if ( ! targetRelationValue ) {
       setAncestorsPath( null );
+
+      handleChange( {
+        target: {
+          name,
+          value: getPermalinkSlug( value ),
+          type: 'text',
+        },
+      } );
     }
   }, [ targetRelationValue, initialRelationValue ] );
 
