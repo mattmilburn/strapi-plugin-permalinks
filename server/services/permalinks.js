@@ -11,4 +11,12 @@ module.exports = ( { strapi } ) => ( {
 
     return data;
   },
+
+  async getEntity( uid, id ) {
+    const entity = await strapi.query( uid ).findOne( {
+      where: { id },
+    } );
+
+    return entity;
+  },
 } );

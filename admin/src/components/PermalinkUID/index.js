@@ -11,7 +11,7 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { axiosInstance, getPermalink } from '../../utils';
+import { axiosInstance, getPermalink, pluginId } from '../../utils';
 import UID_REGEX from '../InputUID/regex';
 import useDebounce from '../InputUID/useDebounce';
 import {
@@ -47,6 +47,9 @@ const PermalinkUID = ( {
   const debouncedTargetFieldValue = useDebounce( modifiedData[ attribute.targetField ], 300 );
   const [ isCustomized, setIsCustomized ] = useState( false );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
+
+  // Vars for handling permalink.
+  const [ ancestorsPath, setAncestorsPath ] = useState( null );
   const targetRelation = attribute?.permalink?.targetRelation;
   const targetRelationValue = targetRelation && modifiedData[ targetRelation ];
   const initialRelationValue = initialData[ targetRelation ];
@@ -111,8 +114,6 @@ const PermalinkUID = ( {
     }
 
     try {
-      const valueWithFullPath = value ? value.trim() : '';
-
       const { data } = await axiosInstance.post( '/content-manager/uid/check-availability', {
         contentTypeUID,
         field: name,
@@ -120,6 +121,22 @@ const PermalinkUID = ( {
       } );
 
       setAvailability( data );
+      setIsLoading( false );
+    } catch ( err ) {
+      console.error( { err } );
+
+      setIsLoading( false );
+    }
+  };
+
+  const updateAncestorsPath = async () => {
+    try {
+      const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}`;
+
+      const { data } = await axiosInstance.get( endpoint );
+      const { path } = data;
+
+      setAncestorsPath( path );
       setIsLoading( false );
     } catch ( err ) {
       console.error( { err } );
@@ -179,7 +196,11 @@ const PermalinkUID = ( {
 
   useEffect( () => {
     if ( targetRelationValue && targetRelationValue !== initialRelationValue ) {
-      // @TODO - Update field value.
+      updateAncestorsPath();
+    }
+
+    if ( ! targetRelationValue ) {
+      setAncestorsPath( null );
     }
   }, [ targetRelationValue, initialRelationValue ] );
 
