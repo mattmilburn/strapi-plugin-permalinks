@@ -207,11 +207,17 @@ const PermalinkUID = ( {
   }, [ debouncedTargetFieldValue, isCustomized, isCreation ] );
 
   useEffect( () => {
-    if ( targetRelationValue && targetRelationValue !== initialRelationValue ) {
+    const selectedSelf = targetRelationValue?.id === modifiedData?.id;
+
+    if (
+      targetRelationValue &&
+      targetRelationValue !== initialRelationValue &&
+      ! selectedSelf
+    ) {
       updateAncestorsPath();
     }
 
-    if ( ! targetRelationValue ) {
+    if ( ! targetRelationValue || selectedSelf ) {
       setAncestorsPath( null );
 
       handleChange( {
