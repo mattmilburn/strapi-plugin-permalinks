@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import { get } from 'lodash';
@@ -12,7 +12,12 @@ import {
 } from '@strapi/icons';
 
 import { PATH_DELIMITER } from '../../constants';
-import { axiosInstance, getPermalinkSlug, pluginId } from '../../utils';
+import {
+  axiosInstance,
+  getPermalink,
+  getPermalinkSlug,
+  pluginId,
+} from '../../utils';
 import { AncestorsPath, Delimiter } from './styled';
 import UID_REGEX from '../InputUID/regex';
 import useDebounce from '../InputUID/useDebounce';
@@ -87,17 +92,14 @@ const PermalinkUID = ( {
       } = await axiosInstance.post( '/content-manager/uid/generate', {
         contentTypeUID,
         field: name,
-        data: {
-          ...modifiedData,
-          [ name ]: `${ancestorsPath}~${getPermalinkSlug( modifiedData[ name ] )}`,
-        }
+        data: modifiedData,
       } );
 
-      // @TODO - Sanitize `data` here to remove ancestors path.
+      setSlug( data );
       onChange( {
         target: {
           name,
-          value: data,
+          value: getPermalink( ancestorsPath, data ),
           type: 'text',
         },
       }, shouldSetInitialValue );
@@ -121,7 +123,7 @@ const PermalinkUID = ( {
       const { data } = await axiosInstance.post( '/content-manager/uid/check-availability', {
         contentTypeUID,
         field: name,
-        value: `${ancestorsPath}~${getPermalinkSlug( modifiedData[ name ] )}`,
+        value: getPermalink( ancestorsPath, slug ),
       } );
 
       setAvailability( data );
@@ -145,14 +147,14 @@ const PermalinkUID = ( {
       const { path } = data;
       const newSlug = getPermalinkSlug( value );
 
+      setIsLoading( false );
       setAncestorsPath( path );
       setSlug( newSlug );
-      setIsLoading( false );
 
       handleChange( {
         target: {
           name,
-          value: newSlug,
+          value: getPermalink( ancestorsPath, newSlug ),
           type: 'text',
         },
       } );
@@ -164,10 +166,6 @@ const PermalinkUID = ( {
   };
 
   useEffect( () => {
-    if ( ! value && attribute.required ) {
-      generateUid.current( true );
-    }
-
     // Initialize the input so the ancestor's path is read-only and the slug is editable.
     getAncestorsPath();
   }, [] );
@@ -218,7 +216,8 @@ const PermalinkUID = ( {
   useEffect( () => {
     const selectedSelf = targetRelationValue && targetRelationValue.id === modifiedData.id;
 
-    if ( ! selectedSelf && targetRelationValue !== initialRelationValue ) {
+    // Maybe update ancestors path.
+    if ( targetRelationValue !== initialRelationValue && ! selectedSelf ) {
       getAncestorsPath();
     }
 
@@ -250,11 +249,20 @@ const PermalinkUID = ( {
   };
 
   const handleChange = e => {
-    if ( e.target.value && isCreation ) {
+    const newSlug = e.target.value;
+
+    if ( newSlug && isCreation ) {
       setIsCustomized( true );
     }
 
-    onChange( e );
+    setSlug( newSlug );
+    onChange( {
+      target: {
+        name,
+        value: getPermalink( ancestorsPath, newSlug ),
+        type: 'text',
+      },
+    } );
   };
 
   const formattedError = error
@@ -265,15 +273,16 @@ const PermalinkUID = ( {
     <TextInput
       disabled={ disabled }
       error={ formattedError }
-      startAction={ ancestorsPath && (
-        <AncestorsPath>
-          { ancestorsPath.split( PATH_DELIMITER ).map( path => (
-            <>
-              { path }<Delimiter>/</Delimiter>
-            </>
-          ) ) }
-        </AncestorsPath>
-      ) }
+      startAction={ ancestorsPath
+        ? <AncestorsPath>
+            { ancestorsPath.split( PATH_DELIMITER ).map( ( path, i ) => (
+              <Fragment key={ i }>
+                { path }<Delimiter>/</Delimiter>
+              </Fragment>
+            ) ) }
+          </AncestorsPath>
+        : null
+      }
       endAction={
         <EndActionWrapper>
           { availability && availability.isAvailable && ! regenerateLabel && (
@@ -327,7 +336,7 @@ const PermalinkUID = ( {
       name={ name }
       onChange={ handleChange }
       placeholder={ formattedPlaceholder }
-      value={ value ?? '' }
+      value={ slug ?? '' }
       required={ required }
     />
   );
