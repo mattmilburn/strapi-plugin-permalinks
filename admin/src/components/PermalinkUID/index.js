@@ -11,7 +11,9 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { axiosInstance, getPermalink, getPermalinkSlug, pluginId } from '../../utils';
+import { PATH_DELIMITER } from '../../constants';
+import { axiosInstance, getPermalinkSlug, pluginId } from '../../utils';
+import { AncestorsPath, Delimiter } from './styled';
 import UID_REGEX from '../InputUID/regex';
 import useDebounce from '../InputUID/useDebounce';
 import {
@@ -87,7 +89,7 @@ const PermalinkUID = ( {
         field: name,
         data: {
           ...modifiedData,
-          [ name ]: getPermalink( modifiedData, name, targetRelation ),
+          [ name ]: `${ancestorsPath}~${getPermalinkSlug( modifiedData[ name ] )}`,
         }
       } );
 
@@ -119,7 +121,7 @@ const PermalinkUID = ( {
       const { data } = await axiosInstance.post( '/content-manager/uid/check-availability', {
         contentTypeUID,
         field: name,
-        value: getPermalink( modifiedData, name, targetRelation ),
+        value: `${ancestorsPath}~${getPermalinkSlug( modifiedData[ name ] )}`,
       } );
 
       setAvailability( data );
@@ -131,13 +133,17 @@ const PermalinkUID = ( {
     }
   };
 
-  const updateAncestorsPath = async () => {
+  const getAncestorsPath = async () => {
+    if ( ! targetRelationValue ) {
+      return;
+    }
+
     try {
       const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}/${name}`;
 
       const { data } = await axiosInstance.get( endpoint );
       const { path } = data;
-      const newSlug = `${path}~${getPermalinkSlug( value )}`;
+      const newSlug = getPermalinkSlug( value );
 
       setAncestorsPath( path );
       setSlug( newSlug );
@@ -161,6 +167,9 @@ const PermalinkUID = ( {
     if ( ! value && attribute.required ) {
       generateUid.current( true );
     }
+
+    // Initialize the input so the ancestor's path is read-only and the slug is editable.
+    getAncestorsPath();
   }, [] );
 
   useEffect( () => {
@@ -207,16 +216,13 @@ const PermalinkUID = ( {
   }, [ debouncedTargetFieldValue, isCustomized, isCreation ] );
 
   useEffect( () => {
-    const selectedSelf = targetRelationValue?.id === modifiedData?.id;
+    const selectedSelf = targetRelationValue && targetRelationValue.id === modifiedData.id;
 
-    if (
-      targetRelationValue &&
-      targetRelationValue !== initialRelationValue &&
-      ! selectedSelf
-    ) {
-      updateAncestorsPath();
+    if ( ! selectedSelf && targetRelationValue !== initialRelationValue ) {
+      getAncestorsPath();
     }
 
+    // Maybe set ancestors path to `null`.
     if ( ! targetRelationValue || selectedSelf ) {
       setAncestorsPath( null );
 
@@ -259,6 +265,15 @@ const PermalinkUID = ( {
     <TextInput
       disabled={ disabled }
       error={ formattedError }
+      startAction={ ancestorsPath && (
+        <AncestorsPath>
+          { ancestorsPath.split( PATH_DELIMITER ).map( path => (
+            <>
+              { path }<Delimiter>/</Delimiter>
+            </>
+          ) ) }
+        </AncestorsPath>
+      ) }
       endAction={
         <EndActionWrapper>
           { availability && availability.isAvailable && ! regenerateLabel && (
