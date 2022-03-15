@@ -18,4 +18,8 @@ export const Delimiter = styled.span`
   margin: 0 2px;
   color: ${({ theme }) => theme.colors.primary500};
   font-size: ${({ theme }) => theme.fontSizes[0]};
+
+  &:last-child {
+    margin-right: 0;
+  }
 `;
