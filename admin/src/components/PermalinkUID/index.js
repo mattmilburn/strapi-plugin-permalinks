@@ -95,7 +95,10 @@ const PermalinkUID = ( {
         data: modifiedData,
       } );
 
+      // Update field state.
       setSlug( data );
+
+      // Update field value.
       onChange( {
         target: {
           name,
@@ -143,21 +146,23 @@ const PermalinkUID = ( {
     try {
       const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}/${name}`;
 
-      const { data } = await axiosInstance.get( endpoint );
-      const { path } = data;
+      const { data: { path } } = await axiosInstance.get( endpoint );
       const newSlug = getPermalinkSlug( value );
 
-      setIsLoading( false );
+      // Update field state.
       setAncestorsPath( path );
       setSlug( newSlug );
 
-      handleChange( {
+      // Update field value.
+      onChange( {
         target: {
           name,
-          value: getPermalink( ancestorsPath, newSlug ),
+          value: getPermalink( path, newSlug ),
           type: 'text',
         },
       } );
+
+      setIsLoading( false );
     } catch ( err ) {
       console.error( { err } );
 
@@ -165,10 +170,7 @@ const PermalinkUID = ( {
     }
   };
 
-  useEffect( () => {
-    // Initialize the input so the ancestor's path is read-only and the slug is editable.
-    getAncestorsPath();
-  }, [] );
+  useEffect( () => getAncestorsPath(), [] );
 
   useEffect( () => {
     if (
@@ -227,9 +229,7 @@ const PermalinkUID = ( {
 
       handleChange( {
         target: {
-          name,
           value: getPermalinkSlug( value ),
-          type: 'text',
         },
       } );
     }
@@ -256,6 +256,7 @@ const PermalinkUID = ( {
     }
 
     setSlug( newSlug );
+
     onChange( {
       target: {
         name,
