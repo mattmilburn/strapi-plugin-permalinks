@@ -1,7 +1,10 @@
+import React from 'react';
 import { prefixPluginTranslations } from '@strapi/helper-plugin';
+import { get } from 'lodash';
 
 import { getTrad, pluginId, pluginName } from './utils';
 import { Initializer, Field } from './components';
+import { filterPermalinkFields } from './contentManagerHooks';
 import reducers from './reducers';
 
 export default {
@@ -21,7 +24,9 @@ export default {
     } );
   },
 
-  bootstrap() {},
+  bootstrap( app ) {
+    app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkFields );
+  },
 
   async registerTrads( { locales } ) {
     const importedTrads = await Promise.all(
