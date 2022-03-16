@@ -4,7 +4,7 @@ import { get } from 'lodash';
 
 import { getTrad, pluginId, pluginName } from './utils';
 import { Initializer, Field } from './components';
-import { filterPermalinkFields } from './contentManagerHooks';
+import { filterPermalinkColumns } from './contentManagerHooks';
 import reducers from './reducers';
 
 export default {
@@ -25,7 +25,7 @@ export default {
   },
 
   bootstrap( app ) {
-    app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkFields );
+    app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkColumns );
   },
 
   async registerTrads( { locales } ) {

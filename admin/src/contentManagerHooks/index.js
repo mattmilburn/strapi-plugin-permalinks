@@ -1,1 +1,1 @@
-export { default as filterPermalinkFields } from './filter-permalink-fields';
+export { default as filterPermalinkColumns } from './filter-permalink-columns';

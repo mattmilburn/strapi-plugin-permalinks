@@ -4,8 +4,8 @@ import { Typography } from '@strapi/design-system';
 import { PATH_DELIMITER } from '../constants';
 import { getPermalinkAncestors, getPermalinkSlug } from '../utils';
 
-const filterPermalinkFields = ( { displayedHeaders, layout } ) => {
-  // Find any fields that have a permalink prop and apply the string replacement.
+const filterPermalinkColumns = ( { displayedHeaders, layout } ) => {
+  // Find any columns that have a permalink prop and apply the string replacement.
   const filteredHeaders = displayedHeaders.map( header => {
     if ( header.fieldSchema.permalink ) {
       return {
@@ -38,4 +38,4 @@ const filterPermalinkFields = ( { displayedHeaders, layout } ) => {
   };
 }
 
-export default filterPermalinkFields;
+export default filterPermalinkColumns;
