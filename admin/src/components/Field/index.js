@@ -1,33 +1,25 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 
 import { InputUID, PermalinkUID } from '../';
+import { pluginId } from '../../utils';
 
 const Field = props => {
   const { layout } = useCMEditViewDataManager();
-  const { attributes } = layout;
-  const { attribute } = props;
-  const targetRelation = attribute?.permalink?.targetRelation;
-  const relation = targetRelation && attributes[ targetRelation ];
-  const relationIsValid = relation && relation.type === 'relation';
+  const { attributes, uid } = layout;
+  const { attribute, name } = props;
+  const { contentTypes } = useSelector( state => state[ `${pluginId}_config` ].config );
+  const pluginOptions = contentTypes.find( type => type.uid === uid && type.targetField === name );
 
-  // If permalink settings are not enabled, fallback to Strapi's core InputUID,
-  // which is 99.99% cloned from Strapi's core files into this plugin.
-  if ( ! relationIsValid ) {
+  // If permalink is not enabled for the current uid, fallback to Strapi's core
+  // InputUID, which is 99.99% cloned from Strapi's core files into this plugin.
+  if ( ! pluginOptions ) {
     return <InputUID { ...props } />;
   }
 
   // Use custom UID field to work with permalinks.
-  return <PermalinkUID { ...props } />;
-};
-
-Field.propTypes = {
-  attribute: PropTypes.shape( {
-    permalink: PropTypes.shape( {
-      parent: PropTypes.string,
-    } ),
-  } ).isRequired,
+  return <PermalinkUID pluginOptions={ pluginOptions } { ...props } />;
 };
 
 export default Field;

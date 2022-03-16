@@ -41,6 +41,7 @@ const PermalinkUID = ( {
   onChange,
   value,
   placeholder,
+  pluginOptions,
   required,
 } ) => {
   const { modifiedData, initialData, layout } = useCMEditViewDataManager();
@@ -59,11 +60,10 @@ const PermalinkUID = ( {
   // Vars for handling permalink.
   const initialAncestorsPath = getPermalinkAncestors( value );
   const initialSlug = getPermalinkSlug( initialValue );
-  const [ slug, setSlug ] = useState( initialSlug );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
-  const targetRelation = attribute?.permalink?.targetRelation;
-  const targetRelationValue = targetRelation && modifiedData[ targetRelation ];
-  const initialRelationValue = initialData[ targetRelation ];
+  const [ slug, setSlug ] = useState( initialSlug );
+  const initialRelationValue = initialData[ pluginOptions.targetRelation ];
+  const targetRelationValue = modifiedData[ pluginOptions.targetRelation ];
 
   const label = intlLabel.id
     ? formatMessage(
@@ -371,6 +371,11 @@ PermalinkUID.propTypes = {
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
   } ),
+  pluginOptions: PropTypes.shape( {
+    uid: PropTypes.string,
+    targetField: PropTypes.string,
+    targetRelation: PropTypes.string,
+  } ).isRequired,
   required: PropTypes.bool,
 };
 
@@ -380,6 +385,7 @@ PermalinkUID.defaultProps = {
   error: undefined,
   labelAction: undefined,
   placeholder: undefined,
+  pluginOptions: {},
   value: '',
   required: false,
 };
