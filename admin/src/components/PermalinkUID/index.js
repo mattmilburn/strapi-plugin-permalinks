@@ -11,7 +11,7 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { PATH_DELIMITER } from '../../constants';
+import { PATH_DELIMITER, SLASH_DELIMITER } from '../../constants';
 import {
   axiosInstance,
   getPermalink,
@@ -279,7 +279,7 @@ const PermalinkUID = ( {
         ? <AncestorsPath>
             { ancestorsPath.split( PATH_DELIMITER ).map( ( path, i ) => (
               <Fragment key={ i }>
-                { path }<Delimiter>/</Delimiter>
+                { path }<Delimiter>{ SLASH_DELIMITER }</Delimiter>
               </Fragment>
             ) ) }
           </AncestorsPath>
