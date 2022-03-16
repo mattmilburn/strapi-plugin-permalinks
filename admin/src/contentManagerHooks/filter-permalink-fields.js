@@ -2,6 +2,7 @@ import React from 'react';
 import { Typography } from '@strapi/design-system';
 
 import { PATH_DELIMITER } from '../constants';
+import { getPermalinkAncestors, getPermalinkSlug } from '../utils';
 
 const filterPermalinkFields = ( { displayedHeaders, layout } ) => {
   // Find any fields that have a permalink prop and apply the string replacement.
@@ -11,13 +12,17 @@ const filterPermalinkFields = ( { displayedHeaders, layout } ) => {
         ...header,
         cellFormatter: props => {
           const value = props[ header.name ];
-          const parts = value.split( PATH_DELIMITER );
-          const len = parts.length - 1;
+          const ancestorsPath = getPermalinkAncestors( value );
+          const slug = getPermalinkSlug( value );
 
           return (
             <>
-              { !! len && <Typography textColor="neutral600">{ parts.slice( 0, len ).join( '/' ) }/</Typography> }
-              <Typography textColor="neutral800">{ parts[ len ] }</Typography>
+              { ancestorsPath && (
+                <Typography textColor="neutral600">
+                  { ancestorsPath.split( PATH_DELIMITER ).join( '/' ) }/
+                </Typography>
+              ) }
+              <Typography textColor="neutral800">{ slug }</Typography>
             </>
           );
         },

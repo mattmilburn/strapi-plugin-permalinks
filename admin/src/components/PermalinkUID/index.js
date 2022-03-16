@@ -15,6 +15,7 @@ import { PATH_DELIMITER } from '../../constants';
 import {
   axiosInstance,
   getPermalink,
+  getPermalinkAncestors,
   getPermalinkSlug,
   pluginId,
 } from '../../utils';
@@ -56,8 +57,10 @@ const PermalinkUID = ( {
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
 
   // Vars for handling permalink.
-  const [ slug, setSlug ] = useState( initialValue );
-  const [ ancestorsPath, setAncestorsPath ] = useState( null );
+  const initialAncestorsPath = getPermalinkAncestors( value );
+  const initialSlug = getPermalinkSlug( initialValue );
+  const [ slug, setSlug ] = useState( initialSlug );
+  const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const targetRelation = attribute?.permalink?.targetRelation;
   const targetRelationValue = targetRelation && modifiedData[ targetRelation ];
   const initialRelationValue = initialData[ targetRelation ];
@@ -169,8 +172,6 @@ const PermalinkUID = ( {
       setIsLoading( false );
     }
   };
-
-  useEffect( () => getAncestorsPath(), [] );
 
   useEffect( () => {
     if (
