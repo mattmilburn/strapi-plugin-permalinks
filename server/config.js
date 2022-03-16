@@ -27,6 +27,11 @@ module.exports = {
       if ( ! entry.targetField ) {
         throw new ValidationError( `Missing targetField for ${entry.uid}.` );
       }
+
+      // Required `targetRelation` prop.
+      if ( ! entry.targetRelation ) {
+        throw new ValidationError( `Missing targetRelation for ${entry.uid}.` );
+      }
     } );
   },
 };
