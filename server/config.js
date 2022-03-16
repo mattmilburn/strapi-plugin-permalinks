@@ -17,20 +17,20 @@ module.exports = {
     }
 
     // Validate each content type.
-    config.contentTypes.forEach( entry => {
+    config.contentTypes.forEach( type => {
       // Required `uid` prop.
-      if ( ! entry.uid ) {
-        throw new ValidationError( `Missing uid for ${entry.uid}.` );
+      if ( ! type.uid ) {
+        throw new ValidationError( `Missing uid for ${type.uid}.` );
       }
 
       // Required `targetField` prop.
-      if ( ! entry.targetField ) {
-        throw new ValidationError( `Missing targetField for ${entry.uid}.` );
+      if ( ! type.targetField ) {
+        throw new ValidationError( `Missing targetField for ${type.uid}.` );
       }
 
       // Required `targetRelation` prop.
-      if ( ! entry.targetRelation ) {
-        throw new ValidationError( `Missing targetRelation for ${entry.uid}.` );
+      if ( ! type.targetRelation ) {
+        throw new ValidationError( `Missing targetRelation for ${type.uid}.` );
       }
     } );
   },
