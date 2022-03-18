@@ -5,7 +5,7 @@ import { PATH_DELIMITER, SLASH_DELIMITER } from '../constants';
 import { getPermalinkAncestors, getPermalinkSlug } from '../utils';
 
 const filterPermalinkColumns = ( { displayedHeaders, layout } ) => {
-  // Find any columns that have a permalink prop and apply the string replacement.
+  // Find any columns that have a permalink flag and apply the string replacement.
   const filteredHeaders = displayedHeaders.map( header => {
     if ( header.fieldSchema.permalink ) {
       return {
