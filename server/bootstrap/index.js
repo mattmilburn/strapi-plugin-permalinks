@@ -1,9 +1,9 @@
 'use strict';
 
-const lifecycleAfterUpdate = require( './lifecycle-after-update' );
+const lifecycleBeforeUpdate = require( './lifecycle-before-update' );
 const schemaValidation = require( './schema-validation' );
 
 module.exports = async params => {
   await schemaValidation( params );
-  await lifecycleAfterUpdate( params );
+  await lifecycleBeforeUpdate( params );
 };
