@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import { get } from 'lodash';
 import { TextInput, Typography } from '@strapi/design-system';
-import { useCMEditViewDataManager } from '@strapi/helper-plugin';
+import { useCMEditViewDataManager, useNotification } from '@strapi/helper-plugin';
 import {
   CheckCircle,
   ExclamationMarkCircle,
@@ -17,6 +17,7 @@ import {
   getPermalink,
   getPermalinkAncestors,
   getPermalinkSlug,
+  getTrad,
   pluginId,
 } from '../../utils';
 import { AncestorsPath, Delimiter } from './styled';
@@ -46,6 +47,7 @@ const PermalinkUID = ( {
   pluginOptions,
   required,
 } ) => {
+  const toggleNotification = useNotification();
   const { modifiedData, initialData, layout } = useCMEditViewDataManager();
   const [ isLoading, setIsLoading ] = useState( false );
   const [ availability, setAvailability ] = useState( null );
@@ -62,7 +64,8 @@ const PermalinkUID = ( {
   // Vars for handling permalink.
   const initialAncestorsPath = getPermalinkAncestors( value );
   const initialSlug = getPermalinkSlug( initialValue );
-  const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
+  const isOrphan = ! initialRelationValue && !! initialAncestorsPath;
+  const [ ancestorsPath, setAncestorsPath ] = useState( isOrphan ? null : initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
   const initialRelationValue = initialData[ pluginOptions.targetRelation ];
   const targetRelationValue = modifiedData[ pluginOptions.targetRelation ];
@@ -174,6 +177,18 @@ const PermalinkUID = ( {
       setIsLoading( false );
     }
   };
+
+  useEffect( () => {
+    if ( isOrphan ) {
+      toggleNotification( {
+        type: 'warning',
+        message: {
+          id: getTrad( 'ui.error.orphan' ),
+          defaultMessage: 'This page has been orphaned since it was last saved.',
+        },
+      } );
+    }
+  }, [] );
 
   useEffect( () => {
     if (
