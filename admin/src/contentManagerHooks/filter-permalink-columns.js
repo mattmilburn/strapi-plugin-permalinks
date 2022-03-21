@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography } from '@strapi/design-system';
 
-import { PATH_SEPARATOR, SLASH_SEPARATOR } from '../constants';
+import { TableCell  } from '../components';
 import { getPermalinkAncestors, getPermalinkSlug, pluginId } from '../utils';
 
 const filterPermalinkColumns = ( { displayedHeaders, layout }, pluginConfig ) => {
@@ -28,17 +28,11 @@ const filterPermalinkColumns = ( { displayedHeaders, layout }, pluginConfig ) =>
           const isOrphan = ! props[ targetRelation ] && !! ancestorsPath;
 
           return (
-            <>
-              { ancestorsPath && (
-                <Typography textColor={ isOrphan ? 'danger600': 'neutral600' }>
-                  { ancestorsPath.split( PATH_SEPARATOR ).join( SLASH_SEPARATOR ) }
-                  { SLASH_SEPARATOR }
-                </Typography>
-              ) }
-              <Typography textColor={ isOrphan ? 'danger600': 'neutral600' }>
-                { slug }
-              </Typography>
-            </>
+            <TableCell
+              isOrphan={ isOrphan }
+              ancestorsPath={ ancestorsPath }
+              slug={ slug }
+            />
           );
         },
       };
