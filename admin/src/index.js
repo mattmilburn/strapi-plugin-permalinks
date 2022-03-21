@@ -1,11 +1,11 @@
 import React from 'react';
-import { prefixPluginTranslations } from '@strapi/helper-plugin';
 import { get } from 'lodash';
+import { prefixPluginTranslations, request } from '@strapi/helper-plugin';
 
-import { getTrad, pluginId, pluginName } from './utils';
 import { Initializer, Field } from './components';
 import { filterPermalinkColumns } from './contentManagerHooks';
 import reducers from './reducers';
+import { getTrad, pluginId, pluginName } from './utils';
 
 export default {
   register( app ) {
@@ -24,8 +24,21 @@ export default {
     } );
   },
 
-  bootstrap( app ) {
-    app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkColumns );
+  async bootstrap( app ) {
+    try {
+      const endpoint = `/${pluginId}/config`;
+      const data = await request( endpoint, { method: 'GET' } );
+      const pluginConfig = data?.config ?? {};
+
+      // Create callbacks with plugin config included.
+      const listViewColumnHook = props => filterPermalinkColumns( props, pluginConfig );
+
+      // Register hooks.
+      app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', listViewColumnHook );
+    } catch ( err ) {
+      console.log( err );
+      return;
+    }
   },
 
   async registerTrads( { locales } ) {

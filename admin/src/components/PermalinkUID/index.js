@@ -20,6 +20,8 @@ import {
   pluginId,
 } from '../../utils';
 import { AncestorsPath, Delimiter } from './styled';
+
+// Import certain assets directly from core InputUID component.
 import UID_REGEX from '../InputUID/regex';
 import useDebounce from '../InputUID/useDebounce';
 import {
@@ -177,8 +179,7 @@ const PermalinkUID = ( {
     if (
       debouncedValue &&
       debouncedValue.trim().match( UID_REGEX ) &&
-      debouncedValue !== initialValue &&
-      ! value
+      debouncedValue !== initialValue
     ) {
       checkAvailability();
     }
