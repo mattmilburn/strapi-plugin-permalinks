@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography } from '@strapi/design-system';
 
-import { PATH_DELIMITER, SLASH_DELIMITER } from '../constants';
+import { PATH_SEPARATOR, SLASH_SEPARATOR } from '../constants';
 import { getPermalinkAncestors, getPermalinkSlug } from '../utils';
 
 const filterPermalinkColumns = ( { displayedHeaders, layout } ) => {
@@ -19,8 +19,8 @@ const filterPermalinkColumns = ( { displayedHeaders, layout } ) => {
             <>
               { ancestorsPath && (
                 <Typography textColor="neutral600">
-                  { ancestorsPath.split( PATH_DELIMITER ).join( SLASH_DELIMITER ) }
-                  { SLASH_DELIMITER }
+                  { ancestorsPath.split( PATH_SEPARATOR ).join( SLASH_SEPARATOR ) }
+                  { SLASH_SEPARATOR }
                 </Typography>
               ) }
               <Typography textColor="neutral800">{ slug }</Typography>
