@@ -18,9 +18,10 @@ module.exports = async ( { strapi } ) => {
     const entity = await strapi.query( model.uid ).findOne( { where } );
     const previousValue = entity[ targetField ];
     const nextValue = data[ targetField ];
+    const hasTargetField = data.hasOwnProperty( targetField );
 
-    // Do nothing if `targetField` did not change.
-    if ( previousValue === nextValue ) {
+    // Do nothing if `targetField` did not change or is not part of this update.
+    if ( ! hasTargetField || previousValue === nextValue ) {
       return;
     }
 
