@@ -4,7 +4,7 @@ import { Box, Typography } from '@strapi/design-system';
 
 import { PATH_SEPARATOR, SLASH_SEPARATOR } from '../../constants';
 
-const TableCell = ( {
+const ListViewTableCell = ( {
   ancestorsPath,
   isOrphan,
   slug,
@@ -36,10 +36,10 @@ const TableCell = ( {
   );
 };
 
-TableCell.propTypes = {
+ListViewTableCell.propTypes = {
   ancestorsPath: PropTypes.string,
   isOrphan: PropTypes.bool.isRequired,
   slug: PropTypes.string.isRequired,
 };
 
-export default TableCell;
+export default ListViewTableCell;
