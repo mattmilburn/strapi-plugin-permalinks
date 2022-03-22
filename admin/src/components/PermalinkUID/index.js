@@ -121,7 +121,7 @@ const PermalinkUID = ( {
       onChange( {
         target: {
           name,
-          value: getPermalink( ancestorsPath, data ),
+          value: getPermalink( isOrphan ? null : ancestorsPath, data ),
           type: 'text',
         },
       }, shouldSetInitialValue );
@@ -145,9 +145,10 @@ const PermalinkUID = ( {
       const { data } = await axiosInstance.post( '/content-manager/uid/check-availability', {
         contentTypeUID,
         field: name,
-        value: getPermalink( ancestorsPath, slug ),
+        value: getPermalink( isOrphan ? null : ancestorsPath, slug ),
       } );
 
+      updateAncestorsPath();
       setAvailability( data );
       setIsLoading( false );
     } catch ( err ) {
@@ -158,25 +159,50 @@ const PermalinkUID = ( {
   };
 
   const updateAncestorsPath = async () => {
+    setIsLoading( true );
+
+    // Always remove orphan state when modifying the parent relation.
+    setIsOrphan( false );
+
+    const newSlug = getPermalinkSlug( value );
+
+    // Maybe remove ancestors path.
     if ( ! targetRelationValue ) {
-      return;
-    }
-
-    try {
-      const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}/${name}`;
-
-      const { data: { path } } = await axiosInstance.get( endpoint );
-      const newSlug = getPermalinkSlug( value );
-
       // Update field state.
-      setAncestorsPath( path );
+      setAncestorsPath( null );
       setSlug( newSlug );
 
-      // Update field value.
+      // Update field value with only the current slug (no ancestors).
       onChange( {
         target: {
           name,
-          value: getPermalink( path, newSlug ),
+          value: newSlug,
+          type: 'text',
+        },
+      } );
+
+      setIsLoading( false );
+      return;
+    }
+
+    // Maybe fetch a new ancestors path.
+    try {
+      const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}/${name}`;
+      const {
+        data: {
+          path: newAncestorsPath,
+        },
+      } = await axiosInstance.get( endpoint );
+
+      // Update field state.
+      setAncestorsPath( newAncestorsPath );
+      setSlug( newSlug );
+
+      // Update field value with ancestors path included.
+      onChange( {
+        target: {
+          name,
+          value: getPermalink( newAncestorsPath, newSlug ),
           type: 'text',
         },
       } );
@@ -248,20 +274,24 @@ const PermalinkUID = ( {
     const selectedSelf = targetRelationValue && targetRelationValue.id === modifiedData.id;
 
     // Maybe set new ancestors path.
-    if ( targetRelationValue !== initialRelationValue && ! selectedSelf ) {
+    if (
+      targetRelationValue &&
+      targetRelationValue !== initialRelationValue &&
+      ! selectedSelf
+    ) {
       updateAncestorsPath();
-      setIsOrphan( false );
     }
 
-    // Maybe unset ancestors path.
-    if ( ! targetRelationValue || selectedSelf ) {
-      if ( ! isOrphan ) {
-        setAncestorsPath( null );
-      }
+    // Maybe unset ancestors path. If this entity is an orphan, we need to leave
+    // the ancestors path visible until a new value is set.
+    if ( ( ! targetRelationValue && ! isOrphan ) || selectedSelf ) {
+      updateAncestorsPath();
 
-      handleChange( {
+      onChange( {
         target: {
+          name,
           value: getPermalinkSlug( value ),
+          type: 'text',
         },
       } );
     }
