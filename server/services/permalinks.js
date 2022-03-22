@@ -3,7 +3,8 @@
 const qs = require( 'qs' );
 
 const config = require( '../config' );
-const { pluginId } = require( '../utils' );
+const { PATH_SEPARATOR } = require( '../constants' );
+const { getPermalinkSlug, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async getConfig() {
@@ -28,14 +29,15 @@ module.exports = ( { strapi } ) => ( {
     } );
   },
 
-  async syncDescendants( uid, rootId, previousValue, nextValue, options ) {
+  async syncDescendants( uid, rootId, value, options ) {
     const { targetField, targetRelation } = options;
 
-    const updateLoop = ( items, prev, next ) => {
+    const updateLoop = ( items, next ) => {
       return items.map( async item => {
         const { id } = item;
         const initialValue = item[ targetField ];
-        const updatedValue = initialValue.replace( prev, next );
+        const slug = getPermalinkSlug( initialValue );
+        const updatedValue = `${next}${PATH_SEPARATOR}${slug}`;
 
         const updatedItem = await strapi.query( uid ).update( {
           where: { id },
@@ -48,7 +50,7 @@ module.exports = ( { strapi } ) => ( {
 
         // If this item has children that also need to be updated, keep the loop going.
         if ( nextChildren.length ) {
-          const nextUpdatedItems = updateLoop( nextChildren, initialValue, updatedValue );
+          const nextUpdatedItems = updateLoop( nextChildren, updatedValue );
 
           return [
             updatedItem,
@@ -67,7 +69,7 @@ module.exports = ( { strapi } ) => ( {
       return Promise.resolve();
     }
 
-    const promisedUpdates = updateLoop( firstItemsToUpdate, previousValue, nextValue );
+    const promisedUpdates = updateLoop( firstItemsToUpdate, value );
 
     return Promise.all( promisedUpdates );
   },

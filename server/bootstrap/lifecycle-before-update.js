@@ -27,7 +27,6 @@ module.exports = async ( { strapi } ) => {
     await pluginService.syncDescendants(
       model.uid,
       where.id,
-      previousValue,
       nextValue,
       options
     );
