@@ -220,7 +220,7 @@ const PermalinkUID = ( {
       toggleNotification( {
         type: 'warning',
         message: {
-          id: getTrad( 'notification.orphan' ),
+          id: getTrad( 'notice.warning.orphan' ),
           defaultMessage: 'This entity has been orphaned since it was last saved.',
         },
         timeout: 3500,
