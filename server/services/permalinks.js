@@ -13,7 +13,7 @@ module.exports = ( { strapi } ) => ( {
     return data;
   },
 
-  async syncDescendants( uid, id, value, options ) {
+  async syncChildren( uid, id, value, options ) {
     const { targetField, targetRelation } = options;
 
     const itemsToUpdate = await strapi.query( uid ).findMany( {
