@@ -15,7 +15,9 @@ module.exports = {
 
   async ancestorsPath( ctx ) {
     const { id, field, uid } = ctx.request.params;
-    const entity = await getService( 'permalinks' ).getEntity( uid, id );
+    const entity = await strapi.query( uid ).findOne( {
+      where: { id },
+    } );
 
     if ( ! entity ) {
       return ctx.notFound();
