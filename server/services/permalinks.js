@@ -22,55 +22,43 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async findChildren( uid, id, target ) {
-    return await strapi.query( uid ).findMany( {
+    const entities = await strapi.query( uid ).findMany( {
       where: {
         [ target ]: { id },
       },
     } );
+
+    return entities;
   },
 
-  async syncDescendants( uid, rootId, value, options ) {
+  async syncDescendants( uid, id, value, options ) {
     const { targetField, targetRelation } = options;
 
-    const updateLoop = ( items, next ) => {
-      return items.map( async item => {
-        const { id } = item;
-        const initialValue = item[ targetField ];
-        const slug = getPermalinkSlug( initialValue );
-        const updatedValue = `${next}${PATH_SEPARATOR}${slug}`;
-
-        const updatedItem = await strapi.query( uid ).update( {
-          where: { id },
-          data: {
-            [ targetField ]: updatedValue,
-          },
-        } );
-
-        const nextChildren = await this.findChildren( uid, id, targetRelation );
-
-        // If this item has children that also need to be updated, keep the loop going.
-        if ( nextChildren.length ) {
-          const nextUpdatedItems = updateLoop( nextChildren, updatedValue );
-
-          return [
-            updatedItem,
-            ...nextUpdatedItems,
-          ];
-        }
-
-        return updatedItem;
-      } );
-    };
-
-    const firstItemsToUpdate = await this.findChildren( uid, rootId, targetRelation );
+    const itemsToUpdate = await strapi.query( uid ).findMany( {
+      where: {
+        [ targetRelation ]: { id },
+      },
+    } );
 
     // Do nothing if there are no immediate children to update.
-    if ( ! firstItemsToUpdate.length ) {
-      return Promise.resolve();
+    if ( ! itemsToUpdate.length ) {
+      return;
     }
 
-    const promisedUpdates = updateLoop( firstItemsToUpdate, value );
+    const promisedUpdates = itemsToUpdate.map( async item => {
+      const slug = getPermalinkSlug( item[ targetField ] );
+      const updatedValue = `${value}${PATH_SEPARATOR}${slug}`;
 
-    return Promise.all( promisedUpdates );
+      const updatedItem = await strapi.query( uid ).update( {
+        where: { id: item.id },
+        data: {
+          [ targetField ]: updatedValue,
+        },
+      } );
+
+      return updatedItem;
+    } );
+
+    await Promise.all( promisedUpdates );
   },
 } );
