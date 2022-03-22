@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import { get } from 'lodash';
@@ -11,7 +11,6 @@ import {
   Refresh,
 } from '@strapi/icons';
 
-import { PATH_SEPARATOR, SLASH_SEPARATOR } from '../../constants';
 import {
   axiosInstance,
   getPermalink,
@@ -20,7 +19,7 @@ import {
   getTrad,
   pluginId,
 } from '../../utils';
-import { AncestorsPath, Delimiter } from './styled';
+import AncestorsPath from './AncestorsPath';
 
 // Import certain assets directly from core InputUID component.
 import UID_REGEX from '../InputUID/regex';
@@ -62,13 +61,13 @@ const PermalinkUID = ( {
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
 
   // Vars for handling permalink.
-  const initialAncestorsPath = getPermalinkAncestors( value );
+  const targetRelationValue = modifiedData[ pluginOptions.targetRelation ];
+  const initialRelationValue = initialData[ pluginOptions.targetRelation ];
+  const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const isOrphan = ! initialRelationValue && !! initialAncestorsPath;
-  const [ ancestorsPath, setAncestorsPath ] = useState( isOrphan ? null : initialAncestorsPath );
+  const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
-  const initialRelationValue = initialData[ pluginOptions.targetRelation ];
-  const targetRelationValue = modifiedData[ pluginOptions.targetRelation ];
 
   const label = intlLabel.id
     ? formatMessage(
@@ -90,6 +89,17 @@ const PermalinkUID = ( {
         { ...placeholder.values }
       )
     : '';
+
+  const formattedError = error
+    ? formatMessage( { id: error, defaultMessage: error } )
+    : undefined;
+
+  const formattedOrphanError = isOrphan
+    ? formatMessage( {
+      id: 'ui.error.orphan',
+      defaultMessage: 'This value must be regenerated after being orphaned.',
+    } )
+    : undefined;
 
   generateUid.current = async ( shouldSetInitialValue = false ) => {
     setIsLoading( true );
@@ -183,9 +193,10 @@ const PermalinkUID = ( {
       toggleNotification( {
         type: 'warning',
         message: {
-          id: getTrad( 'ui.error.orphan' ),
-          defaultMessage: 'This page has been orphaned since it was last saved.',
+          id: getTrad( 'notification.orphan' ),
+          defaultMessage: 'This entity has been orphaned since it was last saved.',
         },
+        timeout: 3500,
       } );
     }
   }, [] );
@@ -242,7 +253,9 @@ const PermalinkUID = ( {
 
     // Maybe set ancestors path to `null`.
     if ( ! targetRelationValue || selectedSelf ) {
-      setAncestorsPath( null );
+      if ( ! isOrphan ) {
+        setAncestorsPath( null );
+      }
 
       handleChange( {
         target: {
@@ -283,24 +296,13 @@ const PermalinkUID = ( {
     } );
   };
 
-  const formattedError = error
-    ? formatMessage( { id: error, defaultMessage: error } )
-    : undefined;
-
   return (
     <TextInput
       disabled={ disabled }
-      error={ formattedError }
-      startAction={ ancestorsPath
-        ? <AncestorsPath>
-            { ancestorsPath.split( PATH_SEPARATOR ).map( ( path, i ) => (
-              <Fragment key={ i }>
-                { path }<Delimiter>{ SLASH_SEPARATOR }</Delimiter>
-              </Fragment>
-            ) ) }
-          </AncestorsPath>
-        : null
-      }
+      error={ formattedOrphanError ?? formattedError }
+      startAction={ ancestorsPath ? (
+        <AncestorsPath path={ ancestorsPath } hasError={ isOrphan } />
+      ) : null }
       endAction={
         <EndActionWrapper>
           { availability && availability.isAvailable && ! regenerateLabel && (
