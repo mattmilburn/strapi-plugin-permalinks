@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography } from '@strapi/design-system';
 
-import { TableCell  } from '../components';
+import { ListViewTableCell  } from '../components';
 import { getPermalinkAncestors, getPermalinkSlug, pluginId } from '../utils';
 
 const filterPermalinkColumns = ( { displayedHeaders, layout }, pluginConfig ) => {
@@ -28,7 +28,7 @@ const filterPermalinkColumns = ( { displayedHeaders, layout }, pluginConfig ) =>
           const isOrphan = ! props[ targetRelation ] && !! ancestorsPath;
 
           return (
-            <TableCell
+            <ListViewTableCell
               isOrphan={ isOrphan }
               ancestorsPath={ ancestorsPath }
               slug={ slug }
