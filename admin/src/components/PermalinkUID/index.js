@@ -65,7 +65,8 @@ const PermalinkUID = ( {
   const initialRelationValue = initialData[ pluginOptions.targetRelation ];
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
-  const isOrphan = ! initialRelationValue && !! initialAncestorsPath;
+  const initialIsOrphan = ! initialRelationValue && !! initialAncestorsPath;
+  const [ isOrphan, setIsOrphan ] = useState( initialIsOrphan );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
 
@@ -156,7 +157,7 @@ const PermalinkUID = ( {
     }
   };
 
-  const getAncestorsPath = async () => {
+  const updateAncestorsPath = async () => {
     if ( ! targetRelationValue ) {
       return;
     }
@@ -199,7 +200,7 @@ const PermalinkUID = ( {
         timeout: 3500,
       } );
     }
-  }, [] );
+  }, [ isOrphan ] );
 
   useEffect( () => {
     if (
@@ -246,12 +247,13 @@ const PermalinkUID = ( {
   useEffect( () => {
     const selectedSelf = targetRelationValue && targetRelationValue.id === modifiedData.id;
 
-    // Maybe update ancestors path.
+    // Maybe set new ancestors path.
     if ( targetRelationValue !== initialRelationValue && ! selectedSelf ) {
-      getAncestorsPath();
+      updateAncestorsPath();
+      setIsOrphan( false );
     }
 
-    // Maybe set ancestors path to `null`.
+    // Maybe unset ancestors path.
     if ( ! targetRelationValue || selectedSelf ) {
       if ( ! isOrphan ) {
         setAncestorsPath( null );
