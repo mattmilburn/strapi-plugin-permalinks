@@ -66,7 +66,9 @@ const PermalinkUID = ( {
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const initialIsOrphan = ! initialRelationValue && !! initialAncestorsPath;
+  const selectedSelfRelation = targetRelationValue && targetRelationValue.id === modifiedData.id;
   const [ isOrphan, setIsOrphan ] = useState( initialIsOrphan );
+  const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
 
@@ -93,13 +95,6 @@ const PermalinkUID = ( {
 
   const formattedError = error
     ? formatMessage( { id: error, defaultMessage: error } )
-    : undefined;
-
-  const formattedOrphanError = isOrphan
-    ? formatMessage( {
-      id: 'ui.error.orphan',
-      defaultMessage: 'This value must be regenerated after being orphaned.',
-    } )
     : undefined;
 
   generateUid.current = async ( shouldSetInitialValue = false ) => {
@@ -135,11 +130,11 @@ const PermalinkUID = ( {
   };
 
   const checkAvailability = async () => {
-    setIsLoading( true );
-
-    if ( ! value ) {
+    if ( ! value || selectedSelfRelation ) {
       return;
     }
+
+    setIsLoading( true );
 
     try {
       const { data } = await axiosInstance.post( '/content-manager/uid/check-availability', {
@@ -148,7 +143,6 @@ const PermalinkUID = ( {
         value: getPermalink( isOrphan ? null : ancestorsPath, slug ),
       } );
 
-      updateAncestorsPath();
       setAvailability( data );
       setIsLoading( false );
     } catch ( err ) {
@@ -162,7 +156,9 @@ const PermalinkUID = ( {
     const newSlug = getPermalinkSlug( value );
 
     // Update field state.
+    setIsOrphan( false );
     setAncestorsPath( null );
+    setParentError( null );
     setSlug( newSlug );
 
     // Update field value with only the current slug (no ancestors).
@@ -177,8 +173,6 @@ const PermalinkUID = ( {
 
   const updateAncestorsPath = async () => {
     setIsLoading( true );
-
-    // Always remove orphan state when modifying the parent relation.
     setIsOrphan( false );
 
     // Maybe remove ancestors path.
@@ -199,6 +193,7 @@ const PermalinkUID = ( {
       const newSlug = getPermalinkSlug( value );
 
       // Update field state.
+      setParentError( null );
       setAncestorsPath( newAncestorsPath );
       setSlug( newSlug );
 
@@ -219,6 +214,11 @@ const PermalinkUID = ( {
 
   useEffect( () => {
     if ( isOrphan ) {
+      setParentError( formatMessage( {
+        id: 'ui.error.orphan',
+        defaultMessage: 'This value must be regenerated after being orphaned.',
+      } ) );
+
       toggleNotification( {
         type: 'warning',
         message: {
@@ -273,29 +273,29 @@ const PermalinkUID = ( {
   }, [ debouncedTargetFieldValue, isCustomized, isCreation ] );
 
   useEffect( () => {
-    const selectedSelf = targetRelationValue && targetRelationValue.id === modifiedData.id;
+    // Remove ancestors path if we have selected the current entity as the parent.
+    if ( selectedSelfRelation ) {
+      removeAncestorsPath();
 
-    // Maybe set new ancestors path.
-    if (
-      targetRelationValue &&
-      targetRelationValue !== initialRelationValue &&
-      ! selectedSelf
-    ) {
-      updateAncestorsPath();
+      setParentError( formatMessage( {
+        id: 'ui.error.selfParent',
+        defaultMessage: 'Cannot assign the {relation} relation to itself.',
+      }, {
+        relation: pluginOptions.targetRelation,
+      } ) );
+
+      return;
     }
 
-    // Maybe unset ancestors path. If this entity is an orphan, we need to leave
-    // the ancestors path visible until a new value is set.
-    if ( ( ! targetRelationValue && ! isOrphan ) || selectedSelf ) {
-      updateAncestorsPath();
+    // Maybe update the input value. If this entity is an orphan, we need to
+    // leave the ancestors path visible until a new value is set.
+    if ( ! targetRelationValue && ! isOrphan ) {
+      removeAncestorsPath();
+    }
 
-      onChange( {
-        target: {
-          name,
-          value: getPermalinkSlug( value ),
-          type: 'text',
-        },
-      } );
+    // Maybe set new ancestors path.
+    if ( targetRelationValue && targetRelationValue !== initialRelationValue ) {
+      updateAncestorsPath();
     }
   }, [ targetRelationValue, initialRelationValue ] );
 
@@ -333,9 +333,12 @@ const PermalinkUID = ( {
   return (
     <TextInput
       disabled={ disabled }
-      error={ formattedOrphanError ?? formattedError }
+      error={ parentError ?? formattedError }
       startAction={ ancestorsPath ? (
-        <AncestorsPath path={ ancestorsPath } hasError={ isOrphan } />
+        <AncestorsPath
+          path={ ancestorsPath }
+          hasError={ !! parentError || !! error }
+        />
       ) : null }
       endAction={
         <EndActionWrapper>
