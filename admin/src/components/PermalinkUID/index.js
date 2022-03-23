@@ -158,29 +158,32 @@ const PermalinkUID = ( {
     }
   };
 
+  const removeAncestorsPath = () => {
+    const newSlug = getPermalinkSlug( value );
+
+    // Update field state.
+    setAncestorsPath( null );
+    setSlug( newSlug );
+
+    // Update field value with only the current slug (no ancestors).
+    onChange( {
+      target: {
+        name,
+        value: newSlug,
+        type: 'text',
+      },
+    } );
+  };
+
   const updateAncestorsPath = async () => {
     setIsLoading( true );
 
     // Always remove orphan state when modifying the parent relation.
     setIsOrphan( false );
 
-    const newSlug = getPermalinkSlug( value );
-
     // Maybe remove ancestors path.
     if ( ! targetRelationValue ) {
-      // Update field state.
-      setAncestorsPath( null );
-      setSlug( newSlug );
-
-      // Update field value with only the current slug (no ancestors).
-      onChange( {
-        target: {
-          name,
-          value: newSlug,
-          type: 'text',
-        },
-      } );
-
+      removeAncestorsPath();
       setIsLoading( false );
       return;
     }
@@ -193,6 +196,7 @@ const PermalinkUID = ( {
           path: newAncestorsPath,
         },
       } = await axiosInstance.get( endpoint );
+      const newSlug = getPermalinkSlug( value );
 
       // Update field state.
       setAncestorsPath( newAncestorsPath );
@@ -206,13 +210,11 @@ const PermalinkUID = ( {
           type: 'text',
         },
       } );
-
-      setIsLoading( false );
     } catch ( err ) {
       console.error( { err } );
-
-      setIsLoading( false );
     }
+
+    setIsLoading( false );
   };
 
   useEffect( () => {
