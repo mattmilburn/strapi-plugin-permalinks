@@ -1,5 +1,7 @@
 {
   "ui.error.orphan": "This value must be regenerated after being orphaned.",
+  "ui.error.selfParent": "Cannot assign the {relation} relation to itself.",
+  "ui.error.childParent": "Cannot assign the {relation} relation to its own descendant.",
 
   "notice.warning.orphan": "This entity has been orphaned since it was last saved."
 }
