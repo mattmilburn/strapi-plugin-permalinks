@@ -193,7 +193,7 @@ const PermalinkUID = ( {
         uid: contentTypeUID,
         id: modifiedData.id,
         parentId: targetRelationValue.id,
-        value,
+        value: newSlug,
       } );
 
       // Update field state.
