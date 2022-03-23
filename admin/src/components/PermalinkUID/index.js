@@ -184,13 +184,17 @@ const PermalinkUID = ( {
 
     // Maybe fetch a new ancestors path.
     try {
-      const endpoint = `${pluginId}/ancestors-path/${contentTypeUID}/${targetRelationValue.id}/${name}`;
+      const newSlug = getPermalinkSlug( value );
       const {
         data: {
           path: newAncestorsPath,
         },
-      } = await axiosInstance.get( endpoint );
-      const newSlug = getPermalinkSlug( value );
+      } = await axiosInstance.post( `${pluginId}/ancestors-path`, {
+        uid: contentTypeUID,
+        id: modifiedData.id,
+        parentId: targetRelationValue.id,
+        value,
+      } );
 
       // Update field state.
       setParentError( null );
@@ -206,6 +210,19 @@ const PermalinkUID = ( {
         },
       } );
     } catch ( err ) {
+      // Maybe set error to incidate relationship conflict.
+      if ( err.response.status === 409 ) {
+        removeAncestorsPath();
+
+        // Set field error.
+        setParentError( formatMessage( {
+          id: 'ui.error.selfChild',
+          defaultMessage: 'Cannot assign the {relation} relation to its own descendant.',
+        }, {
+          relation: pluginOptions.targetRelation,
+        } ) );
+      }
+
       console.error( { err } );
     }
 
