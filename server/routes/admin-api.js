@@ -12,8 +12,8 @@ module.exports = {
       },
     },
     {
-      method: 'GET',
-      path: '/ancestors-path/:uid/:id/:field',
+      method: 'POST',
+      path: '/ancestors-path',
       handler: 'permalinks.ancestorsPath',
       config: {
         policies: [ 'admin::isAuthenticatedAdmin' ],

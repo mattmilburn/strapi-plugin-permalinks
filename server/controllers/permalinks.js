@@ -1,5 +1,7 @@
 'use strict';
 
+const { get } = require( 'lodash' );
+
 const { getService, pluginId } = require( '../utils' );
 
 module.exports = {
@@ -14,15 +16,25 @@ module.exports = {
   },
 
   async ancestorsPath( ctx ) {
-    const { id, field, uid } = ctx.request.params;
-    const entity = await strapi.query( uid ).findOne( {
-      where: { id },
-    } );
+    const { uid, id, parentId, value } = ctx.request.body;
+    const { contentTypes } = await getService( 'permalinks' ).getConfig();
+    const supportedType = contentTypes.find( type => type.uid === uid );
 
-    if ( ! entity ) {
+    if ( ! supportedType ) {
       return ctx.notFound();
     }
 
-    ctx.send( { path: entity[ field ] } );
+    const { targetField, targetRelation } = supportedType;
+    const parentEntity = await strapi.query( uid ).findOne( {
+      where: { id: parentId },
+    } );
+
+    if ( ! parentEntity ) {
+      return ctx.notFound();
+    }
+
+    const path = get( parentEntity, targetField, '' );
+
+    ctx.send( { path } );
   },
 };
