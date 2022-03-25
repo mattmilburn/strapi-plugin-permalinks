@@ -1,4 +1,4 @@
-import { pluginId } from './utils/plugin-id';
+import pluginId from './utils/plugin-id';
 
 export const PATH_SEPARATOR = '~';
 export const SLASH_SEPARATOR = '/';
