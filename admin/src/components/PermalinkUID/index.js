@@ -216,7 +216,7 @@ const PermalinkUID = ( {
 
         // Set field error.
         setParentError( formatMessage( {
-          id: 'ui.error.selfChild',
+          id: getTrad( 'ui.error.selfChild' ),
           defaultMessage: 'Cannot assign the {relation} relation to its own descendant.',
         }, {
           relation: pluginOptions.targetRelation,
@@ -232,16 +232,18 @@ const PermalinkUID = ( {
   useEffect( () => {
     if ( isOrphan ) {
       setParentError( formatMessage( {
-        id: 'ui.error.orphan',
+        id: getTrad( 'ui.error.orphan' ),
         defaultMessage: 'This value must be regenerated after being orphaned.',
       } ) );
 
       toggleNotification( {
         type: 'warning',
-        message: {
-          id: getTrad( 'notice.warning.orphan' ),
-          defaultMessage: 'This entity has been orphaned since it was last saved.',
-        },
+        message: formatMessage( {
+          id: getTrad( 'ui.warning.orphan' ),
+          defaultMessage: 'This {singularName} has been orphaned since it was last saved.',
+        }, {
+          singularName: layout.info.singularName,
+        } ),
         timeout: 3500,
       } );
     }
@@ -295,7 +297,7 @@ const PermalinkUID = ( {
       removeAncestorsPath();
 
       setParentError( formatMessage( {
-        id: 'ui.error.selfParent',
+        id: getTrad( 'ui.error.selfParent' ),
         defaultMessage: 'Cannot assign the {relation} relation to itself.',
       }, {
         relation: pluginOptions.targetRelation,
