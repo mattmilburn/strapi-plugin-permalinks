@@ -9,6 +9,7 @@ export const PathLabel = styled.span`
   font-weight: ${({ theme }) => theme.fontWeights.normal};
   font-size: ${({ theme }) => theme.fontSizes[2]};
   line-height: normal;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
 `;

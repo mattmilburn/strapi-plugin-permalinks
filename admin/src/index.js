@@ -35,8 +35,8 @@ export default {
 
       // Register hooks.
       app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', listViewColumnHook );
-    } catch ( err ) {
-      console.log( err );
+    } catch ( _err ) {
+      // Probably just failed because user is not logged in, which is fine.
       return;
     }
   },
