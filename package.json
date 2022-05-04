@@ -1,20 +1,20 @@
 {
   "name": "strapi-plugin-permalinks",
   "version": "0.1.1",
-  "description": "A plugin for Strapi to enable permalinks for content types with nested relationships.",
+  "description": "A plugin for Strapi CMS to enable permalinks for content types with nested relationships.",
   "license": "MIT",
   "strapi": {
     "displayName": "Permalinks",
     "name": "permalinks",
-    "description": "A plugin for Strapi to enable permalinks for content types with nested relationships.",
+    "description": "A plugin for Strapi CMS to enable permalinks for content types with nested relationships.",
     "kind": "plugin"
   },
   "peerDependencies": {
-    "@strapi/design-system": "^0.0.1-alpha.76",
-    "@strapi/helper-plugin": "^4.1.0",
-    "@strapi/icons": "^0.0.1-alpha.76",
-    "@strapi/strapi": "^4.1.0",
-    "@strapi/utils": "^4.1.0",
+    "@strapi/design-system": "^0.0.1-alpha.79",
+    "@strapi/helper-plugin": "^4.1.9",
+    "@strapi/icons": "^0.0.1-alpha.79",
+    "@strapi/strapi": "^4.1.9",
+    "@strapi/utils": "^4.1.9",
     "@testing-library/react": "^12.1.4"
   },
   "dependencies": {
@@ -29,7 +29,7 @@
     "styled-components": "^5.3.3"
   },
   "engines": {
-    "node": ">=12.x. <=16.x.x",
+    "node": ">=12.x.x <=16.x.x",
     "npm": ">=6.0.0"
   },
   "author": {
@@ -55,6 +55,8 @@
     "permalink",
     "nested",
     "related",
+    "relation",
+    "relationship",
     "slug",
     "uid",
     "url"

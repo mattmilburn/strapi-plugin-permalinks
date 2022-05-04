@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Strapi Permalinks</h1>
-  <p>A plugin for Strapi to enable permalinks for content types with nested relationships.</p>
+  <p>A plugin for Strapi CMS to enable permalinks for content types with nested relationships.</p>
   <p><em>Kinda like WordPress, but not 👍🏻</em></p>
 </div>
 
