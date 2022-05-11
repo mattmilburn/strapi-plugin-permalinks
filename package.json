@@ -1,6 +1,6 @@
 {
   "name": "strapi-plugin-permalinks",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A plugin for Strapi CMS to enable permalinks for content types with nested relationships.",
   "license": "MIT",
   "strapi": {
