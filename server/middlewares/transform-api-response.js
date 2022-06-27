@@ -1,23 +1,34 @@
 'use strict';
 
-const { get, has, head, isArray } = require( 'lodash' );
+const { get, has, head, isArray, set } = require( 'lodash' );
 
 const { getService, isApiRequest } = require( '../utils' );
 
 // Transform function which is used to transform the response object.
-const transform = ( data, field ) => {
+const transform = ( data, config ) => {
   // Single entry.
   if ( has( data, 'attributes' ) ) {
-    return transform( data.attributes, field );
+    return transform( data.attributes, config );
   }
 
   // Collection of entries.
   if ( isArray( data ) && data.length && has( head( data ), 'attributes' ) ) {
-    return data.map( item => transform( item, field ) );
+    return data.map( item => transform( item, config ) );
   }
 
-  // Replace ~ with / in slug fields.
-  data[ field ] = data[ field ].replace( '~', '/' );
+  // Replace ~ with / in data's `targetField`.
+  data[ config.targetField ] = data[ config.targetField ].replace( '~', '/' );
+
+  const relationTargetField = `${config.targetRelation}.${config.targetField}`;
+
+  // Maybe replace ~ with / in data's `targetRelation`.
+  if ( has( data, relationTargetField ) ) {
+    set(
+      data,
+      relationTargetField,
+      get( data, relationTargetField ).replace( '~', '/' )
+    );
+  }
 
   return data;
 };
@@ -39,7 +50,7 @@ module.exports = ( { strapi } ) => {
     const shouldTransform = ctx.body.data && isApiRequest( ctx ) && !! contentType;
 
     if ( shouldTransform ) {
-      ctx.body.data = transform( ctx.body.data, contentType.targetField );
+      ctx.body.data = transform( ctx.body.data, contentType );
     }
   } );
 };
