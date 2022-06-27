@@ -26,12 +26,6 @@ module.exports = ( { strapi } ) => ( {
     return false;
   },
 
-  async getConfig() {
-    const data = await strapi.config.get( `plugin.${pluginId}`, config.default );
-
-    return data;
-  },
-
   async syncChildren( uid, id, value, options ) {
     const { targetField, targetRelation } = options;
 
