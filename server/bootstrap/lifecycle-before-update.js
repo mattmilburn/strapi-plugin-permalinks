@@ -3,8 +3,9 @@
 const { getService } = require( '../utils' );
 
 module.exports = async ( { strapi } ) => {
+  const configService = getService( 'config' );
   const pluginService = getService( 'permalinks' );
-  const { contentTypes } = await pluginService.getConfig();
+  const { contentTypes } = await configService.get();
   const models = contentTypes.map( type => type.uid );
 
   // Lifecycle hook to sync descendants before a parent relation changes.

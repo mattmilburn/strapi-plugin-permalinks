@@ -6,7 +6,7 @@ const { getService, pluginId } = require( '../utils' );
 
 module.exports = {
   async config( ctx ) {
-    const { contentTypes } = await getService( 'permalinks' ).getConfig();
+    const { contentTypes } = await getService( 'config' ).get();
 
     const config = {
       contentTypes,
@@ -17,8 +17,9 @@ module.exports = {
 
   async ancestorsPath( ctx ) {
     const { uid, id, parentId, value } = ctx.request.body;
+    const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
-    const { contentTypes } = await pluginService.getConfig();
+    const { contentTypes } = await configService.get();
     const supportedType = contentTypes.find( type => type.uid === uid );
 
     if ( ! supportedType ) {
