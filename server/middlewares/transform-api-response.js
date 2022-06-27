@@ -17,7 +17,7 @@ const transform = ( data, config ) => {
   }
 
   // Replace ~ with / in data's `targetField`.
-  data[ config.targetField ] = data[ config.targetField ].replaceAll( '~', '/' );
+  data[ config.targetField ] = get( data, config.targetField ).replace( /~/g, '/' );
 
   const relationTargetField = `${config.targetRelation}.${config.targetField}`;
 
@@ -26,7 +26,7 @@ const transform = ( data, config ) => {
     set(
       data,
       relationTargetField,
-      get( data, relationTargetField ).replaceAll( '~', '/' )
+      get( data, relationTargetField ).replace( /~/g, '/' )
     );
   }
 
