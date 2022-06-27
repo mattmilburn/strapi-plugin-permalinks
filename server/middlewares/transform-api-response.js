@@ -12,8 +12,12 @@ const transform = ( data, config ) => {
   }
 
   // Collection of entries.
-  if ( isArray( data ) && data.length && has( head( data ), 'attributes' ) ) {
-    return data.map( item => transform( item, config ) );
+  if ( isArray( data ) && data.length ) {
+    const firstItem = head( data );
+
+    if ( has( firstItem, 'attributes' ) || has( firstItem, config.targetField ) ) {
+      return data.map( item => transform( item, config ) );
+    }
   }
 
   // Replace ~ with / in data's `targetField`.
