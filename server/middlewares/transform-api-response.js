@@ -50,7 +50,9 @@ module.exports = ( { strapi } ) => {
 
     // Determine if this request should transform the data response.
     const { handler } = ctx.state.route;
-    const contentType = config.contentTypes.find( ( { uid } ) => handler.includes( uid ) );
+    const contentType = config.contentTypes.find( ( { uid } ) => {
+      return typeof handler === 'string' && handler.includes( uid );
+    } );
     const shouldTransform = ctx.body.data && isApiRequest( ctx ) && !! contentType;
 
     if ( shouldTransform ) {
