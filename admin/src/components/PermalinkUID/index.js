@@ -16,6 +16,7 @@ import {
   getPermalink,
   getPermalinkAncestors,
   getPermalinkSlug,
+  getRelationValue,
   getTrad,
   pluginId,
 } from '../../utils';
@@ -61,8 +62,8 @@ const PermalinkUID = ( {
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
 
   // Vars for handling permalink.
-  const targetRelationValue = modifiedData[ pluginOptions.targetRelation ];
-  const initialRelationValue = initialData[ pluginOptions.targetRelation ];
+  const targetRelationValue = getRelationValue( modifiedData, pluginOptions.targetRelation );
+  const initialRelationValue = getRelationValue( initialData, pluginOptions.targetRelation );
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const initialIsOrphan = ! initialRelationValue && !! initialAncestorsPath;
