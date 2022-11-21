@@ -19,5 +19,13 @@ module.exports = {
         policies: [ 'admin::isAuthenticatedAdmin' ],
       },
     },
+    {
+      method: 'POST',
+      path: '/check-availability',
+      handler: 'permalinks.checkAvailability',
+      config: {
+        policies: [ 'admin::isAuthenticatedAdmin' ],
+      },
+    },
   ],
 };

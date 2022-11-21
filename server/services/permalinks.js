@@ -1,6 +1,8 @@
 'use strict';
 
+const { get, has } = require( 'lodash' );
 const qs = require( 'qs' );
+const { ValidationError } = require('@strapi/utils').errors;
 
 const config = require( '../config' );
 const { PATH_SEPARATOR } = require( '../constants' );
@@ -24,6 +26,35 @@ module.exports = ( { strapi } ) => ( {
     }
 
     return false;
+  },
+
+  async checkUIDAvailability( uid, field, value ) {
+    const count = await strapi.db.query( uid ).count( {
+      where: { [ field ]: value },
+    } );
+
+    return count > 0 ? false : true;
+  },
+
+  async findUniqueUID( uid, field, value ) {
+    const possibleCollisions = await strapi.db.query( uid )
+      .findMany( {
+        where: { [ field ]: { $contains: value } },
+      } )
+      .then( results => results.map( result => result[ field ] ) );
+
+    if ( possibleCollisions.length === 0 ) {
+      return value;
+    }
+
+    let i = 1;
+    let tmpUID = `${value}-${i}`;
+    while ( possibleCollisions.includes( tmpUID ) ) {
+      i++;
+      tmpUID = `${value}-${i}`;
+    }
+
+    return tmpUID;
   },
 
   async syncChildren( uid, id, value, options ) {
@@ -56,4 +87,19 @@ module.exports = ( { strapi } ) => ( {
 
     await Promise.all( promisedUpdates );
   },
+
+  validateUIDField( uid, field ) {
+    const model = strapi.contentTypes[ uid ];
+
+    if ( ! model ) {
+      throw new ValidationError( `ContentType not found: ${uid}` );
+    }
+
+    if (
+      ! has( model, [ 'attributes', field ] ) ||
+      get( model, [ 'attributes', field, 'type' ] ) !== 'uid'
+    ) {
+      throw new ValidationError( `${field} must be a valid \`uid\` attribute` );
+    }
+  }
 } );

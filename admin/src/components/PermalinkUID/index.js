@@ -63,6 +63,7 @@ const PermalinkUID = ( {
 
   // Vars for handling permalink.
   const targetRelationField = pluginOptions.targetRelation;
+  const targetRelationUid = get( layout, `attributes[${targetRelationField}].targetModel`, null );
   const targetRelationValue = getRelationValue( modifiedData, targetRelationField );
   const initialRelationValue = getRelationValue( initialData, targetRelationField );
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
@@ -139,8 +140,9 @@ const PermalinkUID = ( {
     setIsLoading( true );
 
     try {
-      const { data } = await axiosInstance.post( '/content-manager/uid/check-availability', {
-        contentTypeUID,
+      const { data } = await axiosInstance.post( `${pluginId}/check-availability`, {
+        uid: contentTypeUID,
+        parentUid: targetRelationUid,
         field: name,
         value: getPermalink( isOrphan ? null : ancestorsPath, slug ),
       } );
@@ -195,7 +197,7 @@ const PermalinkUID = ( {
         uid: contentTypeUID,
         id: modifiedData.id,
         parentId: targetRelationValue.id,
-        parentUid: get( layout, `attributes[${targetRelationField}].targetModel`, null ),
+        parentUid: targetRelationUid,
         value: newSlug,
       } );
 

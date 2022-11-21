@@ -2,7 +2,7 @@
 
 const { get } = require( 'lodash' );
 
-const { getService, pluginId } = require( '../utils' );
+const { getService } = require( '../utils' );
 
 module.exports = {
   async config( ctx ) {
@@ -50,5 +50,21 @@ module.exports = {
 
     // Return final path.
     ctx.send( { path } );
+  },
+
+  async checkAvailability( ctx ) {
+    const { uid, parentUid, field, value } = ctx.request.body;
+    const pluginService = getService( 'permalinks' );
+
+    await pluginService.validateUIDField( uid, field );
+
+    const isAvailable = await pluginService.checkUIDAvailability( uid, field, value );
+
+    ctx.body = {
+      isAvailable,
+      suggestion: ! isAvailable
+        ? await pluginService.findUniqueUID( uid, field, value )
+        : null,
+    };
   },
 };
