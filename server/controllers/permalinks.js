@@ -16,7 +16,7 @@ module.exports = {
   },
 
   async ancestorsPath( ctx ) {
-    const { uid, id, parentId, value } = ctx.request.body;
+    const { uid, id, parentId, parentUid, value } = ctx.request.body;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
@@ -26,7 +26,7 @@ module.exports = {
       return ctx.notFound();
     }
 
-    const parentEntity = await strapi.query( uid ).findOne( {
+    const parentEntity = await strapi.query( parentUid ).findOne( {
       where: { id: parentId },
     } );
 

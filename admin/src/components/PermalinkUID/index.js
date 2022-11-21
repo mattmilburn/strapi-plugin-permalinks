@@ -62,8 +62,9 @@ const PermalinkUID = ( {
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
 
   // Vars for handling permalink.
-  const targetRelationValue = getRelationValue( modifiedData, pluginOptions.targetRelation );
-  const initialRelationValue = getRelationValue( initialData, pluginOptions.targetRelation );
+  const targetRelationField = pluginOptions.targetRelation;
+  const targetRelationValue = getRelationValue( modifiedData, targetRelationField );
+  const initialRelationValue = getRelationValue( initialData, targetRelationField );
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const initialIsOrphan = ! initialRelationValue && !! initialAncestorsPath;
@@ -194,6 +195,7 @@ const PermalinkUID = ( {
         uid: contentTypeUID,
         id: modifiedData.id,
         parentId: targetRelationValue.id,
+        parentUid: get( layout, `attributes[${targetRelationField}].targetModel`, null ),
         value: newSlug,
       } );
 
@@ -224,7 +226,7 @@ const PermalinkUID = ( {
         } ) );
       }
 
-      console.error( { err } );
+      console.log( err );
     }
 
     setIsLoading( false );

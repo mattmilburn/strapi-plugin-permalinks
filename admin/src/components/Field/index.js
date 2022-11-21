@@ -7,8 +7,8 @@ import { pluginId } from '../../utils';
 
 const Field = props => {
   const { layout } = useCMEditViewDataManager();
-  const { attributes, uid } = layout;
-  const { attribute, name } = props;
+  const { uid } = layout;
+  const { name } = props;
   const { contentTypes } = useSelector( state => state[ `${pluginId}_config` ].config );
   const pluginOptions = contentTypes.find( type => type.uid === uid && type.targetField === name );
 
