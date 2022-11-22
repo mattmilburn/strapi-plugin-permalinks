@@ -1,6 +1,7 @@
 'use strict';
 
-const { get, has } = require( 'lodash' );
+const get = require( 'lodash/get' );
+const has = require( 'lodash/has' );
 const qs = require( 'qs' );
 const { ValidationError } = require('@strapi/utils').errors;
 

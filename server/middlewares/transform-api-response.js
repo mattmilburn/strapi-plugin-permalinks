@@ -1,6 +1,10 @@
 'use strict';
 
-const { get, has, head, isArray, set } = require( 'lodash' );
+const get = require( 'lodash/get' );
+const has = require( 'lodash/has' );
+const head = require( 'lodash/head' );
+const isArray = require( 'lodash/isArray' );
+const set = require( 'lodash/set' );
 
 const { getService, isApiRequest } = require( '../utils' );
 
