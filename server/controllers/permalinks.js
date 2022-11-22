@@ -1,6 +1,7 @@
 'use strict';
 
-const { get, uniq } = require( 'lodash' );
+const get = require( 'lodash/get' );
+const uniq = require( 'lodash/uniq' );
 
 const { getService } = require( '../utils' );
 

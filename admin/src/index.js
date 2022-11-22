@@ -1,5 +1,5 @@
 import React from 'react';
-import { get } from 'lodash';
+import get from 'lodash/get';
 import { prefixPluginTranslations, request } from '@strapi/helper-plugin';
 
 import { Initializer, Field } from './components';
