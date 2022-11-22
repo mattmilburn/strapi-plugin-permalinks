@@ -9,7 +9,7 @@ const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async checkParentConflicts( id, uid, path, value, targetField ) {
+  async checkSameParentConflict( id, uid, path, value, targetField ) {
     const parts = path.split( PATH_SEPARATOR );
 
     // Check for conflict.
@@ -36,19 +36,19 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async findUniqueUID( uid, field, value ) {
-    const possibleCollisions = await strapi.db.query( uid )
+    const possibleConflicts = await strapi.db.query( uid )
       .findMany( {
         where: { [ field ]: { $contains: value } },
       } )
       .then( results => results.map( result => result[ field ] ) );
 
-    if ( possibleCollisions.length === 0 ) {
+    if ( possibleConflicts.length === 0 ) {
       return value;
     }
 
     let i = 1;
     let tmpUID = `${value}-${i}`;
-    while ( possibleCollisions.includes( tmpUID ) ) {
+    while ( possibleConflicts.includes( tmpUID ) ) {
       i++;
       tmpUID = `${value}-${i}`;
     }
