@@ -27,11 +27,11 @@ module.exports = async ( { strapi } ) => {
     }
 
     // Determine which supported `uids` could be using `model.uid` as a parent.
-    const childUids = contentTypes
-      .filter( type => type.targetUid && type.targetUid === model.uid )
+    const childUIDs = contentTypes
+      .filter( type => type.targetUID && type.targetUID === model.uid )
       .map( type => type.uid );
 
-    const promisedUpdates = [ model.uid, ...childUids ].map( uid => {
+    const promisedUpdates = [ model.uid, ...childUIDs ].map( uid => {
       return pluginService.syncChildren(
         uid,
         where.id,

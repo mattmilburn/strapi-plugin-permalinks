@@ -52,7 +52,7 @@ const PermalinkUID = ( {
   const [ isLoading, setIsLoading ] = useState( false );
   const [ availability, setAvailability ] = useState( null );
   const debouncedValue = useDebounce( value, 300 );
-  const generateUid = useRef();
+  const generateUID = useRef();
   const initialValue = initialData[ name ];
   const { formatMessage } = useIntl();
   const createdAtName = get( layout, [ 'options', 'timestamps', 0 ] );
@@ -63,14 +63,14 @@ const PermalinkUID = ( {
 
   // Vars for handling permalink.
   const targetRelationField = pluginOptions.targetRelation;
-  const targetRelationUid = get( layout, `attributes[${targetRelationField}].targetModel`, null );
+  const targetRelationUID = get( layout, `attributes[${targetRelationField}].targetModel`, null );
   const targetRelationValue = getRelationValue( modifiedData, targetRelationField );
-  const hasDifferentParentUid = targetRelationUid && contentTypeUID !== targetRelationUid;
+  const hasDifferentParentUID = targetRelationUID && contentTypeUID !== targetRelationUID;
   const initialRelationValue = getRelationValue( initialData, targetRelationField );
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const initialIsOrphan = ! initialRelationValue && !! initialAncestorsPath;
-  const selectedSelfRelation = ! isCreation && ! hasDifferentParentUid && targetRelationValue?.id === modifiedData.id;
+  const selectedSelfRelation = ! isCreation && ! hasDifferentParentUID && targetRelationValue?.id === modifiedData.id;
   const [ isOrphan, setIsOrphan ] = useState( initialIsOrphan );
   const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
@@ -101,7 +101,7 @@ const PermalinkUID = ( {
     ? formatMessage( { id: error, defaultMessage: error } )
     : undefined;
 
-  generateUid.current = async ( shouldSetInitialValue = false ) => {
+  generateUID.current = async ( shouldSetInitialValue = false ) => {
     setIsLoading( true );
 
     try {
@@ -143,7 +143,7 @@ const PermalinkUID = ( {
     try {
       const { data } = await axiosInstance.post( `${pluginId}/check-availability`, {
         uid: contentTypeUID,
-        parentUid: targetRelationUid,
+        parentUID: targetRelationUID,
         field: name,
         value: getPermalink( isOrphan ? null : ancestorsPath, slug ),
       } );
@@ -198,7 +198,7 @@ const PermalinkUID = ( {
         uid: contentTypeUID,
         id: modifiedData.id,
         parentId: targetRelationValue.id,
-        parentUid: targetRelationUid,
+        parentUID: targetRelationUID,
         value: newSlug,
       } );
 
@@ -293,7 +293,7 @@ const PermalinkUID = ( {
       modifiedData[ attribute.targetField ] &&
       ! value
     ) {
-      generateUid.current( true );
+      generateUID.current( true );
     }
   }, [ debouncedTargetFieldValue, isCustomized, isCreation ] );
 
@@ -397,7 +397,7 @@ const PermalinkUID = ( {
             </TextValidation>
           ) }
           <FieldActionWrapper
-            onClick={ () => generateUid.current() }
+            onClick={ () => generateUID.current() }
             label="regenerate"
             onMouseEnter={ handleGenerateMouseEnter }
             onMouseLeave={ handleGenerateMouseLeave }

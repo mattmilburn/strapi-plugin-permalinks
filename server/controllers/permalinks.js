@@ -16,7 +16,7 @@ module.exports = {
   },
 
   async ancestorsPath( ctx ) {
-    const { uid, id, parentId, parentUid, value } = ctx.request.body;
+    const { uid, id, parentId, parentUID, value } = ctx.request.body;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
@@ -26,7 +26,7 @@ module.exports = {
       return ctx.notFound();
     }
 
-    const parentEntity = await strapi.query( parentUid ).findOne( {
+    const parentEntity = await strapi.query( parentUID ).findOne( {
       where: { id: parentId },
     } );
 
@@ -37,8 +37,8 @@ module.exports = {
     const path = get( parentEntity, supportedType.targetField, '' );
 
     // Check if the entity in question is being assigned as it's own ancestor, but
-    // only if `uid` and `parentUid` are the same.
-    if ( uid === parentUid ) {
+    // only if `uid` and `parentUID` are the same.
+    if ( uid === parentUID ) {
       const hasParentConflict = await pluginService.checkSameParentConflict(
         id,
         uid,
@@ -57,19 +57,19 @@ module.exports = {
   },
 
   async checkAvailability( ctx ) {
-    const { uid, parentUid, field, value } = ctx.request.body;
+    const { uid, parentUID, field, value } = ctx.request.body;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
-    const currentUids = [ uid, parentUid ];
+    const currentUIDs = [ uid, parentUID ];
 
     // Determine which supported `uids` could present a possible conflict.
-    const otherUids = contentTypes
-      .filter( type => type.targetUid && ! currentUids.includes( type.targetUid ) )
+    const otherUIDs = contentTypes
+      .filter( type => type.targetUID && ! currentUIDs.includes( type.targetUID ) )
       .map( type => type.uid );
 
     // Combine unique `uids`.
-    const uids = uniq( [ ...currentUids, ...otherUids ] );
+    const uids = uniq( [ ...currentUIDs, ...otherUIDs ] );
 
     // Validate that the fields are actually a `uid` fields.
     uids.forEach( _uid => pluginService.validateUIDField( _uid, field ) );
@@ -83,7 +83,7 @@ module.exports = {
 
     // Maybe provide a suggestion.
     const suggestion = ! isAvailable
-      ? await pluginService.findUniqueUID( parentUid, field, value )
+      ? await pluginService.findUniqueUID( parentUID, field, value )
       : null;
 
     ctx.body = {
