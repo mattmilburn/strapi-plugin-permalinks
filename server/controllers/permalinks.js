@@ -36,16 +36,20 @@ module.exports = {
 
     const path = get( parentEntity, supportedType.targetField, '' );
 
-    // Check if the entity in question is being assigned as it's own ancestor.
-    const hasParentConflict = await pluginService.checkParentConflicts(
-      id,
-      path,
-      value,
-      supportedType
-    );
+    // Check if the entity in question is being assigned as it's own ancestor, but
+    // only if `uid` and `parentUid` are the same.
+    if ( uid === parentUid ) {
+      const hasParentConflict = await pluginService.checkParentConflicts(
+        id,
+        uid,
+        path,
+        value,
+        supportedType.targetField
+      );
 
-    if ( hasParentConflict ) {
-      return ctx.conflict();
+      if ( hasParentConflict ) {
+        return ctx.conflict();
+      }
     }
 
     // Return final path.
@@ -54,17 +58,21 @@ module.exports = {
 
   async checkAvailability( ctx ) {
     const { uid, parentUid, field, value } = ctx.request.body;
+    const targetUid = uid !== parentUid ? parentUid : uid;
     const pluginService = getService( 'permalinks' );
 
-    await pluginService.validateUIDField( uid, field );
+    // Validate that the `targetUid` field is actually a `uid` field.
+    await pluginService.validateUIDField( targetUid, field );
 
-    const isAvailable = await pluginService.checkUIDAvailability( uid, field, value );
+    // Determine availability and maybe provide a suggestion.
+    const isAvailable = await pluginService.checkUIDAvailability( targetUid, field, value );
+    const suggestion = ! isAvailable
+      ? await pluginService.findUniqueUID( targetUid, field, value )
+      : null;
 
     ctx.body = {
       isAvailable,
-      suggestion: ! isAvailable
-        ? await pluginService.findUniqueUID( uid, field, value )
-        : null,
+      suggestion,
     };
   },
 };

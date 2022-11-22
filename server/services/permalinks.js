@@ -9,16 +9,15 @@ const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async checkParentConflicts( id, path, value, config ) {
-    const { uid, targetField } = config;
+  async checkParentConflicts( id, uid, path, value, targetField ) {
     const parts = path.split( PATH_SEPARATOR );
 
     // Check for conflict.
     if ( parts.includes( value ) ) {
-      const pathConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( PATH_SEPARATOR );
+      const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( PATH_SEPARATOR );
       const ancestor = await strapi.query( uid ).findOne( {
         where: {
-          [ targetField ]: pathConflict,
+          [ targetField ]: possibleConflict,
         },
       } );
 
