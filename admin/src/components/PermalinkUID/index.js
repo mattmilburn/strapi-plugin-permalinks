@@ -65,11 +65,12 @@ const PermalinkUID = ( {
   const targetRelationField = pluginOptions.targetRelation;
   const targetRelationUid = get( layout, `attributes[${targetRelationField}].targetModel`, null );
   const targetRelationValue = getRelationValue( modifiedData, targetRelationField );
+  const hasDifferentParentUid = contentTypeUID !== targetRelationUid;
   const initialRelationValue = getRelationValue( initialData, targetRelationField );
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const initialIsOrphan = ! initialRelationValue && !! initialAncestorsPath;
-  const selectedSelfRelation = targetRelationValue && targetRelationValue.id === modifiedData.id;
+  const selectedSelfRelation = ! hasDifferentParentUid && targetRelationValue?.id === modifiedData.id;
   const [ isOrphan, setIsOrphan ] = useState( initialIsOrphan );
   const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
