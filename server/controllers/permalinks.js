@@ -1,6 +1,6 @@
 'use strict';
 
-const { get } = require( 'lodash' );
+const { get, uniq } = require( 'lodash' );
 
 const { getService } = require( '../utils' );
 
@@ -58,18 +58,32 @@ module.exports = {
 
   async checkAvailability( ctx ) {
     const { uid, parentUid, field, value } = ctx.request.body;
+    const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
+    const { contentTypes } = await configService.get();
+    const currentUids = [ uid, parentUid ];
 
-    // Determine which `uid` to query.
-    const targetUid = uid !== parentUid ? parentUid : uid;
+    // Determine which supported `uids` could present a possible conflict.
+    const otherUids = contentTypes
+      .filter( type => type.targetUid && ! currentUids.includes( type.targetUid ) )
+      .map( type => type.uid );
 
-    // Validate that the `targetUid` field is actually a `uid` field.
-    await pluginService.validateUIDField( targetUid, field );
+    // Combine unique `uids`.
+    const uids = uniq( [ ...currentUids, ...otherUids ] );
 
-    // Determine availability and maybe provide a suggestion.
-    const isAvailable = await pluginService.checkUIDAvailability( targetUid, field, value );
+    // Validate that the fields are actually a `uid` fields.
+    uids.forEach( _uid => pluginService.validateUIDField( _uid, field ) );
+
+    // Determine availability.
+    const promisedAvailables = await Promise.all( uids.map( _uid => {
+      return pluginService.checkUIDAvailability( _uid, field, value );
+    } ) );
+
+    const isAvailable = promisedAvailables.every( available => available );
+
+    // Maybe provide a suggestion.
     const suggestion = ! isAvailable
-      ? await pluginService.findUniqueUID( targetUid, field, value )
+      ? await pluginService.findUniqueUID( parentUid, field, value )
       : null;
 
     ctx.body = {
