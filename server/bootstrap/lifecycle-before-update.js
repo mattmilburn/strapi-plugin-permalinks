@@ -17,21 +17,30 @@ module.exports = async ( { strapi } ) => {
 
     // Get previous state of entity and compare to next state.
     const entity = await strapi.query( model.uid ).findOne( { where } );
+    const hasTargetField = data.hasOwnProperty( targetField );
     const previousValue = entity[ targetField ];
     const nextValue = data[ targetField ];
-    const hasTargetField = data.hasOwnProperty( targetField );
 
     // Do nothing if `targetField` did not change or is not part of this update.
     if ( ! hasTargetField || previousValue === nextValue ) {
       return;
     }
 
-    await pluginService.syncChildren(
-      model.uid,
-      where.id,
-      nextValue,
-      options
-    );
+    // Determine which supported `uids` could be using `model.uid` as a parent.
+    const childUids = contentTypes
+      .filter( type => type.targetUid && type.targetUid === model.uid )
+      .map( type => type.uid );
+
+    const promisedUpdates = [ model.uid, ...childUids ].map( uid => {
+      return pluginService.syncChildren(
+        uid,
+        where.id,
+        nextValue,
+        options
+      );
+    } );
+
+    await Promise.all( promisedUpdates );
   };
 
   // Subscribe to lifecycle hook.

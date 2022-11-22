@@ -39,7 +39,7 @@ module.exports = {
     // Check if the entity in question is being assigned as it's own ancestor, but
     // only if `uid` and `parentUid` are the same.
     if ( uid === parentUid ) {
-      const hasParentConflict = await pluginService.checkParentConflicts(
+      const hasParentConflict = await pluginService.checkSameParentConflict(
         id,
         uid,
         path,
@@ -58,8 +58,10 @@ module.exports = {
 
   async checkAvailability( ctx ) {
     const { uid, parentUid, field, value } = ctx.request.body;
-    const targetUid = uid !== parentUid ? parentUid : uid;
     const pluginService = getService( 'permalinks' );
+
+    // Determine which `uid` to query.
+    const targetUid = uid !== parentUid ? parentUid : uid;
 
     // Validate that the `targetUid` field is actually a `uid` field.
     await pluginService.validateUIDField( targetUid, field );
