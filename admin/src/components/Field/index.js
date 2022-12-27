@@ -2,7 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 
-import { InputUID, PermalinkUID } from '../';
+import { InputUID } from '../../coreComponents';
+import { PermalinkUID } from '../';
 import { pluginId } from '../../utils';
 
 const Field = props => {

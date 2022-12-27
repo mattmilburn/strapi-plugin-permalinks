@@ -23,14 +23,14 @@ import {
 import AncestorsPath from './AncestorsPath';
 
 // Import certain assets directly from core InputUID component.
-import UID_REGEX from '../InputUID/regex';
-import useDebounce from '../InputUID/useDebounce';
+import UID_REGEX from '../../coreComponents/InputUID/regex';
+import useDebounce from '../../coreComponents/InputUID/useDebounce';
 import {
   EndActionWrapper,
   FieldActionWrapper,
   TextValidation,
   LoadingWrapper,
-} from '../InputUID/endActionStyle';
+} from '../../coreComponents/InputUID/endActionStyle';
 
 const PermalinkUID = ( {
   attribute,
