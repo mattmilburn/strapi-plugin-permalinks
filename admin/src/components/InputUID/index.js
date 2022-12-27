@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { useCMEditViewDataManager } from '@strapi/helper-plugin';
+// import { useCMEditViewDataManager } from '@strapi/helper-plugin'; // CUSTOM MOD [1].
+import { useMenuData } from '../../hooks'; // CUSTOM MOD [1].
 import { useIntl } from 'react-intl';
 import get from 'lodash/get';
 import { TextInput } from '@strapi/design-system/TextInput';
@@ -9,7 +10,8 @@ import Refresh from '@strapi/icons/Refresh';
 import CheckCircle from '@strapi/icons/CheckCircle';
 import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
 import Loader from '@strapi/icons/Loader';
-import { axiosInstance } from '../../utils';
+import { axiosInstance } from '../../utils'; // CUSTOM MOD [2].
+// import { getRequestUrl } from '../../utils'; // CUSTOM MOD [3].
 import useDebounce from './useDebounce';
 import UID_REGEX from './regex';
 import {
@@ -33,14 +35,15 @@ const InputUID = ({
   placeholder,
   required,
 }) => {
-  const { modifiedData, initialData, layout } = useCMEditViewDataManager();
+  // const { modifiedData, initialData, layout } = useCMEditViewDataManager(); // CUSTOM MOD [1].
+  const { initialData, modifiedData } = useMenuData(); // CUSTOM MOD [1].
   const [isLoading, setIsLoading] = useState(false);
   const [availability, setAvailability] = useState(null);
   const debouncedValue = useDebounce(value, 300);
   const generateUid = useRef();
   const initialValue = initialData[name];
   const { formatMessage } = useIntl();
-  const createdAtName = get(layout, ['options', 'timestamps', 0]);
+  const createdAtName = 'createdAt'; // get(layout, ['options', 'timestamps', 0]); // CUSTOM MOD [4].
   const isCreation = !initialData[createdAtName];
   const debouncedTargetFieldValue = useDebounce(modifiedData[attribute.targetField], 300);
   const [isCustomized, setIsCustomized] = useState(false);
@@ -69,7 +72,7 @@ const InputUID = ({
 
   generateUid.current = async (shouldSetInitialValue = false) => {
     setIsLoading(true);
-    const requestURL = '/content-manager/uid/generate';
+    const requestURL = '/content-manager/uid/generate'; // CUSTOM MOD [3].
     try {
       const {
         data: { data },
@@ -81,7 +84,6 @@ const InputUID = ({
       onChange({ target: { name, value: data, type: 'text' } }, shouldSetInitialValue);
       setIsLoading(false);
     } catch (err) {
-      console.error({ err });
       setIsLoading(false);
     }
   };
@@ -89,7 +91,7 @@ const InputUID = ({
   const checkAvailability = async () => {
     setIsLoading(true);
 
-    const requestURL = '/content-manager/uid/check-availability';
+    const requestURL = '/content-manager/uid/check-availability'; // CUSTOM MOD [3].
 
     if (!value) {
       return;
@@ -106,7 +108,6 @@ const InputUID = ({
 
       setIsLoading(false);
     } catch (err) {
-      console.error({ err });
       setIsLoading(false);
     }
   };
@@ -175,7 +176,7 @@ const InputUID = ({
     setRegenerateLabel(null);
   };
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     if (e.target.value && isCreation) {
       setIsCustomized(true);
     }
@@ -183,12 +184,10 @@ const InputUID = ({
     onChange(e);
   };
 
-  const formattedError = error ? formatMessage({ id: error, defaultMessage: error }) : undefined;
-
   return (
     <TextInput
       disabled={disabled}
-      error={formattedError}
+      error={error}
       endAction={
         <EndActionWrapper>
           {availability && availability.isAvailable && !regenerateLabel && (
