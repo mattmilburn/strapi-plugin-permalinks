@@ -146,13 +146,13 @@ const PermalinkUID = ( {
     }
   };
 
-  const checkTargetConnection = async () => {
+  const checkConnection = async () => {
     if ( ! value || isCreation ) {
       return;
     }
 
     try {
-      const { data } = await axiosInstance.post( `${pluginId}/check-target-connect`, {
+      const { data } = await axiosInstance.post( `${pluginId}/check-connection`, {
         uid: contentTypeUID,
         id: initialData.id,
         targetField: targetRelationField,
@@ -168,7 +168,7 @@ const PermalinkUID = ( {
       const newSlug = getPermalinkSlug( value );
       const newAncestorsPath = targetRelation[ targetRelationOptions.targetField ];
 
-      setFieldState( newAncestorsPath, newSlug );
+      setFieldState( newAncestorsPath, newSlug, true );
     } catch ( err ) {
       console.error( { err } );
     }
@@ -244,7 +244,7 @@ const PermalinkUID = ( {
     // If there is an existing ancestors path in the initial slug value, check
     // this entity's orphan state.
     if ( initialAncestorsPath ) {
-      checkTargetConnection();
+      checkConnection();
     }
   }, [] );
 

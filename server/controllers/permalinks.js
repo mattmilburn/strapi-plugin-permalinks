@@ -93,7 +93,7 @@ module.exports = {
     };
   },
 
-  async checkTargetConnection( ctx ) {
+  async checkConnection( ctx ) {
     const { uid, id, targetField } = ctx.request.body;
     const pluginService = getService( 'permalinks' );
 
@@ -104,10 +104,8 @@ module.exports = {
 
     const target = get( entity, targetField );
 
-    if ( target ) {
-      ctx.body = {
-        [ targetField ]: target,
-      };
-    }
+    ctx.body = {
+      [ targetField ]: target ? target : null,
+    };
   },
 };

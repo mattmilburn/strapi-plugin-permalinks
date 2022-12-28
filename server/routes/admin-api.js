@@ -29,8 +29,8 @@ module.exports = {
     },
     {
       method: 'POST',
-      path: '/check-target-connect',
-      handler: 'permalinks.checkTargetConnection',
+      path: '/check-connection',
+      handler: 'permalinks.checkConnection',
       config: {
         policies: [ 'admin::isAuthenticatedAdmin' ],
       },
