@@ -29,8 +29,8 @@ module.exports = {
     },
     {
       method: 'POST',
-      path: '/check-orphan',
-      handler: 'permalinks.checkOrphan',
+      path: '/check-target-connect',
+      handler: 'permalinks.checkTargetConnection',
       config: {
         policies: [ 'admin::isAuthenticatedAdmin' ],
       },

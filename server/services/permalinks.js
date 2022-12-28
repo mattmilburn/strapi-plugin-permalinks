@@ -36,15 +36,6 @@ module.exports = ( { strapi } ) => ( {
     return count > 0 ? false : true;
   },
 
-  async checkOrphan( uid, id, targetField ) {
-    const entity = await strapi.query( uid ).findOne( {
-      where: { id },
-      populate: [ targetField ],
-    } );
-
-    return ! get( entity, targetField );
-  },
-
   async findUniqueUID( uid, field, value ) {
     const possibleConflicts = await strapi.db.query( uid )
       .findMany( {
