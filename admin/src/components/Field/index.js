@@ -11,16 +11,26 @@ const Field = props => {
   const { uid } = layout;
   const { name } = props;
   const { contentTypes } = useSelector( state => state[ `${pluginId}_config` ].config );
-  const pluginOptions = contentTypes.find( type => type.uid === uid && type.targetField === name );
+  const fieldOptions = contentTypes.find( type => type.uid === uid && type.targetField === name );
 
   // If permalink is not enabled for the current uid, fallback to Strapi's core
   // InputUID, which is 99.99% cloned from Strapi's core files into this plugin.
-  if ( ! pluginOptions ) {
+  if ( ! fieldOptions ) {
     return <InputUID { ...props } />;
   }
 
+  // Include the params for the target relation field in case it is connected to
+  // a different collection type which may have a different target field.
+  const targetRelationOptions = contentTypes.find( type => type.uid === fieldOptions.uid );
+
   // Use custom UID field to work with permalinks.
-  return <PermalinkUID pluginOptions={ pluginOptions } { ...props } />;
+  return (
+    <PermalinkUID
+      fieldOptions={ fieldOptions }
+      targetRelationOptions={ targetRelationOptions }
+      { ...props }
+    />
+  );
 };
 
 export default Field;

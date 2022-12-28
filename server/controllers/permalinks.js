@@ -93,14 +93,21 @@ module.exports = {
     };
   },
 
-  async checkOrphan( ctx ) {
+  async checkTargetConnection( ctx ) {
     const { uid, id, targetField } = ctx.request.body;
     const pluginService = getService( 'permalinks' );
 
-    const isOrphan = await pluginService.checkOrphan( uid, id, targetField );
+    const entity = await strapi.query( uid ).findOne( {
+      where: { id },
+      populate: [ targetField ],
+    } );
 
-    ctx.body = {
-      isOrphan,
-    };
+    const target = get( entity, targetField );
+
+    if ( target ) {
+      ctx.body = {
+        [ targetField ]: target,
+      };
+    }
   },
 };

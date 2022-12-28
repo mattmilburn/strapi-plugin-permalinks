@@ -37,14 +37,15 @@ const PermalinkUID = ( {
   description,
   disabled,
   error,
+  fieldOptions,
   intlLabel,
   labelAction,
   name,
   onChange,
-  value,
   placeholder,
-  pluginOptions,
   required,
+  targetRelationOptions,
+  value,
 } ) => {
   const toggleNotification = useNotification();
   const { modifiedData, initialData, layout } = useCMEditViewDataManager();
@@ -60,7 +61,7 @@ const PermalinkUID = ( {
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
 
   // Vars for handling permalink.
-  const targetRelationField = pluginOptions.targetRelation;
+  const targetRelationField = fieldOptions.targetRelation;
   const targetRelationUID = get( layout, `attributes[${targetRelationField}].targetModel`, null );
   const targetRelationValue = getRelationValue( modifiedData, targetRelationField );
   const hasDifferentParentUID = targetRelationUID && contentTypeUID !== targetRelationUID;
@@ -103,25 +104,16 @@ const PermalinkUID = ( {
 
     try {
       const {
-        data: { data },
+        data: { data: newSlug },
       } = await axiosInstance.post( '/content-manager/uid/generate', {
         contentTypeUID,
         field: name,
         data: modifiedData,
       } );
 
-      // Update field state.
-      setSlug( data );
+      const newAncestorsPath = isOrphan ? null : ancestorsPath;
 
-      // Update field value.
-      onChange( {
-        target: {
-          name,
-          value: getPermalink( isOrphan ? null : ancestorsPath, data ),
-          type: 'text',
-        },
-      }, shouldSetInitialValue );
-
+      setFieldState( newAncestorsPath, newSlug, shouldSetInitialValue );
       setIsLoading( false );
     } catch ( err ) {
       console.error( { err } );
@@ -154,21 +146,29 @@ const PermalinkUID = ( {
     }
   };
 
-  const checkOrphan = async () => {
+  const checkTargetConnection = async () => {
     if ( ! value || isCreation ) {
       return;
     }
 
     try {
-      const { data } = await axiosInstance.post( `${pluginId}/check-orphan`, {
+      const { data } = await axiosInstance.post( `${pluginId}/check-target-connect`, {
         uid: contentTypeUID,
         id: initialData.id,
         targetField: targetRelationField,
       } );
 
-      if ( data?.isOrphan ) {
+      const targetRelation = data[ targetRelationField ];
+
+      if ( ! targetRelation ) {
         setIsOrphan( true );
+        return;
       }
+
+      const newSlug = getPermalinkSlug( value );
+      const newAncestorsPath = targetRelation[ targetRelationOptions.targetField ];
+
+      setFieldState( newAncestorsPath, newSlug );
     } catch ( err ) {
       console.error( { err } );
     }
@@ -219,19 +219,7 @@ const PermalinkUID = ( {
         value: newSlug,
       } );
 
-      // Update field state.
-      setParentError( null );
-      setAncestorsPath( newAncestorsPath );
-      setSlug( newSlug );
-
-      // Update field value with ancestors path included.
-      onChange( {
-        target: {
-          name,
-          value: getPermalink( newAncestorsPath, newSlug ),
-          type: 'text',
-        },
-      } );
+      setFieldState( newAncestorsPath, newSlug );
     } catch ( err ) {
       // Maybe set error to incidate relationship conflict.
       if ( err.response.status === 409 ) {
@@ -242,7 +230,7 @@ const PermalinkUID = ( {
           id: getTrad( 'ui.error.selfChild' ),
           defaultMessage: 'Cannot assign the {relation} relation to its own descendant.',
         }, {
-          relation: pluginOptions.targetRelation,
+          relation: fieldOptions.targetRelation,
         } ) );
       }
 
@@ -256,7 +244,7 @@ const PermalinkUID = ( {
     // If there is an existing ancestors path in the initial slug value, check
     // this entity's orphan state.
     if ( initialAncestorsPath ) {
-      checkOrphan();
+      checkTargetConnection();
     }
   }, [] );
 
@@ -331,7 +319,7 @@ const PermalinkUID = ( {
         id: getTrad( 'ui.error.selfParent' ),
         defaultMessage: 'Cannot assign the {relation} relation to itself.',
       }, {
-        relation: pluginOptions.targetRelation,
+        relation: fieldOptions.targetRelation,
       } ) );
 
       return;
@@ -389,6 +377,22 @@ const PermalinkUID = ( {
     }
 
     generateUID.current();
+  };
+
+  const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false ) => {
+    // Update field state.
+    setParentError( null );
+    setAncestorsPath( newAncestorsPath );
+    setSlug( newSlug );
+
+    // Update field value with ancestors path included.
+    onChange( {
+      target: {
+        name,
+        value: getPermalink( newAncestorsPath, newSlug ),
+        type: 'text',
+      },
+    }, shouldSetInitialValue );
   };
 
   return (
@@ -473,6 +477,11 @@ PermalinkUID.propTypes = {
   } ),
   disabled: PropTypes.bool,
   error: PropTypes.string,
+  fieldOptions: PropTypes.shape( {
+    uid: PropTypes.string,
+    targetField: PropTypes.string,
+    targetRelation: PropTypes.string,
+  } ).isRequired,
   intlLabel: PropTypes.shape( {
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
@@ -481,29 +490,30 @@ PermalinkUID.propTypes = {
   labelAction: PropTypes.element,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
-  value: PropTypes.string,
   placeholder: PropTypes.shape( {
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
   } ),
-  pluginOptions: PropTypes.shape( {
+  required: PropTypes.bool,
+  targetRelationOptions: PropTypes.shape( {
     uid: PropTypes.string,
     targetField: PropTypes.string,
     targetRelation: PropTypes.string,
   } ).isRequired,
-  required: PropTypes.bool,
+  value: PropTypes.string,
 };
 
 PermalinkUID.defaultProps = {
   description: undefined,
   disabled: false,
   error: undefined,
+  fieldOptions: {},
   labelAction: undefined,
   placeholder: undefined,
-  pluginOptions: {},
-  value: '',
   required: false,
+  targetRelationOptions: {},
+  value: '',
 };
 
 export default PermalinkUID;
