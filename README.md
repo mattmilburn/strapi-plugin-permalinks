@@ -100,4 +100,3 @@ Editing the orphaned page will display a warning and an error message on the tar
 * Completely refactor using the custom fields feature in Strapi.
 * Config option to limit nesting depth.
 * Better conflict resolution for orphaned pages when parent pages are updated or deleted.
-* Avoid cloning the core `InputUID` component (currently required to function).
