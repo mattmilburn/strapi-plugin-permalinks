@@ -27,5 +27,13 @@ module.exports = {
         policies: [ 'admin::isAuthenticatedAdmin' ],
       },
     },
+    {
+      method: 'POST',
+      path: '/check-orphan',
+      handler: 'permalinks.checkOrphan',
+      config: {
+        policies: [ 'admin::isAuthenticatedAdmin' ],
+      },
+    },
   ],
 };

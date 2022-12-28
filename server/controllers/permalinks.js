@@ -92,4 +92,15 @@ module.exports = {
       suggestion,
     };
   },
+
+  async checkOrphan( ctx ) {
+    const { uid, id, targetField } = ctx.request.body;
+    const pluginService = getService( 'permalinks' );
+
+    const isOrphan = await pluginService.checkOrphan( uid, id, targetField );
+
+    ctx.body = {
+      isOrphan,
+    };
+  },
 };
