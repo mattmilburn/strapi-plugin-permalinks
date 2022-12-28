@@ -54,8 +54,7 @@ const PermalinkUID = ( {
   const generateUID = useRef();
   const initialValue = initialData[ name ];
   const { formatMessage } = useIntl();
-  const createdAtName = get( layout, [ 'options', 'timestamps', 0 ] );
-  const isCreation = ! initialData[ createdAtName ];
+  const isCreation = ! initialData[ 'createdAt' ];
   const debouncedTargetFieldValue = useDebounce( modifiedData[ attribute.targetField ], 300 );
   const [ isCustomized, setIsCustomized ] = useState( false );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
@@ -68,9 +67,8 @@ const PermalinkUID = ( {
   const initialRelationValue = getRelationValue( initialData, targetRelationField );
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
-  const initialIsOrphan = ! initialRelationValue && !! initialAncestorsPath;
   const selectedSelfRelation = ! isCreation && ! hasDifferentParentUID && targetRelationValue?.id === modifiedData.id;
-  const [ isOrphan, setIsOrphan ] = useState( initialIsOrphan );
+  const [ isOrphan, setIsOrphan ] = useState( false );
   const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
@@ -156,6 +154,26 @@ const PermalinkUID = ( {
     }
   };
 
+  const checkOrphan = async () => {
+    if ( ! value || isCreation ) {
+      return;
+    }
+
+    try {
+      const { data } = await axiosInstance.post( `${pluginId}/check-orphan`, {
+        uid: contentTypeUID,
+        id: initialData.id,
+        targetField: targetRelationField,
+      } );
+
+      if ( data?.isOrphan ) {
+        setIsOrphan( true );
+      }
+    } catch ( err ) {
+      console.error( { err } );
+    }
+  };
+
   const removeAncestorsPath = () => {
     const newSlug = getPermalinkSlug( value );
 
@@ -233,6 +251,14 @@ const PermalinkUID = ( {
 
     setIsLoading( false );
   };
+
+  useEffect( () => {
+    // If there is an existing ancestors path in the initial slug value, check
+    // this entity's orphan state.
+    if ( initialAncestorsPath ) {
+      checkOrphan();
+    }
+  }, [] );
 
   useEffect( () => {
     if ( isOrphan ) {
@@ -354,6 +380,17 @@ const PermalinkUID = ( {
     } );
   };
 
+  const handleRefresh = () => {
+    // Clear orphan state when refreshing.
+    if ( isOrphan && !! parentError ) {
+      setIsOrphan( false );
+      setParentError( null );
+      return;
+    }
+
+    generateUID.current();
+  };
+
   return (
     <TextInput
       disabled={ disabled }
@@ -396,7 +433,7 @@ const PermalinkUID = ( {
             </TextValidation>
           ) }
           <FieldActionWrapper
-            onClick={ () => generateUID.current() }
+            onClick={ handleRefresh }
             label="regenerate"
             onMouseEnter={ handleGenerateMouseEnter }
             onMouseLeave={ handleGenerateMouseLeave }
