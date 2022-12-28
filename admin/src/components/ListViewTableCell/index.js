@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography } from '@strapi/design-system';
+import { Box } from '@strapi/design-system/Box';
+import { Typography } from '@strapi/design-system/Typography';
 
 import { PATH_SEPARATOR, SLASH_SEPARATOR } from '../../constants';
 

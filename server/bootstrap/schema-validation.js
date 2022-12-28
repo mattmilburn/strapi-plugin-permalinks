@@ -23,7 +23,5 @@ module.exports = async ( { strapi } ) => {
     if ( ! attributes[ type.targetRelation ] ) {
       throw new ValidationError( `The target relation ${type.targetRelation} is not defined for ${type.uid}.` );
     }
-
-    // @TODO - Add verification for `targetUID`.
   } );
 };

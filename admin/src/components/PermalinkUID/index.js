@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
-import { get } from 'lodash';
-import { TextInput, Typography } from '@strapi/design-system';
+import get from 'lodash/get';
+import { TextInput } from '@strapi/design-system/TextInput';
+import { Typography } from '@strapi/design-system/Typography';
 import { useCMEditViewDataManager, useNotification } from '@strapi/helper-plugin';
-import {
-  CheckCircle,
-  ExclamationMarkCircle,
-  Loader,
-  Refresh,
-} from '@strapi/icons';
+import CheckCircle from '@strapi/icons/CheckCircle';
+import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
+import Loader from '@strapi/icons/Loader';
+import Refresh from '@strapi/icons/Refresh';
 
 import {
   axiosInstance,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from '@strapi/design-system';
+import { Typography } from '@strapi/design-system/Typography';
 
 import { ListViewTableCell  } from '../components';
 import { getPermalinkAncestors, getPermalinkSlug, pluginId } from '../utils';
