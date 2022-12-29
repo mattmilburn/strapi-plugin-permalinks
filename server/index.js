@@ -3,18 +3,19 @@
 const bootstrap = require( './bootstrap' );
 const config = require( './config' );
 const controllers = require( './controllers' );
+const register = require( './register' );
 const routes = require( './routes' );
 const services = require( './services' );
 
 module.exports = {
-  register() {},
   bootstrap,
-  destroy() {},
   config,
+  // contentTypes: {},
   controllers,
+  // destroy() {},
+  // middlewares: {},
+  // policies: {},
+  register,
   routes,
   services,
-  contentTypes: {},
-  policies: {},
-  middlewares: {},
 };

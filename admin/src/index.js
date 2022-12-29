@@ -11,6 +11,29 @@ export default {
   register( app ) {
     app.addReducers( reducers );
 
+    app.customFields.register( {
+      pluginId,
+      name: 'permalink',
+      icon: null,
+      type: 'uid',
+      intlLabel: {
+        id: 'permalink-input.label',
+        defaultMessage: 'Permalink',
+      },
+      intlDescription: {
+        id: 'permalink-input.description',
+        defaultMessage: 'URL path field with relationship bindings.',
+      },
+      components: {
+        Input: async () => import(
+          /* webpackChunkName: "permalink-input" */ './components/PermalinkInput'
+        ),
+      },
+    } );
+
+    /**
+     * @TODO - Remove `addField` and related components one custom field is complete.
+     */
     app.addFields( {
       type: 'uid',
       Component: Field,
