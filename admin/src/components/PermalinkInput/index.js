@@ -46,12 +46,18 @@ const PermalinkInput = ( {
 } ) => {
   const { formatMessage } = useIntl();
   const { initialData, isCreatingEntry, layout, modifiedData } = useCMEditViewDataManager();
-  const targetFieldConfig = useFieldConfig( contentTypeUID );
-  const targetRelationUID = get( layout, [ 'attributes', targetFieldConfig.targetRelation, 'targetModel' ] );
-  const targetRelationConfig = useFieldConfig( targetRelationUID );
   const generateUID = useRef();
 
+  const targetFieldConfig = useFieldConfig( contentTypeUID );
+  const targetRelationUID = get( layout, [ 'attributes', targetFieldConfig.targetRelation, 'targetModel' ], null );
+  const targetRelationConfig = useFieldConfig( targetRelationUID );
+  const targetRelationValue = getRelationValue( modifiedData, targetFieldConfig.targetRelation );
+
+  const hasDifferentRelationUID = targetRelationUID && contentTypeUID !== targetRelationUID;
+  const selectedSelfRelation = ! isCreatingEntry && ! hasDifferentRelationUID && targetRelationValue?.id === modifiedData.id;
+
   const initialValue = initialData[ name ];
+  const initialRelationValue = getRelationValue( initialData, targetFieldConfig.targetRelation );
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const debouncedValue = useDebounce( value, 300 );
