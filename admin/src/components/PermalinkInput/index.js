@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
+import get from 'lodash/get';
 import { TextInput } from '@strapi/design-system/TextInput';
 import { Typography } from '@strapi/design-system/Typography';
 import { useCMEditViewDataManager, useNotification } from '@strapi/helper-plugin';
@@ -11,9 +12,13 @@ import Refresh from '@strapi/icons/Refresh';
 
 import { useDebounce, useFieldConfig } from '../../hooks';
 import {
+  axiosInstance,
   getPermalink,
   getPermalinkAncestors,
   getPermalinkSlug,
+  getRelationValue,
+  getTrad,
+  pluginId,
 } from '../../utils';
 
 import UID_REGEX from './regex';
@@ -40,18 +45,21 @@ const PermalinkInput = ( {
   value,
 } ) => {
   const { formatMessage } = useIntl();
-  const { initialData, isCreatingEntry, modifiedData } = useCMEditViewDataManager();
-  const { targetField, targetRelation } = useFieldConfig( contentTypeUID );
+  const { initialData, isCreatingEntry, layout, modifiedData } = useCMEditViewDataManager();
+  const targetFieldConfig = useFieldConfig( contentTypeUID );
+  const targetRelationUID = get( layout, [ 'attributes', targetFieldConfig.targetRelation, 'targetModel' ] );
+  const targetRelationConfig = useFieldConfig( targetRelationUID );
   const generateUID = useRef();
 
   const initialValue = initialData[ name ];
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
   const debouncedValue = useDebounce( value, 300 );
-  const debouncedTargetValue = useDebounce( modifiedData[ targetField ], 300 );
+  const debouncedTargetValue = useDebounce( modifiedData[ targetFieldConfig.targetField ], 300 );
 
   const [ isLoading, setIsLoading ] = useState( false );
   const [ isOrphan, setIsOrphan ] = useState( false );
+  const [ isCustomized, setIsCustomized ] = useState( false );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
   const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
@@ -82,8 +90,40 @@ const PermalinkInput = ( {
     ? formatMessage( { id: error, defaultMessage: error } )
     : undefined;
 
+  const checkConnection = async () => {
+    if ( ! value || isCreatingEntry ) {
+      return;
+    }
+
+    try {
+      const { data } = await axiosInstance.post( `${pluginId}/check-connection`, {
+        uid: contentTypeUID,
+        id: initialData.id,
+        targetField: targetFieldConfig.targetRelation,
+      } );
+
+      const targetRelationValue = data[ targetFieldConfig.targetRelation ];
+
+      if ( ! targetRelationValue ) {
+        setIsOrphan( true );
+        return;
+      }
+
+      const newSlug = getPermalinkSlug( value );
+      const newAncestorsPath = targetRelationValue[ targetRelationConfig.targetField ];
+
+      setFieldState( newAncestorsPath, newSlug, true );
+    } catch ( err ) {
+      console.error( { err } );
+    }
+  };
+
   const handleChange = event => {
     const newSlug = event.target.value;
+
+    if ( newSlug && isCreatingEntry ) {
+      setIsCustomized( true );
+    }
 
     setSlug( newSlug );
 
@@ -160,6 +200,34 @@ const PermalinkInput = ( {
   };
 
   useEffect( () => {
+    // If there is an existing ancestors path in the initial slug value, check
+    // this entity's orphan state.
+    if ( initialAncestorsPath ) {
+      checkConnection();
+    }
+  }, [] );
+
+  useEffect( () => {
+    if ( isOrphan ) {
+      setParentError( formatMessage( {
+        id: getTrad( 'ui.error.orphan' ),
+        defaultMessage: 'This value must be regenerated after being orphaned.',
+      } ) );
+
+      toggleNotification( {
+        type: 'warning',
+        message: formatMessage( {
+          id: getTrad( 'ui.warning.orphan' ),
+          defaultMessage: 'This {singularName} has been orphaned since it was last saved.',
+        }, {
+          singularName: layout.info.singularName,
+        } ),
+        timeout: 3500,
+      } );
+    }
+  }, [ isOrphan ] );
+
+  useEffect( () => {
     if (
       debouncedValue &&
       debouncedValue.trim().match( UID_REGEX ) &&
@@ -175,14 +243,15 @@ const PermalinkInput = ( {
 
   useEffect( () => {
     if (
+      ! isCustomized &&
       isCreatingEntry &&
       debouncedTargetValue &&
-      modifiedData[ targetField ] &&
+      modifiedData[ targetFieldConfig.targetField ] &&
       ! value
     ) {
       generateUID.current( true );
     }
-  }, [ debouncedTargetValue, isCreatingEntry ] );
+  }, [ debouncedTargetValue, isCreatingEntry, isCustomized ] );
 
   return (
     <TextInput
