@@ -1,12 +1,12 @@
 {
   "name": "strapi-plugin-permalinks",
   "version": "0.4.0",
-  "description": "A plugin for Strapi CMS to enable permalinks for content types with nested relationships.",
+  "description": "A plugin for Strapi CMS to enable a URL path field for content types with nested relationships.",
   "license": "MIT",
   "strapi": {
     "displayName": "Permalinks",
     "name": "permalinks",
-    "description": "Enable permalinks for content types with nested relationships.",
+    "description": "Enable a URL path field for content types with nested relationships.",
     "kind": "plugin"
   },
   "peerDependencies": {
