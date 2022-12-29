@@ -9,11 +9,20 @@ import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
 import Loader from '@strapi/icons/Loader';
 import Refresh from '@strapi/icons/Refresh';
 
+import { useFieldConfig } from '../../hooks';
 import {
+  getPermalink,
   getPermalinkAncestors,
   getPermalinkSlug,
 } from '../../utils';
+
 import AncestorsPath from './AncestorsPath';
+import {
+  EndActionWrapper,
+  FieldActionWrapper,
+  LoadingWrapper,
+  TextValidation,
+} from './styled';
 
 const PermalinkInput = ( {
   attribute,
@@ -30,12 +39,15 @@ const PermalinkInput = ( {
   value,
 } ) => {
   const { formatMessage } = useIntl();
-  const { initialData } = useCMEditViewDataManager();
+  const { initialData, isCreatingEntry } = useCMEditViewDataManager();
+  const { targetField, targetRelation } = useFieldConfig( contentTypeUID );
 
   const initialValue = initialData[ name ];
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
 
+  const [ isLoading, setIsLoading ] = useState( false );
+  const [ regenerateLabel, setRegenerateLabel ] = useState( null );
   const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
@@ -65,6 +77,27 @@ const PermalinkInput = ( {
     ? formatMessage( { id: error, defaultMessage: error } )
     : undefined;
 
+  const handleChange = event => {
+    //
+  };
+
+  const handleGenerateMouseEnter = () => {
+    setRegenerateLabel(
+      formatMessage( {
+        id: 'content-manager.components.uid.regenerate',
+        defaultMessage: 'Regenerate',
+      } )
+    );
+  };
+
+  const handleGenerateMouseLeave = () => {
+    setRegenerateLabel( null );
+  };
+
+  const handleRefresh = () => {
+    //
+  };
+
   return (
     <TextInput
       disabled={ disabled }
@@ -73,7 +106,7 @@ const PermalinkInput = ( {
       label={ label }
       labelAction={ labelAction }
       name={ name }
-      onChange={ () => {} }
+      onChange={ handleChange }
       placeholder={ formattedPlaceholder }
       value={ slug ?? '' }
       required={ required }
@@ -83,6 +116,31 @@ const PermalinkInput = ( {
           hasError={ !! parentError || !! error }
         />
       ) : null }
+      endAction={
+        <EndActionWrapper>
+          { regenerateLabel && (
+            <TextValidation alignItems="center" justifyContent="flex-end">
+              <Typography textColor="primary600" variant="pi">
+                { regenerateLabel }
+              </Typography>
+            </TextValidation>
+          ) }
+          <FieldActionWrapper
+            label="regenerate"
+            onClick={ handleRefresh }
+            onMouseEnter={ handleGenerateMouseEnter }
+            onMouseLeave={ handleGenerateMouseLeave }
+          >
+            { isLoading ? (
+              <LoadingWrapper>
+                <Loader />
+              </LoadingWrapper>
+            ) : (
+              <Refresh />
+            ) }
+          </FieldActionWrapper>
+        </EndActionWrapper>
+      }
     />
   );
 };
