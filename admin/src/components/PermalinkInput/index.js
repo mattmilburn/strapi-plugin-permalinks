@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import { TextInput } from '@strapi/design-system/TextInput';
@@ -42,6 +42,7 @@ const PermalinkInput = ( {
   const { formatMessage } = useIntl();
   const { initialData, isCreatingEntry, modifiedData } = useCMEditViewDataManager();
   const { targetField, targetRelation } = useFieldConfig( contentTypeUID );
+  const generateUID = useRef();
 
   const initialValue = initialData[ name ];
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
@@ -50,6 +51,7 @@ const PermalinkInput = ( {
   const debouncedTargetValue = useDebounce( modifiedData[ targetField ], 300 );
 
   const [ isLoading, setIsLoading ] = useState( false );
+  const [ isOrphan, setIsOrphan ] = useState( false );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
   const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
@@ -81,7 +83,17 @@ const PermalinkInput = ( {
     : undefined;
 
   const handleChange = event => {
-    //
+    const newSlug = event.target.value;
+
+    setSlug( newSlug );
+
+    onChange( {
+      target: {
+        name,
+        value: getPermalink( ancestorsPath, newSlug ),
+        type: 'text',
+      },
+    } );
   };
 
   const handleGenerateMouseEnter = () => {
@@ -98,7 +110,53 @@ const PermalinkInput = ( {
   };
 
   const handleRefresh = () => {
-    //
+    // Clear orphan state when refreshing.
+    if ( isOrphan && !! parentError ) {
+      setIsOrphan( false );
+      setParentError( null );
+      return;
+    }
+
+    generateUID.current();
+  };
+
+  const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false ) => {
+    // Update field state.
+    setParentError( null );
+    setAncestorsPath( newAncestorsPath );
+    setSlug( newSlug );
+
+    // Update field value with ancestors path included.
+    onChange( {
+      target: {
+        name,
+        value: getPermalink( newAncestorsPath, newSlug ),
+        type: 'text',
+      },
+    }, shouldSetInitialValue );
+  };
+
+  generateUID.current = async ( shouldSetInitialValue = false ) => {
+    setIsLoading( true );
+
+    try {
+      const {
+        data: { data: newSlug },
+      } = await axiosInstance.post( '/content-manager/uid/generate', {
+        contentTypeUID,
+        field: name,
+        data: modifiedData,
+      } );
+
+      const newAncestorsPath = isOrphan ? null : ancestorsPath;
+
+      setFieldState( newAncestorsPath, newSlug, shouldSetInitialValue );
+      setIsLoading( false );
+    } catch ( err ) {
+      console.error( { err } );
+
+      setIsLoading( false );
+    }
   };
 
   useEffect( () => {
@@ -122,7 +180,7 @@ const PermalinkInput = ( {
       modifiedData[ targetField ] &&
       ! value
     ) {
-      // generateUID.current( true );
+      generateUID.current( true );
     }
   }, [ debouncedTargetValue, isCreatingEntry ] );
 
