@@ -98,5 +98,6 @@ Editing the orphaned page will display a warning and an error message on the tar
 
 ## <a id="roadmap"></a>🚧 Roadmap
 * Completely refactor using the custom fields feature in Strapi.
+* Use `options.base` to allow same CTB options as `uid` field, then remove it from plugin config.
 * Config option to limit nesting depth.
 * Better conflict resolution for orphaned pages when parent pages are updated or deleted.
