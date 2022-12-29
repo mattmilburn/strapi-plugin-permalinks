@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import { TextInput } from '@strapi/design-system/TextInput';
@@ -9,13 +9,14 @@ import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
 import Loader from '@strapi/icons/Loader';
 import Refresh from '@strapi/icons/Refresh';
 
-import { useFieldConfig } from '../../hooks';
+import { useDebounce, useFieldConfig } from '../../hooks';
 import {
   getPermalink,
   getPermalinkAncestors,
   getPermalinkSlug,
 } from '../../utils';
 
+import UID_REGEX from './regex';
 import AncestorsPath from './AncestorsPath';
 import {
   EndActionWrapper,
@@ -39,12 +40,14 @@ const PermalinkInput = ( {
   value,
 } ) => {
   const { formatMessage } = useIntl();
-  const { initialData, isCreatingEntry } = useCMEditViewDataManager();
+  const { initialData, isCreatingEntry, modifiedData } = useCMEditViewDataManager();
   const { targetField, targetRelation } = useFieldConfig( contentTypeUID );
 
   const initialValue = initialData[ name ];
   const initialAncestorsPath = getPermalinkAncestors( initialValue );
   const initialSlug = getPermalinkSlug( initialValue );
+  const debouncedValue = useDebounce( value, 300 );
+  const debouncedTargetValue = useDebounce( modifiedData[ targetField ], 300 );
 
   const [ isLoading, setIsLoading ] = useState( false );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
@@ -97,6 +100,31 @@ const PermalinkInput = ( {
   const handleRefresh = () => {
     //
   };
+
+  useEffect( () => {
+    if (
+      debouncedValue &&
+      debouncedValue.trim().match( UID_REGEX ) &&
+      debouncedValue !== initialValue
+    ) {
+      // checkAvailability();
+    }
+
+    if ( ! debouncedValue ) {
+      // setAvailability( null );
+    }
+  }, [ debouncedValue, initialValue ] );
+
+  useEffect( () => {
+    if (
+      isCreatingEntry &&
+      debouncedTargetValue &&
+      modifiedData[ targetField ] &&
+      ! value
+    ) {
+      // generateUID.current( true );
+    }
+  }, [ debouncedTargetValue, isCreatingEntry ] );
 
   return (
     <TextInput
