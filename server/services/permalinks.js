@@ -11,7 +11,7 @@ const { getPermalinkSlug, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async checkSameParentConflict( id, uid, path, value, targetField ) {
-    const parts = path.split( PATH_SEPARATOR );
+    const parts = path ? path.split( PATH_SEPARATOR ) : [];
 
     // Check for conflict.
     if ( parts.includes( value ) ) {

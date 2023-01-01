@@ -22,6 +22,7 @@ module.exports = {
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
     const supportedType = contentTypes.find( type => type.uid === uid );
+    const supportedParentType = contentTypes.find( type => type.uid === parentUID );
 
     if ( ! supportedType ) {
       return ctx.notFound();
@@ -35,7 +36,7 @@ module.exports = {
       return ctx.notFound();
     }
 
-    const path = get( parentEntity, supportedType.targetField, '' );
+    const path = get( parentEntity, supportedParentType.targetField, '' );
 
     // Check if the entity in question is being assigned as it's own ancestor, but
     // only if `uid` and `parentUID` are the same.

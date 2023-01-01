@@ -46,6 +46,7 @@ const PermalinkInput = ( {
 } ) => {
   const { formatMessage } = useIntl();
   const { initialData, isCreatingEntry, layout, modifiedData } = useCMEditViewDataManager();
+  const toggleNotification = useNotification();
   const generateUID = useRef();
 
   const targetFieldConfig = useFieldConfig( contentTypeUID );
@@ -66,6 +67,7 @@ const PermalinkInput = ( {
   const [ isLoading, setIsLoading ] = useState( false );
   const [ isOrphan, setIsOrphan ] = useState( false );
   const [ isCustomized, setIsCustomized ] = useState( false );
+  const [ availability, setAvailability ] = useState( null );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
   const [ parentError, setParentError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
@@ -95,6 +97,30 @@ const PermalinkInput = ( {
   const formattedError = error
     ? formatMessage( { id: error, defaultMessage: error } )
     : undefined;
+
+  const checkAvailability = async () => {
+    if ( ! value || selectedSelfRelation ) {
+      return;
+    }
+
+    setIsLoading( true );
+
+    try {
+      const { data } = await axiosInstance.post( `${pluginId}/check-availability`, {
+        uid: contentTypeUID,
+        parentUID: targetRelationUID,
+        field: name,
+        value: getPermalink( isOrphan ? null : ancestorsPath, slug ),
+      } );
+
+      setAvailability( data );
+      setIsLoading( false );
+    } catch ( err ) {
+      console.error( { err } );
+
+      setIsLoading( false );
+    }
+  };
 
   const checkConnection = async () => {
     if ( ! value || isCreatingEntry ) {
@@ -166,6 +192,14 @@ const PermalinkInput = ( {
     generateUID.current();
   };
 
+  const removeAncestorsPath = () => {
+    const newSlug = getPermalinkSlug( value );
+
+    // Update field state.
+    setIsOrphan( false );
+    setFieldState( null, newSlug );
+  };
+
   const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false ) => {
     // Update field state.
     setParentError( null );
@@ -180,6 +214,53 @@ const PermalinkInput = ( {
         type: 'text',
       },
     }, shouldSetInitialValue );
+  };
+
+  const updateAncestorsPath = async () => {
+    setIsLoading( true );
+    setIsOrphan( false );
+
+    // Maybe remove ancestors path.
+    if ( ! targetRelationValue ) {
+      removeAncestorsPath();
+      setIsLoading( false );
+      return;
+    }
+
+    // Maybe fetch a new ancestors path.
+    try {
+      const newSlug = getPermalinkSlug( value );
+      const {
+        data: {
+          path: newAncestorsPath,
+        },
+      } = await axiosInstance.post( `${pluginId}/ancestors-path`, {
+        uid: contentTypeUID,
+        id: modifiedData.id,
+        parentId: targetRelationValue.id,
+        parentUID: targetRelationUID,
+        value: newSlug,
+      } );
+
+      setFieldState( newAncestorsPath, newSlug );
+    } catch ( err ) {
+      // Maybe set error to incidate relationship conflict.
+      if ( err.response.status === 409 ) {
+        removeAncestorsPath();
+
+        // Set field error.
+        setParentError( formatMessage( {
+          id: getTrad( 'ui.error.selfChild' ),
+          defaultMessage: 'Cannot assign the {relation} relation to its own descendant.',
+        }, {
+          relation: targetFieldConfig.targetRelation,
+        } ) );
+      }
+
+      console.log( err );
+    }
+
+    setIsLoading( false );
   };
 
   generateUID.current = async ( shouldSetInitialValue = false ) => {
@@ -239,13 +320,29 @@ const PermalinkInput = ( {
       debouncedValue.trim().match( UID_REGEX ) &&
       debouncedValue !== initialValue
     ) {
-      // checkAvailability();
+      checkAvailability();
     }
 
     if ( ! debouncedValue ) {
-      // setAvailability( null );
+      setAvailability( null );
     }
   }, [ debouncedValue, initialValue ] );
+
+  useEffect( () => {
+    let timer;
+
+    if ( availability && availability.isAvailable ) {
+      timer = setTimeout( () => {
+        setAvailability( null );
+      }, 4000 );
+    }
+
+    return () => {
+      if ( timer ) {
+        clearTimeout( timer );
+      }
+    };
+  }, [ availability ] );
 
   useEffect( () => {
     if (
@@ -258,6 +355,33 @@ const PermalinkInput = ( {
       generateUID.current( true );
     }
   }, [ debouncedTargetValue, isCreatingEntry, isCustomized ] );
+
+  useEffect( () => {
+    // Remove ancestors path if we have selected the current entity as the parent.
+    if ( selectedSelfRelation ) {
+      removeAncestorsPath();
+
+      setParentError( formatMessage( {
+        id: getTrad( 'ui.error.selfParent' ),
+        defaultMessage: 'Cannot assign the {relation} relation to itself.',
+      }, {
+        relation: targetFieldConfig.targetRelation,
+      } ) );
+
+      return;
+    }
+
+    // Maybe update the input value. If this entity is an orphan, we need to
+    // leave the ancestors path visible until a new value is set.
+    if ( ! targetRelationValue && ! isOrphan ) {
+      removeAncestorsPath();
+    }
+
+    // Maybe set new ancestors path.
+    if ( targetRelationValue && targetRelationValue !== initialRelationValue ) {
+      updateAncestorsPath();
+    }
+  }, [ targetRelationValue, initialRelationValue ] );
 
   return (
     <TextInput
