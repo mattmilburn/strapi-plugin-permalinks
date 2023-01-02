@@ -1,8 +1,7 @@
 import React from 'react';
-import get from 'lodash/get';
 import { prefixPluginTranslations, request } from '@strapi/helper-plugin';
 
-import { Initializer, Field } from './components';
+import { Initializer } from './components';
 import { filterPermalinkColumns } from './contentManagerHooks';
 import reducers from './reducers';
 import { pluginId, pluginName } from './utils';
@@ -10,14 +9,6 @@ import { pluginId, pluginName } from './utils';
 export default {
   register( app ) {
     app.addReducers( reducers );
-
-    /**
-     * @TODO - Remove `addField` and related components one custom field is complete.
-     */
-    app.addFields( {
-      type: 'uid',
-      Component: Field,
-    } );
 
     app.registerPlugin( {
       id: pluginId,
