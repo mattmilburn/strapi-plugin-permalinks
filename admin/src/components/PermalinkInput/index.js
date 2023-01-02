@@ -10,6 +10,7 @@ import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
 import Loader from '@strapi/icons/Loader';
 import Refresh from '@strapi/icons/Refresh';
 
+import { UID_REGEX } from '../../constants';
 import { useDebounce, useFieldConfig } from '../../hooks';
 import {
   axiosInstance,
@@ -21,7 +22,6 @@ import {
   pluginId,
 } from '../../utils';
 
-import UID_REGEX from './regex';
 import AncestorsPath from './AncestorsPath';
 import {
   EndActionWrapper,

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { request, useNotification } from '@strapi/helper-plugin';
 
-import { RESOLVE_CONFIG } from '../constants';
+import { ACTION_RESOLVE_CONFIG } from '../constants';
 import { pluginId } from '../utils';
 
 const fetchConfig = async ( toggleNotification ) => {
@@ -29,7 +29,7 @@ const usePluginConfig = () => {
 
   useEffect( () => {
     fetchConfig( toggleNotification ).then( data => {
-      dispatch( { type: RESOLVE_CONFIG, data } );
+      dispatch( { type: ACTION_RESOLVE_CONFIG, data } );
     } );
   }, [ dispatch, toggleNotification ] );
 
