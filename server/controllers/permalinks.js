@@ -7,13 +7,88 @@ const { getService } = require( '../utils' );
 
 module.exports = {
   async config( ctx ) {
-    const { contentTypes } = await getService( 'config' ).get();
+    const { contentTypes, contentTypes2 } = await getService( 'config' ).get();
 
     const config = {
       contentTypes,
+      contentTypes2,
     };
 
     ctx.send( { config } );
+  },
+
+  async ancestorsPath2( ctx ) {
+    const { uid, id, relationId, value } = ctx.params;
+    const configService = getService( 'config' );
+    const pluginService = getService( 'permalinks' );
+
+    const model = strapi.contentTypes[ uid ];
+    const { contentTypes2 } = await configService.get();
+    const isConnected = contentTypes2.flat().includes( uid );
+
+    // Return an error if
+    if ( ! model ) {
+      return ctx.badRequest( `The model ${uid} does not exist.` );
+    }
+
+    if ( ! isConnected ) {
+      return ctx.badRequest( `The model ${uid} is not connected in the permalinks plugin config.` );
+    }
+
+    const { attributes } = model;
+
+    // Identify the permalink field in this model.
+    const permalinkAttr = Object.values( attributes ).find( attr => {
+      return attr?.customField === 'plugin::permalinks.permalink';
+    } );
+
+    if ( ! permalinkAttr ) {
+      return ctx.badRequest( `The model ${uid} does not have a permalinks attribute defined.` );
+    }
+
+    // Identify the connected relation field in this model.
+    const relationAttr = attributes[ permalinkAttr.targetRelation ];
+
+    const relationEntity = await strapi.query( relationAttr.target ).findOne( {
+      where: { id: relationId },
+    } );
+
+    if ( ! relationEntity ) {
+      return ctx.notFound();
+    }
+
+    const relationModel = strapi.contentTypes[ relationAttr.target ];
+
+    // Identify the permalink field in the relation field's model.
+    const relationPermalinkAttr = Object.entries( relationModel.attributes ).find( ( [ name, attr ] ) => {
+      return attr?.customField === 'plugin::permalinks.permalink';
+    } );
+
+    if ( ! relationPermalinkAttr ) {
+      return ctx.badRequest( `The model ${relationAttr.target} does not have a permalinks attribute defined.` );
+    }
+
+    const [ relationPermalinkAttrName ] = relationPermalinkAttr;
+    const path = get( relationEntity, relationPermalinkAttrName, '' );
+
+    // Check if the entity in question is being assigned as it's own ancestor, but
+    // only if this UID and relation UID are the same.
+    // if ( uid === relationAttr.target ) {
+    //   const hasParentConflict = await pluginService.checkSameParentConflict(
+    //     id,
+    //     uid,
+    //     path,
+    //     value,
+    //     supportedType.targetField
+    //   );
+    //
+    //   if ( hasParentConflict ) {
+    //     return ctx.conflict();
+    //   }
+    // }
+
+    // Return final path.
+    ctx.send( { path } );
   },
 
   async ancestorsPath( ctx ) {

@@ -12,6 +12,14 @@ module.exports = {
       },
     },
     {
+      method: 'GET',
+      path: '/ancestors-path2/:uid/:id/:relationId/:value',
+      handler: 'permalinks.ancestorsPath2',
+      config: {
+        policies: [ 'admin::isAuthenticatedAdmin' ],
+      },
+    },
+    {
       method: 'POST',
       path: '/ancestors-path',
       handler: 'permalinks.ancestorsPath',

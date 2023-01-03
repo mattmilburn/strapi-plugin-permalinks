@@ -97,9 +97,9 @@ module.exports = ( { strapi } ) => ( {
 
     if (
       ! has( model, [ 'attributes', field ] ) ||
-      get( model, [ 'attributes', field, 'type' ] ) !== 'uid'
+      get( model, [ 'attributes', field, 'customField' ] ) !== 'plugin::permalinks.permalink'
     ) {
-      throw new ValidationError( `${field} must be a valid \`uid\` attribute` );
+      throw new ValidationError( `${field} must be a valid \`permalink\` custom field attribute` );
     }
   }
 } );
