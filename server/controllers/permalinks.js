@@ -33,9 +33,8 @@ module.exports = {
     }
 
     const { attributes } = model;
-    const [ _permalinkName, permalinkAttr ] = pluginService.getPermalinkAttr( attributes );
+    const [ _permalinkName, permalinkAttr ] = pluginService.getPermalinkAttr( uid );
     const relationAttr = attributes[ permalinkAttr.targetRelation ];
-    const relationModel = strapi.getModel( relationAttr.target );
     const relationEntity = await strapi.query( relationAttr.target ).findOne( {
       where: { id: relationId },
     } );
@@ -45,7 +44,7 @@ module.exports = {
     }
 
     // Get the permalink field in the relation field's model.
-    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationModel.attributes );
+    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationAttr.target );
     const path = get( relationEntity, relationPermalinkName, '' );
 
     // Check if the entity in question is being assigned as it's own ancestor, but
@@ -161,10 +160,9 @@ module.exports = {
     }
 
     const { attributes } = model;
-    const [ permalinkName, permalinkAttr ] = pluginService.getPermalinkAttr( attributes );
+    const [ permalinkName, permalinkAttr ] = pluginService.getPermalinkAttr( uid );
     const relationAttr = attributes[ permalinkAttr.targetRelation ];
-    const relationModel = strapi.getModel( relationAttr.target );
-    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationModel.attributes );
+    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationAttr.target );
     const relationEntity = await strapi.query( relationAttr.target ).findOne( {
       where: { id },
     } );
