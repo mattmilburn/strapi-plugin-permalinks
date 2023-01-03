@@ -128,21 +128,21 @@ const PermalinkInput = ( {
     }
 
     try {
-      const { data } = await axiosInstance.post( `${pluginId}/check-connection`, {
-        uid: contentTypeUID,
-        id: initialData.id,
-        targetField: targetFieldConfig.targetRelation,
-      } );
+      const params = `${contentTypeUID}/${modifiedData.id}`;
+      const endpoint = `${pluginId}/check-connection2/${params}`;
 
-      const targetRelationValue = data[ targetFieldConfig.targetRelation ];
+      const {
+        data: {
+          path: newAncestorsPath,
+        },
+      } = await axiosInstance.get( endpoint );
 
-      if ( ! targetRelationValue ) {
+      if ( ! newAncestorsPath ) {
         setIsOrphan( true );
         return;
       }
 
       const newSlug = getPermalinkSlug( value );
-      const newAncestorsPath = targetRelationValue[ targetRelationConfig.targetField ];
 
       setFieldState( newAncestorsPath, newSlug, true );
     } catch ( err ) {
