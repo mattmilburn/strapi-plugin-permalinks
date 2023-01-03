@@ -230,17 +230,14 @@ const PermalinkInput = ( {
     // Maybe fetch a new ancestors path.
     try {
       const newSlug = getPermalinkSlug( value );
+      const params = `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${newSlug}`;
+      const endpoint = `${pluginId}/ancestors-path2/${params}`;
+
       const {
         data: {
           path: newAncestorsPath,
         },
-      } = await axiosInstance.post( `${pluginId}/ancestors-path`, {
-        uid: contentTypeUID,
-        id: modifiedData.id,
-        parentId: targetRelationValue.id,
-        parentUID: targetRelationUID,
-        value: newSlug,
-      } );
+      } = await axiosInstance.get( endpoint );
 
       setFieldState( newAncestorsPath, newSlug );
     } catch ( err ) {
