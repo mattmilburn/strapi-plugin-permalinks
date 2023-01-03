@@ -19,36 +19,23 @@ module.exports = {
 
   async ancestorsPath2( ctx ) {
     const { uid, id, relationId, value } = ctx.params;
-    const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
+    const model = strapi.getModel( uid );
 
-    const model = strapi.contentTypes[ uid ];
-    const { contentTypes2 } = await configService.get();
-    const isConnected = contentTypes2.flat().includes( uid );
-
-    // Return an error if
     if ( ! model ) {
       return ctx.badRequest( `The model ${uid} does not exist.` );
     }
+
+    const isConnected = await pluginService.validateUIDConnection( uid );
 
     if ( ! isConnected ) {
       return ctx.badRequest( `The model ${uid} is not connected in the permalinks plugin config.` );
     }
 
     const { attributes } = model;
-
-    // Identify the permalink field in this model.
-    const permalinkAttr = Object.values( attributes ).find( attr => {
-      return attr?.customField === 'plugin::permalinks.permalink';
-    } );
-
-    if ( ! permalinkAttr ) {
-      return ctx.badRequest( `The model ${uid} does not have a permalinks attribute defined.` );
-    }
-
-    // Identify the connected relation field in this model.
+    const [ _permalinkName, permalinkAttr ] = pluginService.getPermalinkAttr( attributes );
     const relationAttr = attributes[ permalinkAttr.targetRelation ];
-
+    const relationModel = strapi.getModel( relationAttr.target );
     const relationEntity = await strapi.query( relationAttr.target ).findOne( {
       where: { id: relationId },
     } );
@@ -57,19 +44,9 @@ module.exports = {
       return ctx.notFound();
     }
 
-    const relationModel = strapi.contentTypes[ relationAttr.target ];
-
-    // Identify the permalink field in the relation field's model.
-    const relationPermalinkAttr = Object.entries( relationModel.attributes ).find( ( [ name, attr ] ) => {
-      return attr?.customField === 'plugin::permalinks.permalink';
-    } );
-
-    if ( ! relationPermalinkAttr ) {
-      return ctx.badRequest( `The model ${relationAttr.target} does not have a permalinks attribute defined.` );
-    }
-
-    const [ relationPermalinkAttrName ] = relationPermalinkAttr;
-    const path = get( relationEntity, relationPermalinkAttrName, '' );
+    // Get the permalink field in the relation field's model.
+    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationModel.attributes );
+    const path = get( relationEntity, relationPermalinkName, '' );
 
     // Check if the entity in question is being assigned as it's own ancestor, but
     // only if this UID and relation UID are the same.
@@ -97,7 +74,6 @@ module.exports = {
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
     const supportedType = contentTypes.find( type => type.uid === uid );
-    const supportedParentType = contentTypes.find( type => type.uid === parentUID );
 
     if ( ! supportedType ) {
       return ctx.notFound();
@@ -111,7 +87,7 @@ module.exports = {
       return ctx.notFound();
     }
 
-    const path = get( parentEntity, supportedParentType.targetField, '' );
+    const path = get( parentEntity, supportedType.targetField, '' );
 
     // Check if the entity in question is being assigned as it's own ancestor, but
     // only if `uid` and `parentUID` are the same.
@@ -167,6 +143,40 @@ module.exports = {
       isAvailable,
       suggestion,
     };
+  },
+
+  async checkConnection2( ctx ) {
+    const { uid, id } = ctx.request.params;
+    const pluginService = getService( 'permalinks' );
+    const model = strapi.getModel( uid );
+
+    if ( ! model ) {
+      return ctx.badRequest( `The model ${uid} does not exist.` );
+    }
+
+    const isConnected = await pluginService.validateUIDConnection( uid );
+
+    if ( ! isConnected ) {
+      return ctx.badRequest( `The model ${uid} is not connected in the permalinks plugin config.` );
+    }
+
+    const { attributes } = model;
+    const [ permalinkName, permalinkAttr ] = pluginService.getPermalinkAttr( attributes );
+    const relationAttr = attributes[ permalinkAttr.targetRelation ];
+    const relationModel = strapi.getModel( relationAttr.target );
+    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationModel.attributes );
+    const relationEntity = await strapi.query( relationAttr.target ).findOne( {
+      where: { id },
+    } );
+
+    if ( ! relationEntity ) {
+      return ctx.notFound();
+    }
+
+    const path = get( relationEntity, relationPermalinkName, '' );
+
+    // Return final path (might be empty).
+    ctx.send( { path } );
   },
 
   async checkConnection( ctx ) {

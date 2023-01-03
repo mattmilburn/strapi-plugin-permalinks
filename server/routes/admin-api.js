@@ -36,6 +36,14 @@ module.exports = {
       },
     },
     {
+      method: 'GET',
+      path: '/check-connection2/:uid/:id',
+      handler: 'permalinks.checkConnection2',
+      config: {
+        policies: [ 'admin::isAuthenticatedAdmin' ],
+      },
+    },
+    {
       method: 'POST',
       path: '/check-connection',
       handler: 'permalinks.checkConnection',
