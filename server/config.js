@@ -4,34 +4,26 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 
 module.exports = {
   default: {
+    contentTypes2: [],
     contentTypes: [],
   },
   validator: config => {
-    if ( ! config.contentTypes ) {
+    if ( ! config.contentTypes2 ) {
       return;
     }
 
     // Ensure `contentTypes` is an array.
-    if ( ! Array.isArray( config.contentTypes ) ) {
+    if ( ! Array.isArray( config.contentTypes2 ) ) {
       throw new ValidationError( `Must define contentTypes as an array.` );
     }
 
-    // Validate each content type.
-    config.contentTypes.forEach( type => {
-      // Required `uid` prop.
-      if ( ! type.uid ) {
-        throw new ValidationError( `Missing uid for ${type.uid}.` );
-      }
+    // Ensure UIDs only appear once in the config.
+    const uids = config.contentTypes2.flat();
+    const duplicateUIDs = uids.filter( ( uid, i ) => uids.indexOf( uid ) !== i );
+    const uniqueDuplicateUIDs = duplicateUIDs.filter( ( uid, i ) => duplicateUIDs.indexOf( uid ) === i );
 
-      // Required `targetField` prop.
-      if ( ! type.targetField ) {
-        throw new ValidationError( `Missing targetField for ${type.uid}.` );
-      }
-
-      // Required `targetRelation` prop.
-      if ( ! type.targetRelation ) {
-        throw new ValidationError( `Missing targetRelation for ${type.uid}.` );
-      }
-    } );
+    if ( duplicateUIDs.length ) {
+      throw new ValidationError( `Must not duplicate UIDs in permalinks config: ${uniqueDuplicateUIDs.join( ', ' )}.` );
+    }
   },
 };
