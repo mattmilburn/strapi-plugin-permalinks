@@ -7,7 +7,7 @@ const { ValidationError } = require('@strapi/utils').errors;
 
 const config = require( '../config' );
 const { PATH_SEPARATOR } = require( '../constants' );
-const { getPermalinkSlug, pluginId } = require( '../utils' );
+const { getPermalinkSlug, getService, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async checkSameParentConflict( id, uid, path, value, targetField ) {
@@ -57,6 +57,12 @@ module.exports = ( { strapi } ) => ( {
     return tmpUID;
   },
 
+  getPermalinkAttr( attrs ) {
+    return Object.entries( attrs ).find( ( [ _, attr ] ) => {
+      return attr.customField === 'plugin::permalinks.permalink';
+    } );
+  },
+
   async syncChildren( uid, id, value, options ) {
     const { targetField, targetRelation } = options;
 
@@ -88,8 +94,16 @@ module.exports = ( { strapi } ) => ( {
     await Promise.all( promisedUpdates );
   },
 
+  async validateUIDConnection( uid ) {
+    const configService = getService( 'config' );
+    const model = strapi.getModel( uid );
+    const { contentTypes2 } = await configService.get();
+
+    return contentTypes2.flat().includes( uid );
+  },
+
   validateUIDField( uid, field ) {
-    const model = strapi.contentTypes[ uid ];
+    const model = strapi.getModel( uid );
 
     if ( ! model ) {
       throw new ValidationError( `ContentType not found: ${uid}` );
@@ -99,7 +113,7 @@ module.exports = ( { strapi } ) => ( {
       ! has( model, [ 'attributes', field ] ) ||
       get( model, [ 'attributes', field, 'customField' ] ) !== 'plugin::permalinks.permalink'
     ) {
-      throw new ValidationError( `${field} must be a valid \`permalink\` custom field attribute` );
+      throw new ValidationError( `${field} must be a valid permalink custom field attribute` );
     }
-  }
+  },
 } );
