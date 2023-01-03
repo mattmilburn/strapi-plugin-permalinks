@@ -57,10 +57,18 @@ module.exports = ( { strapi } ) => ( {
     return tmpUID;
   },
 
-  getPermalinkAttr( attrs ) {
-    return Object.entries( attrs ).find( ( [ _, attr ] ) => {
+  getPermalinkAttr( uid ) {
+    const model = strapi.getModel( uid );
+
+    if ( ! model ) {
+      return [];
+    }
+
+    const permalinkAttr = Object.entries( model.attributes ).find( ( [ _, attr ] ) => {
       return attr.customField === 'plugin::permalinks.permalink';
     } );
+
+    return permalinkAttr ? permalinkAttr : [];
   },
 
   async syncChildren( uid, id, value, options ) {
