@@ -10,19 +10,20 @@ const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug, getService, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async checkSameParentConflict( id, uid, path, value, targetField ) {
+  async checkAncestorConflict( id, uid, path, value, targetField ) {
     const parts = path ? path.split( PATH_SEPARATOR ) : [];
 
     // Check for conflict.
     if ( parts.includes( value ) ) {
       const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( PATH_SEPARATOR );
+
       const ancestor = await strapi.query( uid ).findOne( {
         where: {
           [ targetField ]: possibleConflict,
         },
       } );
 
-      return ancestor && ancestor.id === id;
+      return ancestor && ancestor.id === parseInt( id );
     }
 
     return false;
@@ -103,9 +104,7 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async validateUIDConnection( uid ) {
-    const configService = getService( 'config' );
-    const model = strapi.getModel( uid );
-    const { contentTypes2 } = await configService.get();
+    const { contentTypes2 } = await getService( 'config' ).get();
 
     return contentTypes2.flat().includes( uid );
   },

@@ -229,8 +229,7 @@ const PermalinkInput = ( {
 
     // Maybe fetch a new ancestors path.
     try {
-      const newSlug = getPermalinkSlug( value );
-      const params = `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${newSlug}`;
+      const params = `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${initialSlug}`;
       const endpoint = `${pluginId}/ancestors-path/${params}`;
 
       const {
@@ -248,7 +247,7 @@ const PermalinkInput = ( {
         // Set field error.
         setConnectionError( formatMessage( {
           id: getTrad( 'ui.error.selfChild' ),
-          defaultMessage: 'Cannot assign the {relation} relation to its own descendant.',
+          defaultMessage: 'Cannot assign the {relation} relation as its own descendant.',
         }, {
           relation: targetFieldConfig.targetRelation,
         } ) );
