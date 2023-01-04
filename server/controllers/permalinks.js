@@ -17,7 +17,7 @@ module.exports = {
     ctx.send( { config } );
   },
 
-  async ancestorsPath2( ctx ) {
+  async ancestorsPath( ctx ) {
     const { uid, id, relationId, value } = ctx.params;
     const pluginService = getService( 'permalinks' );
     const model = strapi.getModel( uid );
@@ -55,54 +55,13 @@ module.exports = {
     //     uid,
     //     path,
     //     value,
-    //     supportedType.targetField
+    //     permalinkAttr.targetField
     //   );
     //
     //   if ( hasParentConflict ) {
     //     return ctx.conflict();
     //   }
     // }
-
-    // Return final path.
-    ctx.send( { path } );
-  },
-
-  async ancestorsPath( ctx ) {
-    const { uid, id, parentId, parentUID, value } = ctx.request.body;
-    const configService = getService( 'config' );
-    const pluginService = getService( 'permalinks' );
-    const { contentTypes } = await configService.get();
-    const supportedType = contentTypes.find( type => type.uid === uid );
-
-    if ( ! supportedType ) {
-      return ctx.notFound();
-    }
-
-    const parentEntity = await strapi.query( parentUID ).findOne( {
-      where: { id: parentId },
-    } );
-
-    if ( ! parentEntity ) {
-      return ctx.notFound();
-    }
-
-    const path = get( parentEntity, supportedType.targetField, '' );
-
-    // Check if the entity in question is being assigned as it's own ancestor, but
-    // only if `uid` and `parentUID` are the same.
-    if ( uid === parentUID ) {
-      const hasParentConflict = await pluginService.checkSameParentConflict(
-        id,
-        uid,
-        path,
-        value,
-        supportedType.targetField
-      );
-
-      if ( hasParentConflict ) {
-        return ctx.conflict();
-      }
-    }
 
     // Return final path.
     ctx.send( { path } );
@@ -144,7 +103,7 @@ module.exports = {
     };
   },
 
-  async checkConnection2( ctx ) {
+  async checkConnection( ctx ) {
     const { uid, id } = ctx.request.params;
     const pluginService = getService( 'permalinks' );
     const model = strapi.getModel( uid );
@@ -175,21 +134,5 @@ module.exports = {
 
     // Return final path (might be empty).
     ctx.send( { path } );
-  },
-
-  async checkConnection( ctx ) {
-    const { uid, id, targetField } = ctx.request.body;
-    const pluginService = getService( 'permalinks' );
-
-    const entity = await strapi.query( uid ).findOne( {
-      where: { id },
-      populate: [ targetField ],
-    } );
-
-    const target = get( entity, targetField );
-
-    ctx.body = {
-      [ targetField ]: target ? target : null,
-    };
   },
 };
