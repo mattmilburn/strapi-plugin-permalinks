@@ -69,7 +69,7 @@ const PermalinkInput = ( {
   const [ isCustomized, setIsCustomized ] = useState( false );
   const [ availability, setAvailability ] = useState( null );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
-  const [ connectionError, setConnectionError ] = useState( null );
+  const [ relationError, setRelationError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
 
@@ -183,9 +183,9 @@ const PermalinkInput = ( {
 
   const handleRefresh = () => {
     // Clear orphan state when refreshing.
-    if ( isOrphan && !! connectionError ) {
+    if ( isOrphan && !! relationError ) {
       setIsOrphan( false );
-      setConnectionError( null );
+      setRelationError( null );
       return;
     }
 
@@ -202,7 +202,7 @@ const PermalinkInput = ( {
 
   const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false ) => {
     // Update field state.
-    setConnectionError( null );
+    setRelationError( null );
     setAncestorsPath( newAncestorsPath );
     setSlug( newSlug );
 
@@ -229,6 +229,7 @@ const PermalinkInput = ( {
 
     // Maybe fetch a new ancestors path.
     try {
+      const newSlug = getPermalinkSlug( initialValue );
       const params = `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${initialSlug}`;
       const endpoint = `${pluginId}/ancestors-path/${params}`;
 
@@ -240,12 +241,11 @@ const PermalinkInput = ( {
 
       setFieldState( newAncestorsPath, newSlug );
     } catch ( err ) {
-      // Maybe set error to incidate relationship conflict.
+      // Maybe set field error to incidate relationship conflict.
       if ( err.response.status === 409 ) {
         removeAncestorsPath();
 
-        // Set field error.
-        setConnectionError( formatMessage( {
+        setRelationError( formatMessage( {
           id: getTrad( 'ui.error.selfChild' ),
           defaultMessage: 'Cannot assign the {relation} relation as its own descendant.',
         }, {
@@ -292,7 +292,7 @@ const PermalinkInput = ( {
 
   useEffect( () => {
     if ( isOrphan ) {
-      setConnectionError( formatMessage( {
+      setRelationError( formatMessage( {
         id: getTrad( 'ui.error.orphan' ),
         defaultMessage: 'This value must be regenerated after being orphaned.',
       } ) );
@@ -357,7 +357,7 @@ const PermalinkInput = ( {
     if ( selectedSelfRelation ) {
       removeAncestorsPath();
 
-      setConnectionError( formatMessage( {
+      setRelationError( formatMessage( {
         id: getTrad( 'ui.error.selfParent' ),
         defaultMessage: 'Cannot assign the {relation} relation to itself.',
       }, {
@@ -382,7 +382,7 @@ const PermalinkInput = ( {
   return (
     <TextInput
       disabled={ disabled }
-      error={ connectionError ?? formattedError }
+      error={ relationError ?? formattedError }
       hint={ hint }
       label={ label }
       labelAction={ labelAction }
@@ -394,7 +394,7 @@ const PermalinkInput = ( {
       startAction={ ancestorsPath ? (
         <AncestorsPath
           path={ ancestorsPath }
-          hasError={ !! connectionError || !! error }
+          hasError={ !! relationError || !! error }
         />
       ) : null }
       endAction={
