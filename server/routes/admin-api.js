@@ -13,15 +13,7 @@ module.exports = {
     },
     {
       method: 'GET',
-      path: '/ancestors-path2/:uid/:id/:relationId/:value',
-      handler: 'permalinks.ancestorsPath2',
-      config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
-      },
-    },
-    {
-      method: 'POST',
-      path: '/ancestors-path',
+      path: '/ancestors-path/:uid/:id/:relationId/:value',
       handler: 'permalinks.ancestorsPath',
       config: {
         policies: [ 'admin::isAuthenticatedAdmin' ],
@@ -37,15 +29,7 @@ module.exports = {
     },
     {
       method: 'GET',
-      path: '/check-connection2/:uid/:id',
-      handler: 'permalinks.checkConnection2',
-      config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
-      },
-    },
-    {
-      method: 'POST',
-      path: '/check-connection',
+      path: '/check-connection/:uid/:id',
       handler: 'permalinks.checkConnection',
       config: {
         policies: [ 'admin::isAuthenticatedAdmin' ],

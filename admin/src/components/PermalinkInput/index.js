@@ -129,7 +129,7 @@ const PermalinkInput = ( {
 
     try {
       const params = `${contentTypeUID}/${modifiedData.id}`;
-      const endpoint = `${pluginId}/check-connection2/${params}`;
+      const endpoint = `${pluginId}/check-connection/${params}`;
 
       const {
         data: {
@@ -231,7 +231,7 @@ const PermalinkInput = ( {
     try {
       const newSlug = getPermalinkSlug( value );
       const params = `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${newSlug}`;
-      const endpoint = `${pluginId}/ancestors-path2/${params}`;
+      const endpoint = `${pluginId}/ancestors-path/${params}`;
 
       const {
         data: {
