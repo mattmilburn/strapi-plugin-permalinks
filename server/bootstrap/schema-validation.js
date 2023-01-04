@@ -37,17 +37,15 @@ module.exports = async ( { strapi } ) => {
       throw new ValidationError( `Missing ${permalinkName}.targetRelation in ${uid}.` );
     }
 
-    // Ensure that permalink attributes target an actual relation field type and the UID exists.
+    // Ensure that permalink attributes target an actual relation field type that uses a oneToOne relation.
     const targetRelationAttr = attributes[ permalinkAttr.targetRelation ];
 
     if ( targetRelationAttr.type !== 'relation' ) {
       throw new ValidationError( `Must use a valid relation type for ${permalinkName}.targetRelation in ${uid}.` );
     }
 
-    const targetRelationModel = strapi.db.metadata.get( targetRelationAttr.target );
-
-    if ( ! targetRelationModel ) {
-      throw new ValidationError( `The content type ${targetRelationAttr.target} does not exist.` );
+    if ( targetRelationAttr.relation !== 'oneToOne' ) {
+      throw new ValidationError( `Must use a oneToOne relation for ${permalinkName}.targetRelation in ${uid}.` );
     }
   } );
 };
