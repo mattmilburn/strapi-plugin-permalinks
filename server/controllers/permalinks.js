@@ -122,15 +122,16 @@ module.exports = {
     const [ permalinkName, permalinkAttr ] = pluginService.getPermalinkAttr( uid );
     const relationAttr = attributes[ permalinkAttr.targetRelation ];
     const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationAttr.target );
-    const relationEntity = await strapi.query( relationAttr.target ).findOne( {
+    const entity = await strapi.query( uid ).findOne( {
       where: { id },
+      populate: [ permalinkAttr.targetRelation ],
     } );
 
-    if ( ! relationEntity ) {
+    if ( ! entity ) {
       return ctx.notFound();
     }
 
-    const path = get( relationEntity, relationPermalinkName, '' );
+    const path = get( entity, [ permalinkAttr.targetRelation, relationPermalinkName ], '' );
 
     // Return final path (might be empty).
     ctx.send( { path } );
