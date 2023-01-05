@@ -10,7 +10,8 @@ const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug, getService, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async checkAncestorConflict( id, uid, path, value, targetField ) {
+  async checkAncestorConflict( id, uid, path, value ) {
+    const [ name ] = getService( 'permalinks' ).getPermalinkAttr( uid );
     const parts = path ? path.split( PATH_SEPARATOR ) : [];
 
     // Check for conflict.
@@ -19,7 +20,7 @@ module.exports = ( { strapi } ) => ( {
 
       const entity = await strapi.query( uid ).findOne( {
         where: {
-          [ targetField ]: possibleConflict,
+          [ name ]: possibleConflict,
         },
       } );
 
@@ -29,15 +30,21 @@ module.exports = ( { strapi } ) => ( {
     return false;
   },
 
-  async checkUIDAvailability( uid, field, value ) {
+  async checkAvailability( uid, value ) {
+    const [ name ] = getService( 'permalinks' ).getPermalinkAttr( uid );
+
+    if ( ! name ) {
+      return false;
+    }
+
     const count = await strapi.db.query( uid ).count( {
-      where: { [ field ]: value },
+      where: { [ name ]: value },
     } );
 
     return count > 0 ? false : true;
   },
 
-  async findUniqueUID( uid, field, value ) {
+  async findUniqueUID( uid, value ) {
     const possibleConflicts = await strapi.db.query( uid )
       .findMany( {
         where: { [ field ]: { $contains: value } },
@@ -62,7 +69,7 @@ module.exports = ( { strapi } ) => ( {
     const model = strapi.getModel( uid );
 
     if ( ! model ) {
-      return [];
+      throw new ValidationError( `The model ${uid} was not found.` );
     }
 
     const permalinkAttr = Object.entries( model.attributes ).find( ( [ _, attr ] ) => {
@@ -103,24 +110,9 @@ module.exports = ( { strapi } ) => ( {
     await Promise.all( promisedUpdates );
   },
 
-  async validateUIDConnection( uid ) {
+  async validateSupport( uid ) {
     const { contentTypes2 } = await getService( 'config' ).get();
 
     return contentTypes2.flat().includes( uid );
-  },
-
-  validateUIDField( uid, field ) {
-    const model = strapi.getModel( uid );
-
-    if ( ! model ) {
-      throw new ValidationError( `ContentType not found: ${uid}` );
-    }
-
-    if (
-      ! has( model, [ 'attributes', field ] ) ||
-      get( model, [ 'attributes', field, 'customField' ] ) !== 'plugin::permalinks.permalink'
-    ) {
-      throw new ValidationError( `${field} must be a valid permalink custom field attribute` );
-    }
   },
 } );

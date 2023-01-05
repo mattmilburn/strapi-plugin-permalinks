@@ -20,8 +20,16 @@ module.exports = {
       },
     },
     {
-      method: 'POST',
-      path: '/check-availability',
+      method: 'GET',
+      path: '/ancestors-path/:uid/:relationId',
+      handler: 'permalinks.ancestorsPath',
+      config: {
+        policies: [ 'admin::isAuthenticatedAdmin' ],
+      },
+    },
+    {
+      method: 'GET',
+      path: '/check-availability/:uid/:value',
       handler: 'permalinks.checkAvailability',
       config: {
         policies: [ 'admin::isAuthenticatedAdmin' ],
