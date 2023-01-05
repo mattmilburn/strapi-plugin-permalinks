@@ -47,17 +47,19 @@ module.exports = {
     const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationAttr.target );
     const path = get( relationEntity, relationPermalinkName, '' );
 
-    // Check if the entity is being assigned as it's own ancestor/descendant.
-    const hasAncestorConflict = await pluginService.checkAncestorConflict(
-      id,
-      uid,
-      path,
-      value,
-      relationPermalinkName
-    );
+    // Check if the entity is being assigned as it's own ancestor, but only if the UIDs match.
+    if ( uid === relationAttr.target ) {
+      const hasAncestorConflict = await pluginService.checkAncestorConflict(
+        id,
+        uid,
+        path,
+        value,
+        relationPermalinkName
+      );
 
-    if ( hasAncestorConflict ) {
-      return ctx.conflict();
+      if ( hasAncestorConflict ) {
+        return ctx.conflict();
+      }
     }
 
     // Return final path.
