@@ -8,12 +8,7 @@ const { getService } = require( '../utils' );
 
 module.exports = {
   async config( ctx ) {
-    const { contentTypes, contentTypes2 } = await getService( 'config' ).get();
-
-    const config = {
-      contentTypes,
-      contentTypes2,
-    };
+    const config = await getService( 'config' ).get();
 
     ctx.send( { config } );
   },
@@ -69,8 +64,8 @@ module.exports = {
 
   async checkAvailability( ctx ) {
     const { uid, value } = ctx.request.params;
-    const { contentTypes2 } = await getService( 'config' ).get();
-    const uids = contentTypes2.find( uids => uids.includes( uid ) );
+    const { contentTypes } = await getService( 'config' ).get();
+    const uids = contentTypes.find( uids => uids.includes( uid ) );
     const pluginService = getService( 'permalinks' );
 
     const isSupported = await pluginService.validateSupport( uid );

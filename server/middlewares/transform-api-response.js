@@ -61,8 +61,8 @@ module.exports = ( { strapi } ) => {
 
     // Determine if this request should transform the data response.
     const { handler } = ctx.state.route;
-    const { contentTypes2 } = await getService( 'config' ).get();
-    const uids = contentTypes2.flat();
+    const { contentTypes } = await getService( 'config' ).get();
+    const uids = contentTypes.flat();
     const uid = uids.find( _uid => typeof handler === 'string' && handler.includes( _uid ) );
 
     if ( ! uid ) {

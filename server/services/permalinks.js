@@ -111,8 +111,8 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async validateSupport( uid ) {
-    const { contentTypes2 } = await getService( 'config' ).get();
+    const { contentTypes } = await getService( 'config' ).get();
 
-    return contentTypes2.flat().includes( uid );
+    return contentTypes.flat().includes( uid );
   },
 } );
