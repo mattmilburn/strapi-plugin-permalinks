@@ -3,10 +3,9 @@ import { useSelector } from 'react-redux';
 import { pluginId } from '../utils';
 
 const useFieldConfig = uid => {
-  const { contentTypes } = useSelector( state => state[ `${pluginId}_config` ].config );
-  const config = contentTypes.find( type => type.uid === uid );
+  const { layouts } = useSelector( state => state[ `${pluginId}_config` ].config );
 
-  return config;
+  return layouts[ uid ];
 };
 
 export default useFieldConfig;
