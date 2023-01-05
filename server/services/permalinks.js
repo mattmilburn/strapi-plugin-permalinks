@@ -17,13 +17,13 @@ module.exports = ( { strapi } ) => ( {
     if ( parts.includes( value ) ) {
       const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( PATH_SEPARATOR );
 
-      const ancestor = await strapi.query( uid ).findOne( {
+      const entity = await strapi.query( uid ).findOne( {
         where: {
           [ targetField ]: possibleConflict,
         },
       } );
 
-      return ancestor && ancestor.id === parseInt( id );
+      return entity && entity.id === parseInt( id );
     }
 
     return false;

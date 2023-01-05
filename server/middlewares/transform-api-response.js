@@ -8,59 +8,67 @@ const set = require( 'lodash/set' );
 
 const { getService, isApiRequest } = require( '../utils' );
 
-// Transform function which is used to transform the response object.
-const transform = ( data, config ) => {
-  // Single entry.
-  if ( has( data, 'attributes' ) ) {
-    return transform( data.attributes, config );
-  }
-
-  // Collection of entries.
-  if ( isArray( data ) && data.length ) {
-    const firstItem = head( data );
-
-    if ( has( firstItem, 'attributes' ) || has( firstItem, config.targetField ) ) {
-      return data.map( item => transform( item, config ) );
-    }
-  }
-
-  // Replace ~ with / in data's `targetField`.
-  data[ config.targetField ] = get( data, config.targetField, '' ).replace( /~/g, '/' );
-
-  const relationTargetField = `${config.targetRelation}.${config.targetField}`;
-
-  // Maybe replace ~ with / in data's `targetRelation`.
-  if ( has( data, relationTargetField ) ) {
-    set(
-      data,
-      relationTargetField,
-      get( data, relationTargetField ).replace( /~/g, '/' )
-    );
-  }
-
-  return data;
-};
-
 // Transform API response by parsing data string to JSON for rich text fields.
 module.exports = ( { strapi } ) => {
-  strapi.server.use( async ( ctx, next ) => {
-    const config = await getService( 'config' ).get();
+  const transform = ( data, uid ) => {
+    const [ name, attr ] = getService( 'permalinks' ).getPermalinkAttr( uid );
 
+    if ( ! uid ) {
+      return data;
+    }
+
+    // Single entry.
+    if ( has( data, 'attributes' ) ) {
+      return transform( data.attributes, uid );
+    }
+
+    // Collection of entries.
+    if ( isArray( data ) && data.length ) {
+      const firstItem = head( data );
+
+      if ( has( firstItem, 'attributes' ) || has( firstItem, name ) ) {
+        return data.map( item => transform( item, uid ) );
+      }
+    }
+
+    // Replace ~ with / in the permalink field.
+    data[ name ] = get( data, name, '' ).replace( /~/g, '/' );
+
+    // Maybe replace ~ with / in the relation's permalink field, which may only
+    // apply if the API request populated the relation.
+    const { attributes } = strapi.getModel( uid );
+    const relationUID = get( attributes, [ attr.targetRelation, 'target' ] );
+    const [ relationName, relationAttr ] = getService( 'permalinks' ).getPermalinkAttr( relationUID );
+    const relationKeys = [ attr.targetRelation, relationName ];
+
+    if ( has( data, relationKeys ) ) {
+      set(
+        data,
+        relationKeys,
+        get( data, relationKeys ).replace( /~/g, '/' )
+      );
+    }
+
+    return data;
+  };
+
+  strapi.server.use( async ( ctx, next ) => {
     await next();
 
-    if ( ! ctx.body || ! config.contentTypes ) {
+    if ( ! ctx.body || ! ctx.body.data || ! isApiRequest( ctx ) ) {
       return;
     }
 
     // Determine if this request should transform the data response.
     const { handler } = ctx.state.route;
-    const contentType = config.contentTypes.find( ( { uid } ) => {
-      return typeof handler === 'string' && handler.includes( uid );
-    } );
-    const shouldTransform = ctx.body.data && isApiRequest( ctx ) && !! contentType;
+    const { contentTypes2 } = await getService( 'config' ).get();
+    const uids = contentTypes2.flat();
+    const uid = uids.find( _uid => typeof handler === 'string' && handler.includes( _uid ) );
 
-    if ( shouldTransform ) {
-      ctx.body.data = transform( ctx.body.data, contentType );
+    if ( ! uid ) {
+      return;
     }
+
+    ctx.body.data = transform( ctx.body.data, uid );
   } );
 };
