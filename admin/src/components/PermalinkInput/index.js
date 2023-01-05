@@ -106,19 +106,23 @@ const PermalinkInput = ( {
     setIsLoading( true );
 
     try {
-      const { data } = await axiosInstance.post( `${pluginId}/check-availability`, {
-        uid: contentTypeUID,
-        parentUID: targetRelationUID,
-        field: name,
-        value: getPermalink( isOrphan ? null : ancestorsPath, slug ),
-      } );
+      const newSlug = getPermalink( isOrphan ? null : ancestorsPath, slug );
+      const params = `${contentTypeUID}/${newSlug}`;
+      const endpoint = `${pluginId}/check-availability/${params}`;
+
+      const { data } = await axiosInstance.get( endpoint );
 
       setAvailability( data );
       setIsLoading( false );
     } catch ( err ) {
-      console.error( { err } );
+      toggleNotification( {
+        type: 'warning',
+        message: err?.response?.error?.message ?? 'An error occurred.',
+      } );
 
       setIsLoading( false );
+
+      console.error( err );
     }
   };
 
@@ -146,7 +150,12 @@ const PermalinkInput = ( {
 
       setFieldState( newAncestorsPath, newSlug, true );
     } catch ( err ) {
-      console.error( { err } );
+      toggleNotification( {
+        type: 'warning',
+        message: err?.response?.error?.message ?? 'An error occurred.',
+      } );
+
+      console.error( err );
     }
   };
 
@@ -229,8 +238,10 @@ const PermalinkInput = ( {
 
     // Maybe fetch a new ancestors path.
     try {
-      const newSlug = getPermalinkSlug( initialValue );
-      const params = `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${initialSlug}`;
+      const newSlug = getPermalinkSlug( isCreatingEntry ? value : initialValue );
+      const params = isCreatingEntry
+        ? `${contentTypeUID}/${targetRelationValue.id}`
+        : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${initialSlug}`;
       const endpoint = `${pluginId}/ancestors-path/${params}`;
 
       const {
@@ -242,7 +253,7 @@ const PermalinkInput = ( {
       setFieldState( newAncestorsPath, newSlug );
     } catch ( err ) {
       // Maybe set field error to incidate relationship conflict.
-      if ( err.response.status === 409 ) {
+      if ( err?.response?.status === 409 ) {
         removeAncestorsPath();
 
         setRelationError( formatMessage( {
@@ -251,9 +262,16 @@ const PermalinkInput = ( {
         }, {
           relation: targetFieldConfig.targetRelation,
         } ) );
+
+        return;
       }
 
-      console.log( err );
+      toggleNotification( {
+        type: 'warning',
+        message: err?.response?.error?.message ?? 'An error occurred.',
+      } );
+
+      console.error( err );
     }
 
     setIsLoading( false );
@@ -276,9 +294,14 @@ const PermalinkInput = ( {
       setFieldState( newAncestorsPath, newSlug, shouldSetInitialValue );
       setIsLoading( false );
     } catch ( err ) {
-      console.error( { err } );
+      toggleNotification( {
+        type: 'warning',
+        message: err?.response?.error?.message ?? 'An error occurred.',
+      } );
 
       setIsLoading( false );
+
+      console.error( err );
     }
   };
 
@@ -399,6 +422,28 @@ const PermalinkInput = ( {
       ) : null }
       endAction={
         <EndActionWrapper>
+          { ! regenerateLabel && availability && availability?.isAvailable && (
+            <TextValidation alignItems="center" justifyContent="flex-end">
+              <CheckCircle />
+              <Typography textColor="success600" variant="pi">
+                { formatMessage( {
+                  id: 'content-manager.components.uid.available',
+                  defaultMessage: 'Available',
+                } ) }
+              </Typography>
+            </TextValidation>
+          ) }
+          { ! regenerateLabel && availability && ! availability?.isAvailable && (
+            <TextValidation alignItems="center" justifyContent="flex-end" notAvailable>
+              <ExclamationMarkCircle />
+              <Typography textColor="danger600" variant="pi">
+                { formatMessage({
+                  id: 'content-manager.components.uid.unavailable',
+                  defaultMessage: 'Unavailable',
+                } ) }
+              </Typography>
+            </TextValidation>
+          ) }
           { regenerateLabel && (
             <TextValidation alignItems="center" justifyContent="flex-end">
               <Typography textColor="primary600" variant="pi">
