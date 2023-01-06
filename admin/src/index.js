@@ -1,5 +1,5 @@
 import React from 'react';
-import { prefixPluginTranslations, request } from '@strapi/helper-plugin';
+import { prefixPluginTranslations } from '@strapi/helper-plugin';
 
 import { Initializer } from './components';
 import { filterPermalinkColumns } from './contentManagerHooks';
@@ -86,21 +86,8 @@ export default {
     } );
   },
 
-  async bootstrap( app ) {
-    try {
-      const endpoint = `/${pluginId}/config`;
-      const data = await request( endpoint, { method: 'GET' } );
-      const pluginConfig = data?.config ?? {};
-
-      // Create callbacks with plugin config included.
-      const listViewColumnHook = props => filterPermalinkColumns( props, pluginConfig );
-
-      // Register hooks.
-      app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', listViewColumnHook );
-    } catch ( _err ) {
-      // Probably just failed because user is not logged in, which is fine.
-      return;
-    }
+  bootstrap( app ) {
+    app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkColumns );
   },
 
   async registerTrads( { locales } ) {
