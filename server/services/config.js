@@ -12,6 +12,10 @@ module.exports = ( { strapi } ) => ( {
     const layouts = contentTypes.flat().reduce( ( acc, uid ) => {
       const [ name, attr ] = pluginService.getPermalinkAttr( uid );
 
+      if ( ! name ) {
+        return acc;
+      }
+
       return {
         ...acc,
         [ uid ]: {
