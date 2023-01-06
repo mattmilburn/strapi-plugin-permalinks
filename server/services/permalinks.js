@@ -65,6 +65,16 @@ module.exports = ( { strapi } ) => ( {
     return tmpUID;
   },
 
+  getModel( uid ) {
+    const model = strapi.getModel( uid );
+
+    if ( ! model ) {
+      throw new ValidationError( `The model ${uid} was not found.` );
+    }
+
+    return model;
+  },
+
   getPermalinkAttr( uid ) {
     const model = strapi.getModel( uid );
 
