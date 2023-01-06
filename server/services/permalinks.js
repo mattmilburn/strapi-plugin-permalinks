@@ -10,8 +10,7 @@ const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug, getService, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async checkAncestorConflict( id, uid, path, value ) {
-    const [ name ] = getService( 'permalinks' ).getPermalinkAttr( uid );
+  async checkAncestorConflict( id, uid, path, field, value ) {
     const parts = path ? path.split( PATH_SEPARATOR ) : [];
 
     // Check for conflict.
@@ -20,7 +19,7 @@ module.exports = ( { strapi } ) => ( {
 
       const entity = await strapi.query( uid ).findOne( {
         where: {
-          [ name ]: possibleConflict,
+          [ field ]: possibleConflict,
         },
       } );
 
@@ -30,15 +29,9 @@ module.exports = ( { strapi } ) => ( {
     return false;
   },
 
-  async checkAvailability( uid, value ) {
-    const [ name ] = getService( 'permalinks' ).getPermalinkAttr( uid );
-
-    if ( ! name ) {
-      return false;
-    }
-
+  async checkAvailability( uid, field, value ) {
     const count = await strapi.db.query( uid ).count( {
-      where: { [ name ]: value },
+      where: { [ field ]: value },
     } );
 
     return count > 0 ? false : true;
@@ -75,20 +68,6 @@ module.exports = ( { strapi } ) => ( {
     return model;
   },
 
-  getPermalinkAttr( uid ) {
-    const model = strapi.getModel( uid );
-
-    if ( ! model ) {
-      throw new ValidationError( `The model ${uid} was not found.` );
-    }
-
-    const permalinkAttr = Object.entries( model.attributes ).find( ( [ _, attr ] ) => {
-      return attr.customField === 'plugin::permalinks.permalink';
-    } );
-
-    return permalinkAttr ? permalinkAttr : [];
-  },
-
   async syncChildren( uid, id, value, options ) {
     const { targetField, targetRelation } = options;
 
@@ -118,11 +97,5 @@ module.exports = ( { strapi } ) => ( {
     } );
 
     await Promise.all( promisedUpdates );
-  },
-
-  async validateSupport( uid ) {
-    const { contentTypes } = await getService( 'config' ).get();
-
-    return contentTypes.flat().includes( uid );
   },
 } );

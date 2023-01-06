@@ -52,6 +52,7 @@ module.exports = {
         id,
         uid,
         path,
+        name,
         value
       );
 
@@ -79,7 +80,9 @@ module.exports = {
     // Check availability in each related collection.
     const uids = contentTypes.find( uids => uids.includes( uid ) );
     const promisedAvailables = await Promise.all( uids.map( _uid => {
-      return pluginService.checkAvailability( _uid, value );
+      const { name } = layouts[ _uid ];
+
+      return pluginService.checkAvailability( _uid, name, value );
     } ) );
 
     const isAvailable = promisedAvailables.every( available => available );
