@@ -10,8 +10,8 @@ const { getService, isApiRequest } = require( '../utils' );
 
 // Transform API response by parsing data string to JSON for rich text fields.
 module.exports = ( { strapi } ) => {
-  const transform = ( data, uid ) => {
-    const [ name, attr ] = getService( 'permalinks' ).getPermalinkAttr( uid );
+  const transform = ( data, uid, layouts ) => {
+    const { name, targetRelation, targetRelationUID } = layouts[ uid ];
 
     if ( ! uid ) {
       return data;
@@ -19,7 +19,7 @@ module.exports = ( { strapi } ) => {
 
     // Single entry.
     if ( has( data, 'attributes' ) ) {
-      return transform( data.attributes, uid );
+      return transform( data.attributes, uid, layouts );
     }
 
     // Collection of entries.
@@ -27,7 +27,7 @@ module.exports = ( { strapi } ) => {
       const firstItem = head( data );
 
       if ( has( firstItem, 'attributes' ) || has( firstItem, name ) ) {
-        return data.map( item => transform( item, uid ) );
+        return data.map( item => transform( item, uid, layouts ) );
       }
     }
 
@@ -36,10 +36,8 @@ module.exports = ( { strapi } ) => {
 
     // Maybe replace ~ with / in the relation's permalink field, which may only
     // apply if the API request populated the relation.
-    const { attributes } = strapi.getModel( uid );
-    const relationUID = get( attributes, [ attr.targetRelation, 'target' ] );
-    const [ relationName, relationAttr ] = getService( 'permalinks' ).getPermalinkAttr( relationUID );
-    const relationKeys = [ attr.targetRelation, relationName ];
+    const { name: relationPermalinkName } = layouts[ targetRelationUID ];
+    const relationKeys = [ targetRelation, relationPermalinkName ];
 
     if ( has( data, relationKeys ) ) {
       set(
@@ -55,20 +53,26 @@ module.exports = ( { strapi } ) => {
   strapi.server.use( async ( ctx, next ) => {
     await next();
 
-    if ( ! ctx.body || ! ctx.body.data || ! isApiRequest( ctx ) ) {
+    if (
+      ! ctx.body ||
+      ! ctx.body.data ||
+      ! isApiRequest( ctx ) ||
+      typeof ctx.state.route.handler !== 'string'
+    ) {
       return;
     }
 
     // Determine if this request should transform the data response.
-    const { handler } = ctx.state.route;
-    const { contentTypes } = await getService( 'config' ).get();
+    const configService = getService( 'config' );
+    const { contentTypes } = await configService.get();
+    const layouts = await configService.layouts();
     const uids = contentTypes.flat();
-    const uid = uids.find( _uid => typeof handler === 'string' && handler.includes( _uid ) );
+    const uid = uids.find( _uid => ctx.state.route.handler.includes( _uid ) );
 
     if ( ! uid ) {
       return;
     }
 
-    ctx.body.data = transform( ctx.body.data, uid );
+    ctx.body.data = transform( ctx.body.data, uid, layouts );
   } );
 };
