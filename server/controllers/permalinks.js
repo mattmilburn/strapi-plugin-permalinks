@@ -1,6 +1,7 @@
 'use strict';
 
 const get = require( 'lodash/get' );
+const has = require( 'lodash/has' );
 const uniq = require( 'lodash/uniq' );
 const { NotFoundError, ValidationError } = require('@strapi/utils').errors;
 
@@ -8,31 +9,32 @@ const { getService } = require( '../utils' );
 
 module.exports = {
   async config( ctx ) {
-    const config = await getService( 'config' ).get();
+    const configService = getService( 'config' );
+    const config = await configService.get();
+    const layouts = await configService.layouts();
 
-    ctx.send( { config } );
+    ctx.send( {
+      config: {
+        ...config,
+        layouts,
+      },
+    } );
   },
 
   async ancestorsPath( ctx ) {
     const { uid, id, relationId, value } = ctx.params;
+    const layouts = await getService( 'config' ).layouts();
     const pluginService = getService( 'permalinks' );
-    const model = strapi.getModel( uid );
     const isCreating = ! id;
-
-    if ( ! model ) {
-      throw new ValidationError( `The model ${uid} was not found.` );
-    }
-
-    const isSupported = await pluginService.validateSupport( uid );
+    const isSupported = has( layouts, uid );
+    const model = pluginService.getModel( uid );
 
     if ( ! isSupported ) {
       throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
     }
 
-    const { attributes } = model;
-    const [ name, attr ] = pluginService.getPermalinkAttr( uid );
-    const relationAttr = attributes[ attr.targetRelation ];
-    const relationEntity = await strapi.query( relationAttr.target ).findOne( {
+    const { name, targetRelation, targetRelationUID } = layouts[ uid ];
+    const relationEntity = await strapi.query( targetRelationUID ).findOne( {
       where: { id: relationId },
     } );
 
@@ -41,11 +43,11 @@ module.exports = {
     }
 
     // Get the permalink field in the relation field's model.
-    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationAttr.target );
+    const { name: relationPermalinkName } = layouts[ targetRelationUID ];
     const path = get( relationEntity, relationPermalinkName, '' );
 
     // If the UIDs are the same, check if the entity is being assigned as it's own descendant.
-    if ( ! isCreating && uid === relationAttr.target ) {
+    if ( ! isCreating && uid === targetRelationUID ) {
       const hasAncestorConflict = await pluginService.checkAncestorConflict(
         id,
         uid,
@@ -64,17 +66,18 @@ module.exports = {
 
   async checkAvailability( ctx ) {
     const { uid, value } = ctx.request.params;
-    const { contentTypes } = await getService( 'config' ).get();
-    const uids = contentTypes.find( uids => uids.includes( uid ) );
+    const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
-
-    const isSupported = await pluginService.validateSupport( uid );
+    const { contentTypes } = await configService.get();
+    const layouts = await configService.layouts();
+    const isSupported = has( layouts, uid );
 
     if ( ! isSupported ) {
       throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
     }
 
     // Check availability in each related collection.
+    const uids = contentTypes.find( uids => uids.includes( uid ) );
     const promisedAvailables = await Promise.all( uids.map( _uid => {
       return pluginService.checkAvailability( _uid, value );
     } ) );
@@ -94,33 +97,29 @@ module.exports = {
 
   async checkConnection( ctx ) {
     const { uid, id } = ctx.request.params;
+    const layouts = await getService( 'config' ).layouts();
     const pluginService = getService( 'permalinks' );
-    const model = strapi.getModel( uid );
-
-    if ( ! model ) {
-      throw new ValidationError( `The model ${uid} was not found.` );
-    }
-
-    const isSupported = await pluginService.validateSupport( uid );
+    const model = pluginService.getModel( uid );
+    const isSupported = has( layouts, uid );
 
     if ( ! isSupported ) {
       throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
     }
 
     const { attributes } = model;
-    const [ name, attr ] = pluginService.getPermalinkAttr( uid );
-    const relationAttr = attributes[ attr.targetRelation ];
-    const [ relationPermalinkName ] = pluginService.getPermalinkAttr( relationAttr.target );
+    const { name, targetRelation, targetRelationUID } = layouts[ uid ];
+    const { name: relationPermalinkName } = layouts[ targetRelationUID ];
+
     const entity = await strapi.query( uid ).findOne( {
       where: { id },
-      populate: [ attr.targetRelation ],
+      populate: [ targetRelation ],
     } );
 
     if ( ! entity ) {
       throw new NotFoundError( `The relation entity for ${name} was not found.` );
     }
 
-    const path = get( entity, [ attr.targetRelation, relationPermalinkName ], '' );
+    const path = get( entity, [ targetRelation, relationPermalinkName ], '' );
 
     // Return final path (might be empty).
     ctx.send( { path } );
