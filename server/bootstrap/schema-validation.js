@@ -37,11 +37,18 @@ module.exports = async ( { strapi } ) => {
       throw new ValidationError( `Missing ${name}.targetRelation in ${uid}.` );
     }
 
+    // Ensure that permalink attributes target an actual string type field.
+    const targetFieldAttr = attributes[ attr.targetField ];
+
+    if ( targetFieldAttr.type !== 'string' && targetFieldAttr.type !== 'text' ) {
+      throw new ValidationError( `Must use a valid string type for ${name}.targetField in ${uid}. Found ${targetFieldAttr.type}.` );
+    }
+
     // Ensure that permalink attributes target an actual relation field type that uses a oneToOne relation.
     const targetRelationAttr = attributes[ attr.targetRelation ];
 
     if ( targetRelationAttr.type !== 'relation' ) {
-      throw new ValidationError( `Must use a valid relation type for ${name}.targetRelation in ${uid}.` );
+      throw new ValidationError( `Must use a valid relation type for ${name}.targetRelation in ${uid}. Found ${targetRelationAttr.type}.` );
     }
 
     if ( targetRelationAttr.relation !== 'oneToOne' ) {
