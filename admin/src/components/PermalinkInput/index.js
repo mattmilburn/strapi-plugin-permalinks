@@ -117,7 +117,10 @@ const PermalinkInput = ( {
     } catch ( err ) {
       toggleNotification( {
         type: 'warning',
-        message: err?.response?.error?.message ?? 'An error occurred.',
+        message: err?.response?.error?.message ?? formatMessage( {
+          id: getTrad( 'ui.error' ),
+          defaultMessage: 'An error occurred.',
+        } ),
       } );
 
       setIsLoading( false );
@@ -152,7 +155,10 @@ const PermalinkInput = ( {
     } catch ( err ) {
       toggleNotification( {
         type: 'warning',
-        message: err?.response?.error?.message ?? 'An error occurred.',
+        message: err?.response?.error?.message ?? formatMessage( {
+          id: getTrad( 'ui.error' ),
+          defaultMessage: 'An error occurred.',
+        } ),
       } );
 
       console.error( err );
@@ -268,7 +274,10 @@ const PermalinkInput = ( {
 
       toggleNotification( {
         type: 'warning',
-        message: err?.response?.error?.message ?? 'An error occurred.',
+        message: err?.response?.error?.message ?? formatMessage( {
+          id: getTrad( 'ui.error' ),
+          defaultMessage: 'An error occurred.',
+        } ),
       } );
 
       console.error( err );
@@ -296,7 +305,10 @@ const PermalinkInput = ( {
     } catch ( err ) {
       toggleNotification( {
         type: 'warning',
-        message: err?.response?.error?.message ?? 'An error occurred.',
+        message: err?.response?.error?.message ?? formatMessage( {
+          id: getTrad( 'ui.error' ),
+          defaultMessage: 'An error occurred.',
+        } ),
       } );
 
       setIsLoading( false );
