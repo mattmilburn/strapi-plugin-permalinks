@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
+import { useSelector } from 'react-redux';
 import get from 'lodash/get';
 import { TextInput } from '@strapi/design-system/TextInput';
 import { Typography } from '@strapi/design-system/Typography';
@@ -11,7 +12,7 @@ import Loader from '@strapi/icons/Loader';
 import Refresh from '@strapi/icons/Refresh';
 
 import { UID_REGEX } from '../../constants';
-import { useDebounce, useFieldConfig } from '../../hooks';
+import { useDebounce } from '../../hooks';
 import {
   axiosInstance,
   getPermalink,
@@ -46,12 +47,13 @@ const PermalinkInput = ( {
 } ) => {
   const { formatMessage } = useIntl();
   const { initialData, isCreatingEntry, layout, modifiedData } = useCMEditViewDataManager();
+  const { layouts, lowercase } = useSelector( state => state[ `${pluginId}_config` ].config );
   const toggleNotification = useNotification();
   const generateUID = useRef();
 
-  const targetFieldConfig = useFieldConfig( contentTypeUID );
+  const targetFieldConfig = layouts[ contentTypeUID ];
   const targetRelationUID = get( layout, [ 'attributes', targetFieldConfig.targetRelation, 'targetModel' ], null );
-  const targetRelationConfig = useFieldConfig( targetRelationUID );
+  const targetRelationConfig = layouts[ targetRelationUID ];
   const targetRelationValue = getRelationValue( modifiedData, targetFieldConfig.targetRelation );
 
   const hasDifferentRelationUID = targetRelationUID && contentTypeUID !== targetRelationUID;
@@ -106,7 +108,7 @@ const PermalinkInput = ( {
     setIsLoading( true );
 
     try {
-      const newSlug = getPermalink( isOrphan ? null : ancestorsPath, slug );
+      const newSlug = getPermalink( isOrphan ? null : ancestorsPath, slug, lowercase );
       const params = `${contentTypeUID}/${newSlug}`;
       const endpoint = `${pluginId}/check-availability/${params}`;
 
@@ -177,7 +179,7 @@ const PermalinkInput = ( {
     onChange( {
       target: {
         name,
-        value: getPermalink( ancestorsPath, newSlug ),
+        value: getPermalink( ancestorsPath, newSlug, lowercase ),
         type: 'text',
       },
     } );
@@ -225,7 +227,7 @@ const PermalinkInput = ( {
     onChange( {
       target: {
         name,
-        value: getPermalink( newAncestorsPath, newSlug ),
+        value: getPermalink( newAncestorsPath, newSlug, lowercase ),
         type: 'text',
       },
     }, shouldSetInitialValue );
