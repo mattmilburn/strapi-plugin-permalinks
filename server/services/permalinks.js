@@ -37,7 +37,7 @@ module.exports = ( { strapi } ) => ( {
     return count > 0 ? false : true;
   },
 
-  async findUniqueUID( uid, value ) {
+  async findUniquePermalink( uid, field, value ) {
     const possibleConflicts = await strapi.db.query( uid )
       .findMany( {
         where: { [ field ]: { $contains: value } },

@@ -71,6 +71,7 @@ module.exports = {
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
     const layouts = await configService.layouts();
+    const uids = contentTypes.find( uids => uids.includes( uid ) );
     const isSupported = has( layouts, uid );
 
     if ( ! isSupported ) {
@@ -78,23 +79,32 @@ module.exports = {
     }
 
     // Check availability in each related collection.
-    const uids = contentTypes.find( uids => uids.includes( uid ) );
     const promisedAvailables = await Promise.all( uids.map( _uid => {
       const { name } = layouts[ _uid ];
 
-      return pluginService.checkAvailability( _uid, name, value );
+      return pluginService
+        .checkAvailability( _uid, name, value )
+        .then( available => ( {
+          uid: _uid,
+          available,
+        } ) );
     } ) );
 
-    const isAvailable = promisedAvailables.every( available => available );
+    const isAvailable = promisedAvailables.every( ( { available } ) => available );
 
     // Maybe provide a suggestion.
-    // const suggestion = ! isAvailable
-    //   ? await pluginService.findUniqueUID( uid, value )
-    //   : null;
+    let suggestion = null;
+
+    if ( ! isAvailable ) {
+      const { uid: conflictUID } = promisedAvailables.find( ( { available } ) => ! available );
+      const targetConflictField = get( layouts, [ conflictUID, targetField ] );
+
+      suggestion = await pluginService.findUniquePermalink( conflictUID, targetConflictField, value );
+    }
 
     ctx.body = {
       isAvailable,
-      suggestion: '',
+      suggestion,
     };
   },
 
