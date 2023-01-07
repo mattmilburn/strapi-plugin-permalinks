@@ -5,7 +5,8 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 module.exports = {
   default: {
     contentTypes: [],
-    layouts: [],
+    layouts: [], // @NOTE - This prop is not configurable through `config/plugins.js`.
+    lowercase: true,
   },
   validator: config => {
     if ( ! config.contentTypes ) {
