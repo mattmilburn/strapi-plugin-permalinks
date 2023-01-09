@@ -17,7 +17,7 @@ module.exports = async ( { strapi } ) => {
     const { targetField } = options;
 
     // Get previous state of entity and compare to next state.
-    const entity = await strapi.query( model.uid ).findOne( { where } );
+    const entity = await strapi.db.query( model.uid ).findOne( { where } );
     const hasTargetField = data.hasOwnProperty( targetField );
     const previousValue = entity[ targetField ];
     const nextValue = data[ targetField ];

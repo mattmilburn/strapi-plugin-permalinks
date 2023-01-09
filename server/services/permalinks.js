@@ -17,7 +17,7 @@ module.exports = ( { strapi } ) => ( {
     if ( parts.includes( value ) ) {
       const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( PATH_SEPARATOR );
 
-      const entity = await strapi.query( uid ).findOne( {
+      const entity = await strapi.db.query( uid ).findOne( {
         where: {
           [ field ]: possibleConflict,
         },
@@ -38,9 +38,13 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async findUniquePermalink( uid, field, value ) {
-    const possibleConflicts = await strapi.db.query( uid )
-      .findMany( {
-        where: { [ field ]: { $contains: value } },
+    const possibleConflicts = await strapi.entityService
+      .findMany( uid, {
+        where: {
+          [ field ]: {
+            $contains: value,
+          },
+        },
       } )
       .then( results => results.map( result => result[ field ] ) );
 
@@ -71,7 +75,7 @@ module.exports = ( { strapi } ) => ( {
   async syncChildren( uid, id, value, options ) {
     const { targetField, targetRelation } = options;
 
-    const itemsToUpdate = await strapi.query( uid ).findMany( {
+    const itemsToUpdate = await strapi.entityService.findMany( uid, {
       where: {
         [ targetRelation ]: { id },
       },
@@ -86,8 +90,7 @@ module.exports = ( { strapi } ) => ( {
       const slug = getPermalinkSlug( item[ targetField ] );
       const updatedValue = `${value}${PATH_SEPARATOR}${slug}`;
 
-      const updatedItem = await strapi.query( uid ).update( {
-        where: { id: item.id },
+      const updatedItem = await strapi.entityService.update( uid, item.id, {
         data: {
           [ targetField ]: updatedValue,
         },

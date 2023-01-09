@@ -34,9 +34,7 @@ module.exports = {
     }
 
     const { name, targetRelation, targetRelationUID } = layouts[ uid ];
-    const relationEntity = await strapi.query( targetRelationUID ).findOne( {
-      where: { id: relationId },
-    } );
+    const relationEntity = await strapi.entityService.findOne( targetRelationUID, relationId );
 
     if ( ! relationEntity ) {
       throw new NotFoundError( `The relation entity for ${name} was not found.` );
@@ -97,7 +95,7 @@ module.exports = {
 
     if ( ! isAvailable ) {
       const { uid: conflictUID } = promisedAvailables.find( ( { available } ) => ! available );
-      const targetConflictField = get( layouts, [ conflictUID, targetField ] );
+      const targetConflictField = get( layouts, [ conflictUID, 'targetField' ] );
 
       suggestion = await pluginService.findUniquePermalink( conflictUID, targetConflictField, value );
     }
@@ -123,8 +121,7 @@ module.exports = {
     const { name, targetRelation, targetRelationUID } = layouts[ uid ];
     const { name: relationPermalinkName } = layouts[ targetRelationUID ];
 
-    const entity = await strapi.query( uid ).findOne( {
-      where: { id },
+    const entity = await strapi.entityService.findOne( uid, id, {
       populate: [ targetRelation ],
     } );
 
