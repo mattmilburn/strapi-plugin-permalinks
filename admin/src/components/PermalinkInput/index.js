@@ -356,7 +356,7 @@ const PermalinkInput = ( {
       checkAvailability();
     }
 
-    if ( ! debouncedValue ) {
+    if ( ! debouncedValue || debouncedValue === initialValue ) {
       setAvailability( null );
     }
   }, [ debouncedValue, initialValue ] );
