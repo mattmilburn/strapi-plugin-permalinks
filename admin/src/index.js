@@ -42,47 +42,70 @@ export default {
        * prop. But there is no access to schema or other data in this prop which
        * makes it impossible to dynamically give options for the `targetField`.
        *
-       * For now, the `targetField` will need to remain in the plugin config.
+       * For now, the `targetField` and `targetRelation` will need to remain
+       * in the plugin config.
        */
-      // options: {
-      //   base: [
-      //     {
-      //       sectionTitle: null,
-      //       items: [
-      //         {
-      //           intlLabel: {
-      //             id: 'content-type-builder.modalForm.attribute.target-field',
-      //             defaultMessage: 'Attached field',
-      //           },
-      //           name: 'targetField',
-      //           type: 'select',
-      //           options: [
-      //             {
-      //               key: '__null_reset_value__',
-      //               value: '',
-      //               metadatas: {
-      //                 intlLabel: {
-      //                   id: 'global.none',
-      //                   defaultMessage: 'None',
-      //                 },
-      //               },
-      //             },
-      //             {
-      //               key: 'title',
-      //               value: 'title',
-      //               metadatas: {
-      //                 intlLabel: {
-      //                   id: 'title..no-override',
-      //                   defaultMessage: 'Title',
-      //                 },
-      //               },
-      //             },
-      //           ],
-      //         },
-      //       ],
-      //     },
-      //   ],
-      // },
+      options: {
+        // base: [
+        //   {
+        //     sectionTitle: null,
+        //     items: [
+        //       {
+        //         intlLabel: {
+        //           id: 'content-type-builder.modalForm.attribute.target-field',
+        //           defaultMessage: 'Attached field',
+        //         },
+        //         name: 'targetField',
+        //         type: 'select',
+        //         options: [
+        //           {
+        //             key: '__null_reset_value__',
+        //             value: '',
+        //             metadatas: {
+        //               intlLabel: {
+        //                 id: 'global.none',
+        //                 defaultMessage: 'None',
+        //               },
+        //             },
+        //           },
+        //           {
+        //             key: 'title',
+        //             value: 'title',
+        //             metadatas: {
+        //               intlLabel: {
+        //                 id: 'title.no-override',
+        //                 defaultMessage: 'Title',
+        //               },
+        //             },
+        //           },
+        //         ],
+        //       },
+        //     ],
+        //   },
+        // ],
+        advanced: [
+          {
+            sectionTitle: {
+              id: 'global.settings',
+              defaultMessage: 'Settings',
+            },
+            items: [
+              {
+                name: 'required',
+                type: 'checkbox',
+                intlLabel: {
+                  id: 'content-type-builder.form.attribute.item.requiredField',
+                  defaultMessage: 'Required field',
+                },
+                description: {
+                  id: 'content-type-builder.form.attribute.item.requiredField.description',
+                  defaultMessage: 'You won\'t be able to create an entry if this field is empty',
+                },
+              },
+            ],
+          },
+        ],
+      },
     } );
   },
 
