@@ -72,8 +72,8 @@ module.exports = ( { strapi } ) => ( {
     return model;
   },
 
-  async syncChildren( uid, id, value, options ) {
-    const { targetField, targetRelation } = options;
+  async syncChildren( uid, id, value, attr ) {
+    const { targetField, targetRelation } = attr;
 
     const itemsToUpdate = await strapi.entityService.findMany( uid, {
       where: {
