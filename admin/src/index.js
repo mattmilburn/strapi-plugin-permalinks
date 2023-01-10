@@ -1,7 +1,7 @@
 import React from 'react';
 import { prefixPluginTranslations } from '@strapi/helper-plugin';
 
-import { Initializer } from './components';
+import { EditViewRightLinks, Initializer } from './components';
 import { filterPermalinkColumns } from './contentManagerHooks';
 import reducers from './reducers';
 import { pluginId, pluginName } from './utils';
@@ -111,6 +111,11 @@ export default {
 
   bootstrap( app ) {
     app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkColumns );
+
+    app.injectContentManagerComponent( 'editView', 'right-links', {
+      name: pluginId,
+      Component: EditViewRightLinks,
+    } );
   },
 
   async registerTrads( { locales } ) {
