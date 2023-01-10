@@ -19,8 +19,8 @@ const CopyLinkButton = ( { url } ) => {
         toggleNotification( {
           type: 'success',
           message: {
-            id: 'notification.link-copied',
-            defaultMessage: 'Link copied to the clipboard',
+            id: getTrad( 'notification.success.permalink-copied' ),
+            defaultMessage: 'Permalink copied to the clipboard',
           },
         } );
       } }
@@ -32,8 +32,8 @@ const CopyLinkButton = ( { url } ) => {
         style={ { width: '100%' } }
       >
         { formatMessage( {
-          id: getTrad( 'label.copy-link' ),
-          defaultMessage: 'Copy link',
+          id: getTrad( 'form.button.copy-permalink' ),
+          defaultMessage: 'Copy permalink',
         } ) }
       </Button>
     </CopyToClipboard>

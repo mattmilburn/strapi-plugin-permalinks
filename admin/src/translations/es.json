@@ -1,0 +1,9 @@
+{
+  "form.button.copy-permalink": "Copiar enlace permanente",
+  "form.error.orphan": "Este valor debe regenerarse después de quedar huérfano.",
+  "form.error.parent-child": "No se puede asignar la relación {relation} como su propio descendiente.",
+  "form.error.parent-self": "No se puede asignar la relación {relation} a sí mismo.",
+  "notification.error": "Ocurrió un error",
+  "notification.success.permalink-copied": "Enlace permanente copiado al portapapeles",
+  "notification.warning.orphan": "Este {singularName} ha quedado huérfano desde la última vez que se guardó."
+}

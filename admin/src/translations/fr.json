@@ -1,1 +1,9 @@
-{}
+{
+  "form.button.copy-permalink": "Copier le lien",
+  "form.error.orphan": "Cette valeur doit être régénérée après avoir été orpheline.",
+  "form.error.parent-child": "Impossible d'affecter la relation {relation} comme son propre descendant.",
+  "form.error.parent-self": "Impossible d'attribuer la relation {relation} à elle-même.",
+  "notification.error": "Une erreur s'est produite",
+  "notification.success.permalink-copied": "Lien copié dans le presse-papier",
+  "notification.warning.orphan": "Ce {singularName} est orphelin depuis son dernier enregistrement."
+}
