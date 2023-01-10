@@ -37,7 +37,7 @@ module.exports = ( { strapi } ) => ( {
   async findUniquePermalink( uid, field, value ) {
     const possibleConflicts = await strapi.entityService
       .findMany( uid, {
-        where: {
+        filters: {
           [ field ]: {
             $contains: value,
           },
@@ -69,12 +69,10 @@ module.exports = ( { strapi } ) => ( {
     return model;
   },
 
-  async syncChildren( uid, id, value, attr ) {
-    const { name, targetRelation } = attr;
-
+  async syncChildren( uid, id, value, field, relationField ) {
     const itemsToUpdate = await strapi.entityService.findMany( uid, {
-      where: {
-        [ targetRelation ]: { id },
+      filters: {
+        [ relationField ]: { id },
       },
     } );
 
@@ -84,12 +82,12 @@ module.exports = ( { strapi } ) => ( {
     }
 
     const promisedUpdates = itemsToUpdate.map( item => {
-      const slug = getPermalinkSlug( item[ name ] );
+      const slug = getPermalinkSlug( item[ field ] );
       const updatedValue = `${value}${PATH_SEPARATOR}${slug}`;
 
       return strapi.entityService.update( uid, item.id, {
         data: {
-          [ name ]: updatedValue,
+          [ field ]: updatedValue,
         },
       } );
     } );
