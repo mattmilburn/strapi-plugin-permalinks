@@ -1,6 +1,6 @@
 'use strict';
 
-const beforeUpdateLifecycle = require( '../lifecycles/before-update' );
+const afterUpdateLifecycle = require( '../lifecycles/after-update' );
 const transformApiResponseMiddleware = require( '../middlewares/transform-api-response' );
 const schemaValidation = require( './schema-validation' );
 
@@ -11,5 +11,5 @@ module.exports = async params => {
   await transformApiResponseMiddleware( params );
 
   // Lifecycles.
-  await beforeUpdateLifecycle( params );
+  await afterUpdateLifecycle( params );
 };
