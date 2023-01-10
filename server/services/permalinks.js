@@ -1,13 +1,10 @@
 'use strict';
 
 const get = require( 'lodash/get' );
-const has = require( 'lodash/has' );
-const qs = require( 'qs' );
 const { ValidationError } = require('@strapi/utils').errors;
 
-const config = require( '../config' );
 const { PATH_SEPARATOR } = require( '../constants' );
-const { getPermalinkSlug, getService, pluginId } = require( '../utils' );
+const { getPermalinkSlug } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async checkAncestorConflict( id, uid, path, field, value ) {
@@ -73,7 +70,7 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async syncChildren( uid, id, value, attr ) {
-    const { targetField, targetRelation } = attr;
+    const { name, targetRelation } = attr;
 
     const itemsToUpdate = await strapi.entityService.findMany( uid, {
       where: {
@@ -86,17 +83,15 @@ module.exports = ( { strapi } ) => ( {
       return;
     }
 
-    const promisedUpdates = itemsToUpdate.map( async item => {
-      const slug = getPermalinkSlug( item[ targetField ] );
+    const promisedUpdates = itemsToUpdate.map( item => {
+      const slug = getPermalinkSlug( item[ name ] );
       const updatedValue = `${value}${PATH_SEPARATOR}${slug}`;
 
-      const updatedItem = await strapi.entityService.update( uid, item.id, {
+      return strapi.entityService.update( uid, item.id, {
         data: {
-          [ targetField ]: updatedValue,
+          [ name ]: updatedValue,
         },
       } );
-
-      return updatedItem;
     } );
 
     await Promise.all( promisedUpdates );
