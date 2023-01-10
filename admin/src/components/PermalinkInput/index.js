@@ -120,8 +120,8 @@ const PermalinkInput = ( {
       toggleNotification( {
         type: 'warning',
         message: err?.response?.error?.message ?? formatMessage( {
-          id: getTrad( 'ui.error' ),
-          defaultMessage: 'An error occurred.',
+          id: getTrad( 'notification.error' ),
+          defaultMessage: 'An error occurred',
         } ),
       } );
 
@@ -158,8 +158,8 @@ const PermalinkInput = ( {
       toggleNotification( {
         type: 'warning',
         message: err?.response?.error?.message ?? formatMessage( {
-          id: getTrad( 'ui.error' ),
-          defaultMessage: 'An error occurred.',
+          id: getTrad( 'notification.error' ),
+          defaultMessage: 'An error occurred',
         } ),
       } );
 
@@ -265,7 +265,7 @@ const PermalinkInput = ( {
         removeAncestorsPath();
 
         setRelationError( formatMessage( {
-          id: getTrad( 'ui.error.selfChild' ),
+          id: getTrad( 'form.error.parent-child' ),
           defaultMessage: 'Cannot assign the {relation} relation as its own descendant.',
         }, {
           relation: targetFieldConfig.targetRelation,
@@ -277,8 +277,8 @@ const PermalinkInput = ( {
       toggleNotification( {
         type: 'warning',
         message: err?.response?.error?.message ?? formatMessage( {
-          id: getTrad( 'ui.error' ),
-          defaultMessage: 'An error occurred.',
+          id: getTrad( 'notification.error' ),
+          defaultMessage: 'An error occurred',
         } ),
       } );
 
@@ -308,8 +308,8 @@ const PermalinkInput = ( {
       toggleNotification( {
         type: 'warning',
         message: err?.response?.error?.message ?? formatMessage( {
-          id: getTrad( 'ui.error' ),
-          defaultMessage: 'An error occurred.',
+          id: getTrad( 'notification.error' ),
+          defaultMessage: 'An error occurred',
         } ),
       } );
 
@@ -330,14 +330,14 @@ const PermalinkInput = ( {
   useEffect( () => {
     if ( isOrphan ) {
       setRelationError( formatMessage( {
-        id: getTrad( 'ui.error.orphan' ),
+        id: getTrad( 'form.error.orphan' ),
         defaultMessage: 'This value must be regenerated after being orphaned.',
       } ) );
 
       toggleNotification( {
         type: 'warning',
         message: formatMessage( {
-          id: getTrad( 'ui.warning.orphan' ),
+          id: getTrad( 'notification.warning.orphan' ),
           defaultMessage: 'This {singularName} has been orphaned since it was last saved.',
         }, {
           singularName: layout.info.singularName,
@@ -395,7 +395,7 @@ const PermalinkInput = ( {
       removeAncestorsPath();
 
       setRelationError( formatMessage( {
-        id: getTrad( 'ui.error.selfParent' ),
+        id: getTrad( 'form.error.parent-self' ),
         defaultMessage: 'Cannot assign the {relation} relation to itself.',
       }, {
         relation: targetFieldConfig.targetRelation,
@@ -451,7 +451,7 @@ const PermalinkInput = ( {
             <TextValidation alignItems="center" justifyContent="flex-end" notAvailable>
               <ExclamationMarkCircle />
               <Typography textColor="danger600" variant="pi">
-                { formatMessage({
+                { formatMessage( {
                   id: 'content-manager.components.uid.unavailable',
                   defaultMessage: 'Unavailable',
                 } ) }
