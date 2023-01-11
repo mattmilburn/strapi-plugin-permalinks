@@ -1,54 +1,113 @@
 <div align="center">
+  <mark>@LOGO</mark>
   <h1>Strapi Permalinks</h1>
   <p>A plugin for Strapi CMS to enable permalinks for content types with nested relationships.</p>
-  <p><em>Kinda like WordPress, but not 👍🏻</em></p>
+  <mark>@SCREENSHOT - COVER</mark>
 </div>
 
 ## Get Started
 
 * [Features](#features)
 * [Installation](#installation)
+* [Custom Field](#custom-field)
 * [Configuration](#configuration)
 * [User Guide](#user-guide)
+* [Troubleshooting](#troubleshooting)
+* [Support or Donate](#donate)
 * [Roadmap](#roadmap)
 
 ## <a id="features"></a>✨ Features
-* Manage a chain of slugs to build a unique URL path.
+* Use a custom field type to manage a chain of URL paths to build a unique permalink.
 * Nested relationships for content types.
-* Child relations automatically sync with changes to parents.
-* Create parent/child relations from different collections.
+* Parent/child relations can use different collection types.
+* Child relations automatically sync when parents change.
 
 ## <a id="installation"></a>💎 Installation
 ```bash
 yarn add strapi-plugin-permalinks@latest
 ```
 
+## <a id="custom-field"></a>✏️ Custom Field
+To get started, let's create a simple `Page` collection that uses permalinks.
+
+<mark>@SCREENSHOT - CONTENT TYPE BUILDER</mark>
+
+#### Schema for `Page`
+```js
+{
+  "kind": "collectionType",
+  "collectionName": "pages",
+  "info": {
+    "singularName": "page",
+    "pluralName": "pages",
+    "displayName": "Page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "customField",
+      "customField": "plugin::permalinks.permalink",
+      "required": true
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "parent": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::page.page"
+    }
+  }
+}
+```
+
+After generating the permalink attribute through the content type builder in Strapi, there are additional `targetField` and `targetRelation` props that will need to be manually to the permalink schema attribute.
+
+> **NOTE:** Strapi does not currently provide the necessary params to dynamically render a list containing the other field names as select menu options, which is why `targetField` and `targetRelation` need to be added manually for now.
+
+#### Page schema with added props
+
+```js
+"slug": {
+  "type": "customField",
+  "customField": "plugin::permalinks.permalink",
+  "targetField": "title",
+  "targetRelation": "parent",
+  "required": true
+},
+```
+
+### `targetField`
+This is the same `targetField` prop used with `uid` field types. It should point to a string type field which will be used to make suggestions for the unique permalink value.
+
+### `targetRelation`
+This prop should point to a `oneToOne` relation field which will be used as it's "parent" relation.
+
 ## <a id="configuration"></a>🔧 Configuration
 | property | type (default) | description |
 | - | - | - |
-| contentTypes | array (`[]`) | An array of objects describing which content types and fields should use permalink features. |
+| contentTypes | array (`[]`) | An array of related UIDs that use permalink fields. |
+| lowercase | boolean (`true`) | If set to `true`, it will ensure the input value is always lowercased. |
 
 ### `contentTypes`
-An array of objects describing which content types and fields should use permalink features.
-
-Each object in the array requires a `uid`, `targetField`, and `targetRelation` props. The field name "slug" is recommended for the `targetField` value because it represents the unique part of the URL path, but it is not required. Similarly, the relation name "parent" is recommended for the `targetRelation`, but is not required.
+An array of related UIDs that use permalink fields.
 
 #### Example
-Consider we have a `Page` content type which has a `title` field, a `uid` field named `slug`, and relation field named `parent` with a "has one" relationship to other `Pages`.
-
-Let's configure the `Page` content type to use permalinks.
+Let's add the `Page` content type to the plugin config, which will enable it in middlewares, lifecycles, etc. and also help keep related collections synced as data changes.
 
 ```js
 module.exports = {
   'permalinks': {
-    enabled: true,
     config: {
       contentTypes: [
-        {
-          uid: 'api::page.page',
-          targetField: 'slug',
-          targetRelation: 'parent',
-        },
+        [ 'api::page.page' ],
       ],
     },
   },
@@ -56,48 +115,90 @@ module.exports = {
 ```
 
 #### Example with mixed relations
-Let's say we have a separate `Example` collection and we want those entities to have a `Page` as it's `parent`? This is mostly handled automatically, except when related entities are synced, which needs one additional config option `targetUID` to be in place.
+In addition to our generic `Page` collection, let's say we have other collections representing different types of pages, such as `FaqPage` with parent `Pages` and `ProductPage` with parent `ProductPages`.
+
+We will want to keep them all in sync with unique permalinks. Our config might look like the code below:
+
+> Order does not matter here. Parent/child relationships are determined by the custom field attribute.
 
 ```js
 module.exports = {
   'permalinks': {
-    enabled: true,
     config: {
       contentTypes: [
-        {
-          uid: 'api::example.example',
-          targetField: 'slug',
-          targetRelation: 'parent',
-          targetUID: 'api::page.page',
-        },
-        {
-          uid: 'api::page.page',
-          targetField: 'slug',
-          targetRelation: 'parent',
-        },
+        [ 'api::page.page', 'api::faq-page.faq-page' ],
+        [ 'api::product-page.product-page' ],
       ],
     },
   },
 };
 ```
 
+This informs the plugin which collections should avoid permalink conflicts with other collections.
+
+**Here is a recap of what is achieved in this example:**
+* `Pages` have parent `Pages` and will sync across `Pages` and `FaqPages`.
+* `FaqPages` have parent `Pages` and will sync across `Pages` and `FaqPages`.
+* `ProductPages` have parent `ProductPages` and will sync across `ProductPages`.
+
+### `lowercase`
+Defaults to `true`. It will ensure the permalink value is always lowercased.
+
+> **NOTE:** If you are setting this option to `true` when it was previously set to `false`, it will not automatically lowercase existing permalinks in the database. You will need to lowercase existing permalinks yourself, which can be easily done with a database migration script.
+
+#### Example migration script to lowercase existing permalinks
+`./database/migrations/100-lowercase-permalinks.js`
+
+```js
+module.exports = {
+  async up( knex ) {
+    const entries = await knex( 'pages' );
+
+    const promisedUpdates = entries.map( entry => {
+      return knex( uid )
+        .where( { id: entry.id } )
+        .update( {
+          slug: entry.slug.toLowerCase(),
+        } );
+    } );
+
+    await Promise.all( promisedUpdates );
+  },
+
+  down() {},
+};
+```
+
 ## <a id="user-guide"></a>📘 User Guide
-Assign a parent relation to a page to automatically generate a URL path that includes the slugs of it's parent pages.
+Assign a parent relation to an entity to automatically generate a URL path that includes the slugs of it's parent entities.
 
-### Syncing pages with child pages
-All child pages will automatically have their slug values updated when the slug of their ancestor changes. This extends down to all descendant pages.
+### Syncing entities with children
+All child entities will automatically have their permalink values updated when the permalink of their ancestor changes. This extends down to all descendants.
 
-### Deleting pages with children
-Deleting a page that has children will **orphan** those child pages. The parent relation will be removed from the child pages but no other changes to their data will occur.
+### Deleting entities with children
+Deleting an entity that has children will **orphan** those children. The parent relation will be removed from the child entities but no other changes to their data will occur.
 
 **If orphaned pages exist**, you will see their slug value in the content manger list view as a red label instead of plain text.
 
-Editing the orphaned page will display a warning and an error message on the target field. From here you can assign a new parent or no parent at all. Upon saving, any children of the page will also update their target fields to reflect to new parent slugs.
+<mark>@SCREENSHOT - Edit view orphan error</mark>
 
-*Better conflict resolution regarding updated/deleted pages is on the roadmap.*
+Editing the orphaned page will display a warning and an error message on the permalink field. From here you can assign a new parent or no parent at all. Upon saving, any children of the entity will also update their target fields to reflect to new parent permalinks.
+
+## <a id="troubleshooting"></a>💩 Troubleshooting
+
+#### In general
+Remember to **rebuild your app** after making changes to some config or other code.
+
+```bash
+yarn build
+# OR
+yarn develop
+```
+
+## <a id="donate"></a>❤️ Support or Donate
+If you are enjoying this plugin and feel extra appreciative, you can [buy me a beer or 3 🍺🍺🍺](https://www.buymeacoffee.com/mattmilburn).
 
 ## <a id="roadmap"></a>🚧 Roadmap
-* Completely refactor using the custom fields feature in Strapi.
-* Use `options.base` to allow same CTB options as `uid` field, then remove it from plugin config.
-* Config option to limit nesting depth.
-* Better conflict resolution for orphaned pages when parent pages are updated or deleted.
+* Config option to limit nesting depth
+* Use same content-type builder options as `uid` field, then deprecate it in plugin config (not currently possible)
+* Better conflict resolution for orphaned pages
