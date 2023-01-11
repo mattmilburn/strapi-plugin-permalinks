@@ -426,7 +426,7 @@ const PermalinkInput = ( {
       name={ name }
       onChange={ handleChange }
       placeholder={ formattedPlaceholder }
-      value={ slug ?? '' }
+      value={ slug ? getPermalink( null, slug, lowercase ) : '' }
       required={ required }
       startAction={ ancestorsPath ? (
         <AncestorsPath
