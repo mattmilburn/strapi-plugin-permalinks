@@ -1,7 +1,7 @@
 'use strict';
 
 const get = require( 'lodash/get' );
-const { ValidationError } = require('@strapi/utils').errors;
+const { ValidationError } = require( '@strapi/utils' ).errors;
 
 const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug } = require( '../utils' );
