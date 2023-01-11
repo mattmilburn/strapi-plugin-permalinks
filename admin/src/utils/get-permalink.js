@@ -1,9 +1,13 @@
 import { PATH_SEPARATOR } from '../constants';
 
 const getPermalink = ( ancestorsPath, slug, lowercase = true ) => {
-  const permalink = [ ancestorsPath, slug ].filter( i => i ).join( PATH_SEPARATOR );
+  // Only lowercase the slug because the rest of the path belongs to another entity.
+  const parts = [
+    ancestorsPath,
+    lowercase ? slug.toLowerCase() : slug,
+  ];
 
-  return lowercase ? permalink.toLowerCase() : permalink;
+  return parts.filter( i => i ).join( PATH_SEPARATOR );
 };
 
 export default getPermalink;
