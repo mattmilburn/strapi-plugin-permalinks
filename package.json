@@ -17,9 +17,9 @@
     "@strapi/utils": "^4.5.3"
   },
   "dependencies": {
-    "axios": "^0.26.1",
+    "axios": "^0.27.2",
     "immer": "^9.0.12",
-    "lodash": "^4.17.21",
+    "lodash": "4.17.21",
     "prop-types": "^15.8.1",
     "qs": "^6.10.3",
     "react": "^17.0.2",
@@ -55,6 +55,7 @@
     "permalink",
     "nested",
     "path",
+    "parent",
     "related",
     "relation",
     "relationship",
