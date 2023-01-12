@@ -19,9 +19,12 @@ const EditViewRightLinks = () => {
   }
 
   const attr = config.layouts[ uid ];
-  const url = modifiedData[ attr.name ];
 
-  return <CopyLinkButton url={ url } />;
+  if ( ! attr ) {
+    return null;
+  }
+
+  return <CopyLinkButton url={ modifiedData[ attr.name ] } />;
 };
 
 export default EditViewRightLinks;
