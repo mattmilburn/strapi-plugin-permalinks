@@ -27,5 +27,12 @@ module.exports = {
     if ( duplicateUIDs.length ) {
       throw new ValidationError( `Must not duplicate UIDs in permalinks config: ${uniqueDuplicateUIDs.join( ', ' )}.` );
     }
+
+    // Ensure UIDS from `urls` option also appear in `contentTypes`.
+    const conflictUIDsFromUrls = Object.keys( config.urls ).filter( uid => ! uids.includes( uid ) );
+
+    if ( conflictUIDsFromUrls.length ) {
+      throw new ValidationError( `Must define UIDs in contentTypes if they are defined in the urls option: ${conflictUIDsFromUrls.join( ', ' )}.` );
+    }
   },
 };
