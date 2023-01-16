@@ -4,8 +4,8 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 
 module.exports = {
   default: {
+    urls: {},
     contentTypes: [],
-    layouts: [], // @NOTE - This prop is not configurable through `config/plugins.js`.
     lowercase: true,
   },
   validator: config => {
@@ -18,8 +18,9 @@ module.exports = {
       throw new ValidationError( `Must define contentTypes as an array.` );
     }
 
-    // Ensure UIDs only appear once in the config.
     const uids = config.contentTypes.flat();
+
+    // Ensure UIDs only appear once in the config.
     const duplicateUIDs = uids.filter( ( uid, i ) => uids.indexOf( uid ) !== i );
     const uniqueDuplicateUIDs = duplicateUIDs.filter( ( uid, i ) => duplicateUIDs.indexOf( uid ) === i );
 
