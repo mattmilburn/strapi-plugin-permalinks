@@ -4,5 +4,7 @@ export { default as getPermalinkAncestors } from './get-permalink-ancestors';
 export { default as getPermalinkSlug } from './get-permalink-slug';
 export { default as getRelationValue } from './get-relation-value';
 export { default as getTrad } from './get-trad';
+export { default as interpolate } from './interpolate';
 export { default as pluginId } from './plugin-id';
 export { default as pluginName } from './plugin-name';
+export { default as trimSlashes } from './trim-slashes';
