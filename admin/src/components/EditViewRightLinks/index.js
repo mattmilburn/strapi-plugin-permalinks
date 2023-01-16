@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 
+import { useParsedUrl } from '../../hooks';
 import { pluginId } from '../../utils';
 import { CopyLinkButton } from '../';
 
@@ -11,20 +11,14 @@ const EditViewRightLinks = () => {
     isCreatingEntry,
     modifiedData,
   } = useCMEditViewDataManager();
-  const { config, isLoading } = useSelector( state => state[ `${pluginId}_config` ] );
   const { uid } = allLayoutData.contentType;
+  const { isLoading, url } = useParsedUrl( uid, modifiedData, isCreatingEntry );
 
   if ( isLoading || isCreatingEntry ) {
     return null;
   }
 
-  const attr = config.layouts[ uid ];
-
-  if ( ! attr ) {
-    return null;
-  }
-
-  return <CopyLinkButton url={ modifiedData[ attr.name ] } />;
+  return <CopyLinkButton url={ url } />;
 };
 
 export default EditViewRightLinks;

@@ -2,6 +2,7 @@ import React from 'react';
 import { prefixPluginTranslations } from '@strapi/helper-plugin';
 
 import { EditViewRightLinks, Initializer } from './components';
+import { HOOK_BEFORE_BUILD_URL } from './constants';
 import { filterPermalinkColumns } from './contentManagerHooks';
 import reducers from './reducers';
 import { pluginId, pluginName } from './utils';
@@ -9,6 +10,8 @@ import { pluginId, pluginName } from './utils';
 export default {
   register( app ) {
     app.addReducers( reducers );
+
+    app.createHook( HOOK_BEFORE_BUILD_URL );
 
     app.registerPlugin( {
       id: pluginId,
