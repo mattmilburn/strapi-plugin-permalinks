@@ -4,9 +4,10 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 
 module.exports = {
   default: {
-    urls: {},
     contentTypes: [],
+    fullPermalink: false,
     lowercase: true,
+    urls: {},
   },
   validator: config => {
     if ( ! config.contentTypes ) {

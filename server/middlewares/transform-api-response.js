@@ -6,12 +6,23 @@ const head = require( 'lodash/head' );
 const isArray = require( 'lodash/isArray' );
 const set = require( 'lodash/set' );
 
-const { getService, isApiRequest } = require( '../utils' );
+const { PATH_SEPARATOR, SLASH_SEPARATOR } = require( '../constants' );
+const { getService, isApiRequest, parseUrl } = require( '../utils' );
 
 // Transform API response by parsing data string to JSON for rich text fields.
 module.exports = ( { strapi } ) => {
-  const transform = ( data, uid, layouts ) => {
-    const { name, targetRelation, targetRelationUID } = layouts[ uid ];
+  const sanitize = ( data, keys, url ) => {
+    const value = url
+      ? parseUrl( url, data )
+      : get( data, keys, '' );
+
+    return value.replace( new RegExp( PATH_SEPARATOR, 'g' ), SLASH_SEPARATOR );
+  };
+
+  const transform = ( data, uid, config ) => {
+    const layout = config.layouts[ uid ];
+    const url = config.urls[ uid ];
+    const { name, targetRelation, targetRelationUID } = layout;
 
     if ( ! uid ) {
       return data;
@@ -19,7 +30,7 @@ module.exports = ( { strapi } ) => {
 
     // Single entry.
     if ( has( data, 'attributes' ) ) {
-      return transform( data.attributes, uid, layouts );
+      return transform( data.attributes, uid, config );
     }
 
     // Collection of entries.
@@ -27,25 +38,31 @@ module.exports = ( { strapi } ) => {
       const firstItem = head( data );
 
       if ( has( firstItem, 'attributes' ) || has( firstItem, name ) ) {
-        return data.map( item => transform( item, uid, layouts ) );
+        return data.map( item => transform( item, uid, config ) );
       }
     }
 
-    // Replace ~ with / in the permalink field.
-    data[ name ] = get( data, name, '' ).replace( /~/g, '/' );
-
-    // Maybe replace ~ with / in the relation's permalink field, which may only
-    // apply if the API request populated the relation.
-    const { name: relationPermalinkName } = layouts[ targetRelationUID ];
+    // Maybe sanitize the target relation's permalink field, which may only apply
+    // if the API request populated the relation.
+    const { name: relationPermalinkName } = config.layouts[ targetRelationUID ];
     const relationKeys = [ targetRelation, relationPermalinkName ];
 
     if ( has( data, relationKeys ) ) {
+      const sanitizedRelationValue = sanitize(
+        data[ targetRelation ],
+        relationPermalinkName,
+        config.fullPermalink ? config.urls[ targetRelationUID ] : null
+      );
+
       set(
         data,
         relationKeys,
-        get( data, relationKeys ).replace( /~/g, '/' )
+        sanitizedRelationValue
       );
     }
+
+    // Sanitize permalink field by replacing ~ with / and maybe parse full permalink.
+    data[ name ] = sanitize( data, name, config.fullPermalink ? url : null );
 
     return data;
   };
@@ -64,7 +81,7 @@ module.exports = ( { strapi } ) => {
 
     // Determine if this request should transform the data response.
     const configService = getService( 'config' );
-    const { contentTypes } = await configService.get();
+    const { contentTypes, fullPermalink, urls } = await configService.get();
     const layouts = await configService.layouts();
     const uids = contentTypes.flat();
     const uid = uids.find( _uid => ctx.state.route.handler.includes( _uid ) );
@@ -73,6 +90,8 @@ module.exports = ( { strapi } ) => {
       return;
     }
 
-    ctx.body.data = transform( ctx.body.data, uid, layouts );
+    const config = { fullPermalink, layouts, urls };
+
+    ctx.body.data = transform( ctx.body.data, uid, config );
   } );
 };
