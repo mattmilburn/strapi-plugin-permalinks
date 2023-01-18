@@ -6,7 +6,7 @@ const { getService } = require( '../utils' );
 
 module.exports = async ( { strapi } ) => {
   const { contentTypes } = await getService( 'config' ).get();
-  const uids = contentTypes.flat();
+  const uids = contentTypes.flat().map( ( { uid } ) => uid );
 
   uids.forEach( uid => {
     const model = strapi.db.metadata.get( uid );

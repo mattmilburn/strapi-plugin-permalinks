@@ -18,8 +18,8 @@ module.exports = ( { strapi } ) => ( {
     const { contentTypes } = config;
 
     // Add `layouts` data to config based on content types with a permalink field configured.
-    const layouts = contentTypes.flat().reduce( ( acc, uid ) => {
-      const model = pluginService.getModel( uid );
+    const layouts = contentTypes.flat().reduce( ( acc, item ) => {
+      const model = pluginService.getModel( item.uid );
 
       const permalinkAttr = Object.entries( model.attributes ).find( ( [ _name, attr ] ) => {
         return attr.customField === 'plugin::permalinks.permalink';
@@ -34,7 +34,7 @@ module.exports = ( { strapi } ) => ( {
 
       return {
         ...acc,
-        [ uid ]: {
+        [ item.uid ]: {
           name,
           targetField: attr.targetField,
           targetRelation: attr.targetRelation,

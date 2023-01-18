@@ -6,7 +6,6 @@ module.exports = {
   default: {
     contentTypes: [],
     lowercase: true,
-    urls: {},
   },
   validator: config => {
     if ( ! config.contentTypes ) {
@@ -15,24 +14,24 @@ module.exports = {
 
     // Ensure `contentTypes` is an array.
     if ( ! Array.isArray( config.contentTypes ) ) {
-      throw new ValidationError( `Must define contentTypes as an array.` );
+      throw new ValidationError( 'Must define contentTypes as an array.' );
     }
 
-    const uids = config.contentTypes.flat();
+    // Ensure each config object has a `uid` prop defined.
+    const uids = config.contentTypes.flat().map( item => item.uid );
 
-    // Ensure UIDs only appear once in the config.
+    uids.forEach( uid => {
+      if ( ! uid ) {
+        throw new ValidationError( 'Each contentType must have a uid prop.' );
+      }
+    } );
+
+    // Ensure UIDs only appear once across the config.
     const duplicateUIDs = uids.filter( ( uid, i ) => uids.indexOf( uid ) !== i );
     const uniqueDuplicateUIDs = duplicateUIDs.filter( ( uid, i ) => duplicateUIDs.indexOf( uid ) === i );
 
     if ( duplicateUIDs.length ) {
       throw new ValidationError( `Must not duplicate UIDs in permalinks config: ${uniqueDuplicateUIDs.join( ', ' )}.` );
-    }
-
-    // Ensure UIDS from `urls` option also appear in `contentTypes`.
-    const conflictUIDsFromUrls = Object.keys( config.urls ).filter( uid => ! uids.includes( uid ) );
-
-    if ( conflictUIDsFromUrls.length ) {
-      throw new ValidationError( `Must define UIDs in contentTypes if they are defined in the urls option: ${conflictUIDsFromUrls.join( ', ' )}.` );
     }
   },
 };
