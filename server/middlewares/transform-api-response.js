@@ -42,26 +42,21 @@ module.exports = ( { strapi } ) => {
       }
     }
 
-    // Maybe sanitize the target relation's permalink field, which may only apply
-    // if the API request populated the relation.
-    const { name: relationPermalinkName } = config.layouts[ targetRelationUID ];
-    const relationKeys = [ targetRelation, relationPermalinkName ];
-
-    if ( has( data, relationKeys ) ) {
-      const sanitizedRelationValue = sanitize(
-        data[ targetRelation ],
-        relationPermalinkName,
-        config.urls[ targetRelationUID ]
-      );
-
-      set(
-        data,
-        relationKeys,
-        sanitizedRelationValue
-      );
+    // Maybe transform entries from the `localizations` array, which may only
+    // apply if the API request populated the localized entries.
+    if ( has( data, 'localizations' ) ) {
+      data.localizations = data.localizations.map( entry => transform( entry, uid, config ) );
     }
 
-    // Sanitize permalink field by replacing ~ with / and maybe parse full permalink.
+    // Maybe sanitize the `targetRelation` permalink field, which may only apply
+    // if the API request populated the relation.
+    const { name: relationPermalinkName } = config.layouts[ targetRelationUID ];
+
+    if ( has( data, [ targetRelation, relationPermalinkName ] ) ) {
+      data[ targetRelation ] = transform( data[ targetRelation ], targetRelationUID, config );
+    }
+
+    // Sanitize permalink field by replacing ~ with / and maybe parse into full permalink.
     data[ name ] = sanitize( data, name, url );
 
     return data;
