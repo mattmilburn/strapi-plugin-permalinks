@@ -6,6 +6,7 @@ const initialState = {
   isLoading: true,
   config: {
     contentTypes: [],
+    lowercase: true,
   },
 };
 

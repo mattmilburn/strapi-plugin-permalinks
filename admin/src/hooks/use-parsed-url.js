@@ -10,7 +10,7 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
   const { config, isLoading } = usePluginConfig();
   const [ url, setUrl ] = useState( null );
 
-  const { urls, layouts } = config;
+  const { contentTypes, layouts } = config;
   const attr = layouts[ uid ];
 
   if ( ! attr ) {
@@ -22,15 +22,16 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
       return;
     }
 
-    const stateFromConfig = { url: urls[ uid ] ?? null };
+    const uidConfig = contentTypes.flat().find( item => item.uid === uid );
+    const stateFromConfig = { url: uidConfig.url ?? null };
     const { state } = runHookWaterfall( HOOK_BEFORE_BUILD_URL, { state: stateFromConfig, data } );
-    const url = parseUrl( state, data );
+    const parsedUrl = parseUrl( state, data );
 
-    if ( ! url ) {
+    if ( ! parsedUrl ) {
       return;
     }
 
-    setUrl( url );
+    setUrl( parsedUrl );
   }, [ isCreatingEntry, isLoading, data ] );
 
   return {

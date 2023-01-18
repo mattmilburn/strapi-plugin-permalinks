@@ -21,7 +21,7 @@ module.exports = ( { strapi } ) => {
 
   const transform = ( data, uid, config ) => {
     const layout = config.layouts[ uid ];
-    const url = config.urls[ uid ];
+    const { url } = config.contentTypes.flat().find( item => item.uid === uid );
     const { name, targetRelation, targetRelationUID } = layout;
 
     if ( ! uid ) {
@@ -76,16 +76,16 @@ module.exports = ( { strapi } ) => {
 
     // Determine if this request should transform the data response.
     const configService = getService( 'config' );
-    const { contentTypes, urls } = await configService.get();
+    const { contentTypes } = await configService.get();
     const layouts = await configService.layouts();
-    const uids = contentTypes.flat();
+    const uids = contentTypes.flat().map( ( { uid } ) => uid );
     const uid = uids.find( _uid => ctx.state.route.handler.includes( _uid ) );
 
     if ( ! uid ) {
       return;
     }
 
-    const config = { layouts, urls };
+    const config = { contentTypes, layouts };
 
     ctx.body.data = transform( ctx.body.data, uid, config );
   } );

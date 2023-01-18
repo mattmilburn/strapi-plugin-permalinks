@@ -14,7 +14,7 @@ const EditViewRightLinks = () => {
   const { uid } = allLayoutData.contentType;
   const { isLoading, url } = useParsedUrl( uid, modifiedData, isCreatingEntry );
 
-  if ( isLoading || isCreatingEntry ) {
+  if ( isLoading || isCreatingEntry || ! url ) {
     return null;
   }
 

@@ -69,7 +69,7 @@ module.exports = {
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
     const layouts = await configService.layouts();
-    const uids = contentTypes.find( uids => uids.includes( uid ) );
+    const uids = contentTypes.find( items => !! items.find( item => item.uid === uid ) );
     const isSupported = has( layouts, uid );
 
     if ( ! isSupported ) {

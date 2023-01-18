@@ -7,7 +7,7 @@ module.exports = async ( { strapi } ) => {
   const pluginService = getService( 'permalinks' );
   const { contentTypes } = await configService.get();
   const layouts = await configService.layouts();
-  const models = contentTypes.flat();
+  const models = contentTypes.flat().map( ( { uid } ) => uid );
 
   // Lifecycle hook to set state before updating an entity. This will help know
   // whether or not the value changed in the `afterUpdate` lifecycle.
@@ -44,14 +44,13 @@ module.exports = async ( { strapi } ) => {
     }
 
     // Sync children across all related content types.
-    const uids = contentTypes.find( _uids => _uids.includes( uid ) );
+    const uids = contentTypes.find( items => !! items.find( item => item.uid === uid ) );
     const promisedUpdates = uids.map( _uid => {
       // Determine if this `_uid` can be a parent of `uid`.
       const thisAttr = layouts[ _uid ];
       const otherAttr = layouts[ thisAttr.targetRelationUID ];
 
       if ( otherAttr.targetRelationUID !== uid ) {
-        console.log( 'INCOMPATIBLE', id, uid, otherAttr.targetRelationUID, nextValue );
         return;
       }
 
