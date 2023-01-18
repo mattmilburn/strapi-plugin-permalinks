@@ -5,7 +5,6 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 module.exports = {
   default: {
     contentTypes: [],
-    fullPermalink: false,
     lowercase: true,
     urls: {},
   },
