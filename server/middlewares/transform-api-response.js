@@ -51,7 +51,7 @@ module.exports = ( { strapi } ) => {
       const sanitizedRelationValue = sanitize(
         data[ targetRelation ],
         relationPermalinkName,
-        config.fullPermalink ? config.urls[ targetRelationUID ] : null
+        config.urls[ targetRelationUID ]
       );
 
       set(
@@ -62,7 +62,7 @@ module.exports = ( { strapi } ) => {
     }
 
     // Sanitize permalink field by replacing ~ with / and maybe parse full permalink.
-    data[ name ] = sanitize( data, name, config.fullPermalink ? url : null );
+    data[ name ] = sanitize( data, name, url );
 
     return data;
   };
@@ -81,7 +81,7 @@ module.exports = ( { strapi } ) => {
 
     // Determine if this request should transform the data response.
     const configService = getService( 'config' );
-    const { contentTypes, fullPermalink, urls } = await configService.get();
+    const { contentTypes, urls } = await configService.get();
     const layouts = await configService.layouts();
     const uids = contentTypes.flat();
     const uid = uids.find( _uid => ctx.state.route.handler.includes( _uid ) );
@@ -90,7 +90,7 @@ module.exports = ( { strapi } ) => {
       return;
     }
 
-    const config = { fullPermalink, layouts, urls };
+    const config = { layouts, urls };
 
     ctx.body.data = transform( ctx.body.data, uid, config );
   } );

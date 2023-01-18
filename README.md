@@ -34,6 +34,8 @@ To get started, let's create a simple `Page` collection that uses permalinks.
 
 #### Schema for `Page`
 ```js
+// ./src/api/page/content-types/page/schema.json
+
 {
   "kind": "collectionType",
   "collectionName": "pages",
@@ -75,6 +77,8 @@ After generating the permalink attribute through the content type builder in Str
 #### Page schema with added props
 
 ```js
+// ./src/api/page/content-types/page/schema.json
+
 "slug": {
   "type": "customField",
   "customField": "plugin::permalinks.permalink",
@@ -95,6 +99,7 @@ This prop should point to a `oneToOne` relation field which will be used as it's
 | - | - | - |
 | contentTypes | array (`[]`) | An array of related UIDs that use permalink fields. |
 | lowercase | boolean (`true`) | If set to `true`, it will ensure the input value is always lowercased. |
+| urls | object (`{}`) | (Optional) An object describing destination URL templates for different UIDs. |
 
 ### `contentTypes`
 An array of related UIDs that use permalink fields.
@@ -103,6 +108,8 @@ An array of related UIDs that use permalink fields.
 Let's add the `Page` content type to the plugin config, which will enable it in middlewares, lifecycles, etc. and also help keep related collections synced as data changes.
 
 ```js
+// ./config/plugins.js
+
 module.exports = {
   'permalinks': {
     config: {
@@ -122,6 +129,8 @@ We will want to keep them all in sync with unique permalinks. Our config might l
 > Order does not matter here. Parent/child relationships are determined by the custom field attribute.
 
 ```js
+// ./config/plugins.js
+
 module.exports = {
   'permalinks': {
     config: {
@@ -147,9 +156,10 @@ Defaults to `true`. It will ensure the permalink value is always lowercased.
 > **NOTE:** If you are setting this option to `true` when it was previously set to `false`, it will not automatically lowercase existing permalinks in the database. You will need to lowercase existing permalinks yourself, which can be easily done with a database migration script.
 
 #### Example migration script to lowercase existing permalinks
-`./database/migrations/100-lowercase-permalinks.js`
 
 ```js
+// ./database/migrations/100-lowercase-permalinks.js
+
 module.exports = {
   async up( knex ) {
     const entries = await knex( 'pages' );
@@ -168,6 +178,39 @@ module.exports = {
   down() {},
 };
 ```
+
+### `urls`
+An object describing destination URL templates for different UIDs. See section about [mapping data into the URLs](#mapping-values-from-entry-data-into-preview-urls) for greater customization.
+
+This is **required** if you intend to serve a full URL rather than just a relative path. The value will still be stored in the database as a unique, relative path either way.
+
+#### Example
+
+```js
+// ./config/plugins.js
+
+module.exports = ( { env } ) => ( {
+  'permalinks': {
+    config: {
+      contentTypes: [
+        [ 'api::page.page' ],
+        [ 'api::post.post' ],
+      ],
+      urls: {
+        'api::page.page': `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{slug}`,
+        'api::post.post': `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/blog/{slug}`,
+      },
+    },
+  },
+} );
+```
+
+#### Mapping values from entry data into permalink URLs
+By using `{curly_braces}`, you can map values from the entry data into your permalink to customize the URL however you like.
+
+For example, if you are working with localization enabled, you could use the `locale` value in your URL template.
+
+> **Unmatched values** will be replaced with an empty string.
 
 ## <a id="user-guide"></a>📘 User Guide
 Assign a parent relation to an entity to automatically generate a URL path that includes the slugs of it's parent entities.
@@ -200,5 +243,6 @@ If you are enjoying this plugin and feel extra appreciative, you can [buy me a b
 
 ## <a id="roadmap"></a>🚧 Roadmap
 * Config option to limit nesting depth
-* Use same content-type builder options as `uid` field, then deprecate it in plugin config (not currently possible)
 * Better conflict resolution for orphaned pages
+* Better method for handling complicated localized URLs (currently requires plugin with custom hook and middleware)
+* Use same content-type builder options as `uid` field, then deprecate it in plugin config (not currently possible)
