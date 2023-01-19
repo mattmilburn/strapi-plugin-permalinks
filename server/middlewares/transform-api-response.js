@@ -78,7 +78,7 @@ module.exports = ( { strapi } ) => {
     const configService = getService( 'config' );
     const { contentTypes } = await configService.get();
     const layouts = await configService.layouts();
-    const uids = contentTypes.flat().map( ( { uid } ) => uid );
+    const uids = await configService.uids();
     const uid = uids.find( _uid => ctx.state.route.handler.includes( _uid ) );
 
     if ( ! uid ) {

@@ -69,10 +69,8 @@ module.exports = {
     const pluginService = getService( 'permalinks' );
     const { contentTypes } = await configService.get();
     const layouts = await configService.layouts();
+    const uids = await configService.uids( uid );
     const isSupported = has( layouts, uid );
-    const uids = contentTypes
-      .find( items => !! items.find( item => item.uid === uid ) )
-      .map( item => item.uid );
 
     if ( ! isSupported ) {
       throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );

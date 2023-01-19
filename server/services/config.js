@@ -45,4 +45,18 @@ module.exports = ( { strapi } ) => ( {
 
     return layouts;
   },
+
+  async uids( uid = null ) {
+    const { contentTypes } = await strapi.config.get( `plugin.${pluginId}`, defaultConfig );
+
+    // If a `uid` is provided, return UIDs that are connected together.
+    if ( uid ) {
+      return contentTypes
+        .find( items => !! items.find( item => item.uid === uid ) )
+        .map( item => item.uid );
+    }
+
+    // Otherwise, return all unique UIDs.
+    return contentTypes.flat().map( item => item.uid );
+  },
 } );
