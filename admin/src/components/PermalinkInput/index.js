@@ -363,6 +363,15 @@ const PermalinkInput = ( {
   }, [ debouncedValue, initialValue ] );
 
   useEffect( () => {
+    // This is required for scenarios like switching between locales to ensure
+    // the field value updates with the locale change.
+    const newAncestorsPath = getPermalinkAncestors( initialValue );
+    const newSlug = getPermalinkSlug( initialValue );
+
+    setFieldState( newAncestorsPath, newSlug, true );
+  }, [ initialValue ] );
+
+  useEffect( () => {
     let timer;
 
     if ( availability && availability.isAvailable ) {
