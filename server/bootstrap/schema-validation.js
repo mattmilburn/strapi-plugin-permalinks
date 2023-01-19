@@ -5,8 +5,9 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 const { getService } = require( '../utils' );
 
 module.exports = async ( { strapi } ) => {
-  const { contentTypes } = await getService( 'config' ).get();
-  const uids = contentTypes.flat().map( ( { uid } ) => uid );
+  const configService = getService( 'config' );
+  const { contentTypes } = await configService.get();
+  const uids = await configService.uids();
 
   uids.forEach( uid => {
     const model = strapi.db.metadata.get( uid );
