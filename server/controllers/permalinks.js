@@ -3,6 +3,7 @@
 const get = require( 'lodash/get' );
 const has = require( 'lodash/has' );
 const uniq = require( 'lodash/uniq' );
+const slugify = require( 'slugify' );
 const { NotFoundError, ValidationError } = require( '@strapi/utils' ).errors;
 
 const { getService } = require( '../utils' );
@@ -136,15 +137,29 @@ module.exports = {
 
   async suggestion( ctx ) {
     const { uid, value } = ctx.params;
-    const layouts = await getService( 'config' ).layouts();
+    const configService = getService( 'config' );
+    const pluginService = getService( 'permalinks' );
+    const layouts = await configService.layouts();
     const isSupported = has( layouts, uid );
+    const model = pluginService.getModel( uid );
 
     if ( ! isSupported ) {
       throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
     }
 
     const { name } = layouts[ uid ];
-    const path = await getService( 'permalinks' ).generateSuggestion( uid, name, value );
+    const attr = model.attributes[ name ];
+    const defaultValue = get( attr, 'default', model.modelName );
+    const options = {
+      lower: true,
+      ...get( attr, 'options', {} ),
+    };
+
+    const path = await pluginService.findUniquePermalink(
+      uid,
+      name,
+      slugify( value, options )
+    );
 
     // Return final path.
     ctx.send( { path } );
