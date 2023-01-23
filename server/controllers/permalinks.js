@@ -67,7 +67,6 @@ module.exports = {
     const { uid, value } = ctx.request.params;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
-    const { contentTypes } = await configService.get();
     const layouts = await configService.layouts();
     const uids = await configService.uids( uid );
     const isSupported = has( layouts, uid );
@@ -132,6 +131,22 @@ module.exports = {
     const path = get( entity, [ targetRelation, relationPermalinkName ], '' );
 
     // Return final path (might be empty).
+    ctx.send( { path } );
+  },
+
+  async suggestion( ctx ) {
+    const { uid, value } = ctx.params;
+    const layouts = await getService( 'config' ).layouts();
+    const isSupported = has( layouts, uid );
+
+    if ( ! isSupported ) {
+      throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
+    }
+
+    const { name } = layouts[ uid ];
+    const path = await getService( 'permalinks' ).generateSuggestion( uid, name, value );
+
+    // Return final path.
     ctx.send( { path } );
   },
 };

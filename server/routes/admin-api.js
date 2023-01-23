@@ -43,5 +43,13 @@ module.exports = {
         policies: [ 'admin::isAuthenticatedAdmin' ],
       },
     },
+    {
+      method: 'GET',
+      path: '/suggestion/:uid/:value',
+      handler: 'permalinks.suggestion',
+      config: {
+        policies: [ 'admin::isAuthenticatedAdmin' ],
+      },
+    },
   ],
 };

@@ -293,13 +293,14 @@ const PermalinkInput = ( {
     setIsLoading( true );
 
     try {
+      const params = `${contentTypeUID}/${debouncedTargetValue}`;
+      const endpoint = `${pluginId}/suggestion/${params}`;
+
       const {
-        data: { data: newSlug },
-      } = await axiosInstance.post( '/content-manager/uid/generate', {
-        contentTypeUID,
-        field: name,
-        data: modifiedData,
-      } );
+        data: {
+          path: newSlug,
+        },
+      } = await axiosInstance.get( endpoint );
 
       const newAncestorsPath = isOrphan ? null : ancestorsPath;
 

@@ -1,6 +1,8 @@
 'use strict';
 
 const get = require( 'lodash/get' );
+const isEmpty = require( 'lodash/isEmpty' );
+const slugify = require( 'slugify' );
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
 const { PATH_SEPARATOR } = require( '../constants' );
@@ -57,6 +59,30 @@ module.exports = ( { strapi } ) => ( {
     }
 
     return tmpUID;
+  },
+
+  async generateSuggestion( uid, field, value ) {
+    const contentType = strapi.contentTypes[ uid ];
+    const attr = contentType.attributes[ field ];
+    const defaultValue = get( attr, 'default', contentType.modelName );
+    const options = {
+      lower: true,
+      ...get( attr, 'options', {} ),
+    };
+
+    if ( ! isEmpty( value ) ) {
+      return this.findUniquePermalink(
+        uid,
+        field,
+        slugify( value, options )
+      );
+    }
+
+    return this.findUniquePermalink(
+      uid,
+      field,
+      slugify( defaultValue, options )
+    );
   },
 
   getModel( uid ) {
