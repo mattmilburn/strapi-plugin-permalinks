@@ -2,10 +2,11 @@
 
 const get = require( 'lodash/get' );
 const isEmpty = require( 'lodash/isEmpty' );
+const slugify = require( 'slugify' );
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
 const { PATH_SEPARATOR } = require( '../constants' );
-const { getPermalinkSlug } = require( '../utils' );
+const { getPermalinkSlug, getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async checkAncestorConflict( id, uid, path, field, value ) {
@@ -35,26 +36,38 @@ module.exports = ( { strapi } ) => ( {
     return count > 0 ? false : true;
   },
 
-  async findUniquePermalink( uid, field, value ) {
-    const possibleConflicts = await strapi.entityService
-      .findMany( uid, {
-        filters: {
-          [ field ]: {
-            $contains: value,
+  async findUniquePermalink( uids, value ) {
+    const layouts = await getService( 'config' ).layouts();
+    const slugifyOptions = { lower: true };
+    const slug = slugify( value, slugifyOptions );
+
+    const promisedConflicts = await Promise.all( uids.map( uid => {
+      const { name } = layouts[ uid ];
+      const model = this.getModel( uid );
+      const defaultValue = get( model, [ 'attributes', name, 'default' ], model.modelName );
+
+      return strapi.entityService
+        .findMany( uid, {
+          filters: {
+            [ name ]: {
+              $contains: slugify( slug || defaultValue, slugifyOptions ),
+            },
           },
-        },
-      } )
-      .then( results => results.map( result => result[ field ] ) );
+        } )
+        .then( results => results.map( result => result[ name ] ) );
+    } ) );
+
+    const possibleConflicts = promisedConflicts.flat();
 
     if ( possibleConflicts.length === 0 ) {
-      return value;
+      return slug;
     }
 
     let i = 1;
-    let tmpUID = `${value}-${i}`;
+    let tmpUID = `${slug}-${i}`;
     while ( possibleConflicts.includes( tmpUID ) ) {
       i++;
-      tmpUID = `${value}-${i}`;
+      tmpUID = `${slug}-${i}`;
     }
 
     return tmpUID;

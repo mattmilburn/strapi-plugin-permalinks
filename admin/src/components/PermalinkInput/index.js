@@ -298,7 +298,7 @@ const PermalinkInput = ( {
 
       const {
         data: {
-          path: newSlug,
+          suggestion: newSlug,
         },
       } = await axiosInstance.get( endpoint );
 
