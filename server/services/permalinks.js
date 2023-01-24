@@ -43,7 +43,7 @@ module.exports = ( { strapi } ) => ( {
 
     const promisedConflicts = await Promise.all( uids.map( uid => {
       const { name } = layouts[ uid ];
-      const model = this.getModel( uid );
+      const model = strapi.getModel( uid );
       const defaultValue = get( model, [ 'attributes', name, 'default' ], model.modelName );
 
       return strapi.entityService
@@ -71,16 +71,6 @@ module.exports = ( { strapi } ) => ( {
     }
 
     return tmpUID;
-  },
-
-  getModel( uid ) {
-    const model = strapi.getModel( uid );
-
-    if ( ! model ) {
-      throw new ValidationError( `The model ${uid} was not found.` );
-    }
-
-    return model;
   },
 
   async syncChildren( uid, id, value, field, relationField ) {

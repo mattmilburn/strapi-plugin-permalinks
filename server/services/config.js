@@ -3,7 +3,7 @@
 const get = require( 'lodash/get' );
 
 const { default: defaultConfig } = require( '../config' );
-const { getService, pluginId } = require( '../utils' );
+const { pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async get() {
@@ -13,13 +13,12 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async layouts() {
-    const pluginService = getService( 'permalinks' );
     const config = await strapi.config.get( `plugin.${pluginId}`, defaultConfig );
     const { contentTypes } = config;
 
     // Add `layouts` data to config based on content types with a permalink field configured.
     const layouts = contentTypes.flat().reduce( ( acc, item ) => {
-      const model = pluginService.getModel( item.uid );
+      const model = strapi.getModel( item.uid );
 
       const permalinkAttr = Object.entries( model.attributes ).find( ( [ _name, attr ] ) => {
         return attr.customField === 'plugin::permalinks.permalink';
