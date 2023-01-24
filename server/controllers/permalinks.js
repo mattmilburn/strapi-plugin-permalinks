@@ -3,7 +3,6 @@
 const get = require( 'lodash/get' );
 const has = require( 'lodash/has' );
 const uniq = require( 'lodash/uniq' );
-const slugify = require( 'slugify' );
 const { NotFoundError, ValidationError } = require( '@strapi/utils' ).errors;
 
 const { getService } = require( '../utils' );
@@ -78,7 +77,7 @@ module.exports = {
 
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( _uid => {
-      const name = get( layouts, [ _uid, 'name' ] );
+      const { name } = layouts[ _uid ];
 
       return pluginService
         .checkAvailability( _uid, name, value )
@@ -95,9 +94,8 @@ module.exports = {
 
     if ( ! isAvailable ) {
       const { uid: conflictUID } = promisedAvailables.find( ( { available } ) => ! available );
-      const targetConflictField = get( layouts, [ conflictUID, 'targetField' ] );
 
-      suggestion = await pluginService.findUniquePermalink( conflictUID, targetConflictField, value );
+      suggestion = await pluginService.findUniquePermalink( [ conflictUID ], value );
     }
 
     ctx.body = {
@@ -140,28 +138,17 @@ module.exports = {
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
     const layouts = await configService.layouts();
+    const uids = await configService.uids( uid );
     const isSupported = has( layouts, uid );
-    const model = pluginService.getModel( uid );
 
     if ( ! isSupported ) {
       throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
     }
 
-    const { name } = layouts[ uid ];
-    const attr = model.attributes[ name ];
-    const defaultValue = get( attr, 'default', model.modelName );
-    const options = {
-      lower: true,
-      ...get( attr, 'options', {} ),
-    };
-
-    const path = await pluginService.findUniquePermalink(
-      uid,
-      name,
-      slugify( value, options )
-    );
+    // Make unique suggestion from one or more collections.
+    const suggestion = await pluginService.findUniquePermalink( uids, value );
 
     // Return final path.
-    ctx.send( { path } );
+    ctx.send( { suggestion } );
   },
 };
