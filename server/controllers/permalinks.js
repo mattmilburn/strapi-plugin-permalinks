@@ -23,16 +23,14 @@ module.exports = {
 
   async ancestorsPath( ctx ) {
     const { uid, id, relationId, value } = ctx.params;
-    const layouts = await getService( 'config' ).layouts();
+    const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
+    const validationService = getService( 'validation' );
+
+    await validationService.validateUIDInput( uid );
+
     const isCreating = ! id;
-    const isSupported = has( layouts, uid );
-    const model = pluginService.getModel( uid );
-
-    if ( ! isSupported ) {
-      throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
-    }
-
+    const layouts = await configService.layouts();
     const { name, targetRelation, targetRelationUID } = layouts[ uid ];
     const relationEntity = await strapi.entityService.findOne( targetRelationUID, relationId );
 
@@ -67,13 +65,12 @@ module.exports = {
     const { uid, value } = ctx.request.params;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
+    const validationService = getService( 'validation' );
+
+    await validationService.validateUIDInput( uid );
+
     const layouts = await configService.layouts();
     const uids = await configService.uids( uid );
-    const isSupported = has( layouts, uid );
-
-    if ( ! isSupported ) {
-      throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
-    }
 
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( _uid => {
@@ -89,7 +86,7 @@ module.exports = {
 
     const isAvailable = promisedAvailables.every( ( { available } ) => available );
 
-    // Maybe provide a suggestion.
+    // Maybe provide a unique suggestion.
     let suggestion = null;
 
     if ( ! isAvailable ) {
@@ -106,19 +103,16 @@ module.exports = {
 
   async checkConnection( ctx ) {
     const { uid, id } = ctx.request.params;
-    const layouts = await getService( 'config' ).layouts();
-    const pluginService = getService( 'permalinks' );
-    const model = pluginService.getModel( uid );
-    const isSupported = has( layouts, uid );
+    const configService = getService( 'config' );
+    const validationService = getService( 'validation' );
 
-    if ( ! isSupported ) {
-      throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
-    }
+    await validationService.validateUIDInput( uid );
 
-    const { attributes } = model;
+    const layouts = await configService.layouts();
     const { name, targetRelation, targetRelationUID } = layouts[ uid ];
     const { name: relationPermalinkName } = layouts[ targetRelationUID ];
 
+    // Check connection with `targetRelation`.
     const entity = await strapi.entityService.findOne( uid, id, {
       populate: [ targetRelation ],
     } );
@@ -129,7 +123,7 @@ module.exports = {
 
     const path = get( entity, [ targetRelation, relationPermalinkName ], '' );
 
-    // Return final path (might be empty).
+    // Return path.
     ctx.send( { path } );
   },
 
@@ -137,15 +131,14 @@ module.exports = {
     const { uid, value } = ctx.params;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
+    const validationService = getService( 'validation' );
+
+    await validationService.validateUIDInput( uid );
+
     const layouts = await configService.layouts();
     const uids = await configService.uids( uid );
-    const isSupported = has( layouts, uid );
 
-    if ( ! isSupported ) {
-      throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );
-    }
-
-    // Make unique suggestion from one or more collections.
+    // Provide a unique suggestion.
     const suggestion = await pluginService.findUniquePermalink( uids, value );
 
     // Return final path.
