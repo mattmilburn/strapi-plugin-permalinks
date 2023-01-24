@@ -27,7 +27,6 @@ module.exports = async ( { strapi } ) => {
     const { uid } = model;
     const { id } = where;
     const attr = layouts[ uid ];
-    console.log( 'AFTER UPDATE', uid, attr );
     const { name, targetRelation, targetRelationUID } = attr;
 
     // Do nothing if this data does not contain the `[name]` prop.
