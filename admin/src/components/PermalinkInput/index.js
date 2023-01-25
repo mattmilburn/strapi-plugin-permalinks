@@ -364,15 +364,6 @@ const PermalinkInput = ( {
   }, [ debouncedValue, initialValue ] );
 
   useEffect( () => {
-    // This is required for scenarios like switching between locales to ensure
-    // the field value updates with the locale change.
-    const newAncestorsPath = getPermalinkAncestors( initialValue );
-    const newSlug = getPermalinkSlug( initialValue );
-
-    setFieldState( newAncestorsPath, newSlug, true );
-  }, [ initialValue ] );
-
-  useEffect( () => {
     let timer;
 
     if ( availability && availability.isAvailable ) {
@@ -399,6 +390,15 @@ const PermalinkInput = ( {
       generateUID.current( true );
     }
   }, [ debouncedTargetValue, isCreatingEntry, isCustomized ] );
+
+  useEffect( () => {
+    // This is required for scenarios like switching between locales to ensure
+    // the field value updates with the locale change.
+    const newAncestorsPath = getPermalinkAncestors( initialValue );
+    const newSlug = getPermalinkSlug( initialValue );
+
+    setFieldState( newAncestorsPath, newSlug, true );
+  }, [ initialData.id ] );
 
   useEffect( () => {
     // Remove ancestors path if we have selected the current entity as the parent.
