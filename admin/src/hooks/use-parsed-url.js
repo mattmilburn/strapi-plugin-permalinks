@@ -13,10 +13,6 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
   const { contentTypes, layouts } = config;
   const attr = layouts[ uid ];
 
-  if ( ! attr ) {
-    return null;
-  }
-
   useEffect( () => {
     if ( isLoading || isCreatingEntry || ! attr ) {
       return;
@@ -36,6 +32,7 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
 
   return {
     isLoading,
+    isSupported: !! attr,
     url,
   };
 };

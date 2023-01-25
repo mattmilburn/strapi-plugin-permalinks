@@ -12,9 +12,9 @@ const EditViewRightLinks = () => {
     modifiedData,
   } = useCMEditViewDataManager();
   const { uid } = allLayoutData.contentType;
-  const { isLoading, url } = useParsedUrl( uid, modifiedData, isCreatingEntry );
+  const { isLoading, isSupported, url } = useParsedUrl( uid, modifiedData, isCreatingEntry );
 
-  if ( isLoading || isCreatingEntry || ! url ) {
+  if ( isLoading || isCreatingEntry || ! isSupported || ! url ) {
     return null;
   }
 
