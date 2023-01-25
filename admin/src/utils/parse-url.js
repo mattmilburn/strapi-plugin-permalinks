@@ -4,7 +4,7 @@ import interpolate from './interpolate';
 import trimSlashes from './trim-slashes';
 
 const parseUrl = ( config, data ) => {
-  if ( ! config || ! data ) {
+  if ( ! config?.url || ! data ) {
     return null;
   }
 
