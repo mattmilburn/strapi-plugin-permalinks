@@ -34,9 +34,9 @@ import {
 const PermalinkInput = ( {
   attribute,
   contentTypeUID,
-  description,
   disabled,
   error,
+  hint,
   intlLabel,
   labelAction,
   name,
@@ -81,13 +81,6 @@ const PermalinkInput = ( {
         { ...intlLabel.values }
       )
     : name;
-
-  const hint = description
-    ? formatMessage(
-        { id: description.id, defaultMessage: description.defaultMessage },
-        { ...description.values }
-      )
-    : '';
 
   const formattedPlaceholder = placeholder
     ? formatMessage(
@@ -497,9 +490,9 @@ const PermalinkInput = ( {
 };
 
 PermalinkInput.defaultProps = {
-  description: undefined,
   disabled: false,
   error: undefined,
+  hint: '',
   labelAction: undefined,
   placeholder: undefined,
   required: false,
@@ -512,13 +505,12 @@ PermalinkInput.propTypes = {
     required: PropTypes.bool,
   } ).isRequired,
   contentTypeUID: PropTypes.string.isRequired,
-  description: PropTypes.shape( {
-    id: PropTypes.string.isRequired,
-    defaultMessage: PropTypes.string.isRequired,
-    values: PropTypes.object,
-  } ),
   disabled: PropTypes.bool,
   error: PropTypes.string,
+  hint: PropTypes.oneOfType( [
+    PropTypes.string,
+    PropTypes.array,
+  ] ),
   intlLabel: PropTypes.shape( {
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
