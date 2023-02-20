@@ -18,7 +18,7 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
       return;
     }
 
-    const uidConfig = contentTypes.flat().find( item => item.uid === uid );
+    const uidConfig = contentTypes.find( item => item.uids.includes( uid ) );
     const stateFromConfig = { url: uidConfig.url ?? null };
     const { state } = runHookWaterfall( HOOK_BEFORE_BUILD_URL, { state: stateFromConfig, data } );
     const parsedUrl = parseUrl( state, data );

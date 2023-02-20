@@ -45,12 +45,13 @@ module.exports = ( { strapi } ) => ( {
       const { name } = layouts[ uid ];
       const model = strapi.getModel( uid );
       const defaultValue = get( model, [ 'attributes', name, 'default' ], model.modelName );
+      const slugQuery = slugify( slug || defaultValue, slugifyOptions );
 
       return strapi.entityService
         .findMany( uid, {
           filters: {
             [ name ]: {
-              $contains: slugify( slug || defaultValue, slugifyOptions ),
+              $contains: slugQuery,
             },
           },
         } )
