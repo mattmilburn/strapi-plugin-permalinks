@@ -17,12 +17,12 @@ module.exports = {
       throw new ValidationError( 'Must define contentTypes as an array.' );
     }
 
-    // Ensure each config object has a `uid` prop defined.
-    const uids = config.contentTypes.flat().map( item => item.uid );
+    // Ensure each config object has a `uids` array defined.
+    const uids = config.contentTypes.map( item => item.uids ).flat();
 
     uids.forEach( uid => {
       if ( ! uid ) {
-        throw new ValidationError( 'Each contentType must have a uid prop.' );
+        throw new ValidationError( 'Each contentType must have a uids prop defined as an array.' );
       }
     } );
 

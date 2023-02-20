@@ -21,7 +21,7 @@ module.exports = ( { strapi } ) => {
 
   const transform = ( data, uid, config ) => {
     const layout = config.layouts[ uid ];
-    const { url } = config.contentTypes.flat().find( item => item.uid === uid );
+    const { url } = config.contentTypes.find( item => item.uids.includes( uid ) );
     const { name, targetRelation, targetRelationUID } = layout;
 
     if ( ! uid ) {
