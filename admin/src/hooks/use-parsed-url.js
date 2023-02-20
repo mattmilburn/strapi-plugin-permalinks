@@ -9,6 +9,7 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
   const { runHookWaterfall } = useStrapiApp();
   const { config, isLoading } = usePluginConfig();
   const [ url, setUrl ] = useState( null );
+  const [ canCopy, setCopy ] = useState( true );
 
   const { contentTypes, layouts } = config;
   const attr = layouts[ uid ];
@@ -19,7 +20,10 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
     }
 
     const uidConfig = contentTypes.find( item => item.uids.includes( uid ) );
-    const stateFromConfig = { url: uidConfig.url ?? null };
+    const stateFromConfig = {
+      ...uidConfig,
+      url: uidConfig.url ?? null,
+    };
     const { state } = runHookWaterfall( HOOK_BEFORE_BUILD_URL, { state: stateFromConfig, data } );
     const parsedUrl = parseUrl( state, data );
 
@@ -28,9 +32,11 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
     }
 
     setUrl( parsedUrl );
+    setCopy( state?.copy === false ? false : true );
   }, [ isCreatingEntry, isLoading, data ] );
 
   return {
+    canCopy,
     isLoading,
     isSupported: !! attr,
     url,
