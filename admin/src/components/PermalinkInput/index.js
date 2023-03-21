@@ -15,6 +15,7 @@ import { PATH_SEPARATOR, UID_REGEX } from '../../constants';
 import { useDebounce } from '../../hooks';
 import {
   axiosInstance,
+  getApiUrl,
   getPermalink,
   getPermalinkAncestors,
   getPermalinkSlug,
@@ -103,7 +104,7 @@ const PermalinkInput = ( {
     try {
       const newSlug = getPermalink( isOrphan ? null : ancestorsPath, slug, lowercase );
       const params = `${contentTypeUID}/${newSlug}`;
-      const endpoint = `${pluginId}/check-availability/${params}`;
+      const endpoint = getApiUrl( `${pluginId}/check-availability/${params}` );
 
       const { data } = await axiosInstance.get( endpoint );
 
@@ -131,7 +132,7 @@ const PermalinkInput = ( {
 
     try {
       const params = `${contentTypeUID}/${modifiedData.id}`;
-      const endpoint = `${pluginId}/check-connection/${params}`;
+      const endpoint = getApiUrl( `${pluginId}/check-connection/${params}` );
 
       const {
         data: {
@@ -244,7 +245,7 @@ const PermalinkInput = ( {
       const params = isCreatingEntry
         ? `${contentTypeUID}/${targetRelationValue.id}`
         : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${initialSlug}`;
-      const endpoint = `${pluginId}/ancestors-path/${params}`;
+      const endpoint = getApiUrl( `${pluginId}/ancestors-path/${params}` );
 
       const {
         data: {
@@ -287,7 +288,7 @@ const PermalinkInput = ( {
 
     try {
       const params = `${contentTypeUID}/${debouncedTargetValue}`;
-      const endpoint = `${pluginId}/suggestion/${params}`;
+      const endpoint = getApiUrl( `${pluginId}/suggestion/${params}` );
 
       const {
         data: {
