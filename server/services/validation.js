@@ -1,5 +1,7 @@
 'use strict';
 
+const { ValidationError } = require( '@strapi/utils' ).errors;
+
 const { getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
