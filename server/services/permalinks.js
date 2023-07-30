@@ -3,7 +3,6 @@
 const get = require( 'lodash/get' );
 const isEmpty = require( 'lodash/isEmpty' );
 const slugify = require( 'slugify' );
-const { ValidationError } = require( '@strapi/utils' ).errors;
 
 const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug, getService } = require( '../utils' );

@@ -3,7 +3,7 @@
 const get = require( 'lodash/get' );
 const has = require( 'lodash/has' );
 const uniq = require( 'lodash/uniq' );
-const { NotFoundError, ValidationError } = require( '@strapi/utils' ).errors;
+const { NotFoundError } = require( '@strapi/utils' ).errors;
 
 const { getService } = require( '../utils' );
 
