@@ -346,8 +346,8 @@ const PermalinkInput = ( {
   useEffect( () => {
     if (
       debouncedValue &&
-      debouncedValue.trim().match( URL_SEGMENT_REGEX ) &&
-      debouncedValue !== initialValue
+      debouncedValue !== initialValue &&
+      URL_SEGMENT_REGEX.test( debouncedValue )
     ) {
       checkAvailability();
     }
