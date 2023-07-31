@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { Box } from '@strapi/design-system/Box';
 import { Typography } from '@strapi/design-system/Typography';
 
-import { PATH_SEPARATOR, SLASH_SEPARATOR } from '../../constants';
-
 const ListViewTableCell = ( {
   ancestorsPath,
   isOrphan,
@@ -21,15 +19,14 @@ const ListViewTableCell = ( {
       style={ { width: 'fit-content' } }
     >
       <Typography fontWeight="bold" textColor="danger700">
-        { [ ancestorsPath, slug ].filter( i => i ).join( SLASH_SEPARATOR ) }
+        { [ ancestorsPath, slug ].filter( i => i ).join( '/' ) }
       </Typography>
     </Box>
   ) : (
     <>
       { ancestorsPath && (
         <Typography textColor="neutral600">
-          { ancestorsPath.split( PATH_SEPARATOR ).join( SLASH_SEPARATOR ) }
-          { SLASH_SEPARATOR }
+          { ancestorsPath }/
         </Typography>
       ) }
       <Typography textColor="neutral600">{ slug }</Typography>
