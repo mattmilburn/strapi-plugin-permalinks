@@ -11,7 +11,7 @@ import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
 import Loader from '@strapi/icons/Loader';
 import Refresh from '@strapi/icons/Refresh';
 
-import { UID_REGEX } from '../../constants';
+import { URL_SEGMENT_REGEX } from '../../constants';
 import { useDebounce } from '../../hooks';
 import {
   axiosInstance,
@@ -346,7 +346,7 @@ const PermalinkInput = ( {
   useEffect( () => {
     if (
       debouncedValue &&
-      debouncedValue.trim().match( UID_REGEX ) &&
+      debouncedValue.trim().match( URL_SEGMENT_REGEX ) &&
       debouncedValue !== initialValue
     ) {
       checkAvailability();
