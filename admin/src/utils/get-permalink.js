@@ -5,7 +5,7 @@ const getPermalink = ( ancestorsPath, slug, lowercase = true ) => {
     slug && lowercase ? slug.toLowerCase() : slug,
   ];
 
-  return parts.filter( i => i ).join( '/' );
+  return parts.filter( i => i ).join( '/' ).trim();
 };
 
 export default getPermalink;
