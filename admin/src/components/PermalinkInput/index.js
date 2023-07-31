@@ -11,7 +11,7 @@ import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
 import Loader from '@strapi/icons/Loader';
 import Refresh from '@strapi/icons/Refresh';
 
-import { PATH_SEPARATOR, UID_REGEX } from '../../constants';
+import { UID_REGEX } from '../../constants';
 import { useDebounce } from '../../hooks';
 import {
   axiosInstance,
@@ -162,8 +162,8 @@ const PermalinkInput = ( {
   };
 
   const handleChange = event => {
-    // Remove ~ characters from the input value because they are used as the path separator.
-    const newSlug = ( event.target.value ?? '' ).replace( PATH_SEPARATOR, '' );
+    // Remove slash characters from the input value because they are used as the path separator.
+    const newSlug = ( event.target.value ?? '' ).replace( '/', '' );
 
     if ( newSlug && isCreatingEntry ) {
       setIsCustomized( true );

@@ -4,16 +4,15 @@ const get = require( 'lodash/get' );
 const isEmpty = require( 'lodash/isEmpty' );
 const slugify = require( 'slugify' );
 
-const { PATH_SEPARATOR } = require( '../constants' );
 const { getPermalinkSlug, getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async checkAncestorConflict( id, uid, path, field, value ) {
-    const parts = path ? path.split( PATH_SEPARATOR ) : [];
+    const parts = path ? path.split( '/' ) : [];
 
     // Check for conflict.
     if ( parts.includes( value ) ) {
-      const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( PATH_SEPARATOR );
+      const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( '/' );
 
       const entity = await strapi.db.query( uid ).findOne( {
         where: {
@@ -87,7 +86,7 @@ module.exports = ( { strapi } ) => ( {
 
     const promisedUpdates = itemsToUpdate.map( item => {
       const slug = getPermalinkSlug( item[ field ] );
-      const updatedValue = `${value}${PATH_SEPARATOR}${slug}`;
+      const updatedValue = `${value}/${slug}`;
 
       return strapi.entityService.update( uid, item.id, {
         data: {
