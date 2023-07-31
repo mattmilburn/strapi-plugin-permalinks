@@ -4,6 +4,6 @@ module.exports = ( { strapi } ) => {
   strapi.customFields.register( {
     plugin: 'permalinks',
     name: 'permalink',
-    type: 'uid',
+    type: 'string',
   } );
 };
