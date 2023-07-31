@@ -5,5 +5,9 @@ module.exports = ( { strapi } ) => {
     plugin: 'permalinks',
     name: 'permalink',
     type: 'string',
+    inputSize: {
+      default: 6,
+      isResizable: true,
+    },
   } );
 };
