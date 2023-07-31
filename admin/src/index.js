@@ -5,7 +5,7 @@ import { EditViewRightLinks, Initializer } from './components';
 import { HOOK_BEFORE_BUILD_URL } from './constants';
 import { filterPermalinkColumns } from './contentManagerHooks';
 import reducers from './reducers';
-import { pluginId, pluginName } from './utils';
+import { getTrad, pluginId, pluginName } from './utils';
 
 export default {
   register( app ) {
@@ -26,11 +26,11 @@ export default {
       type: 'uid',
       icon: null,
       intlLabel: {
-        id: 'permalink-input.label',
+        id: getTrad( 'register.label' ),
         defaultMessage: 'Permalink',
       },
       intlDescription: {
-        id: 'permalink-input.description',
+        id: getTrad( 'register.description' ),
         defaultMessage: 'URL path field with relationship bindings.',
       },
       components: {
