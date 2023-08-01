@@ -27,6 +27,10 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async checkAvailability( uid, field, value ) {
+    /**
+     * @TODO - Must check availability while omitting the current ID (if exists).
+     */
+
     const count = await strapi.db.query( uid ).count( {
       where: { [ field ]: value },
     } );
