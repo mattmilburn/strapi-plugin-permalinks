@@ -12,8 +12,9 @@ module.exports = async ( { strapi } ) => {
   // Lifecycle hook to validate permalink values before they are created or updated.
   const beforeCreateUpdate = async ( event ) => {
     const { model, params } = event;
-    const { data } = params;
+    const { data, where } = params;
     const { uid } = model;
+    const { id } = where;
     const attr = layouts[ uid ];
     const value = data[ attr.name ];
 
@@ -21,12 +22,8 @@ module.exports = async ( { strapi } ) => {
     const promisedAvailables = await Promise.all( uids.map( uid => {
       const { name } = layouts[ uid ];
 
-      /**
-       * @TODO - Must check availability while omitting the current ID (if exists).
-       */
-
       return pluginService
-        .checkAvailability( uid, name, value )
+        .checkAvailability( uid, name, value, id )
         .then( available => ( {
           uid,
           available,
