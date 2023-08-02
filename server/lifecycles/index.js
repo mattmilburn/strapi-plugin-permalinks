@@ -5,5 +5,5 @@ const beforeCreateUpdate = require('./before-create-update');
 
 module.exports = {
   afterUpdate,
-  beforeCreateUpdate
+  beforeCreateUpdate,
 };

@@ -7,6 +7,10 @@ const { NotFoundError } = require( '@strapi/utils' ).errors;
 
 const { getService } = require( '../utils' );
 
+/**
+ * @TODO - Refactor controllers' logic into service methods.
+ */
+
 module.exports = {
   async config( ctx ) {
     const configService = getService( 'config' );

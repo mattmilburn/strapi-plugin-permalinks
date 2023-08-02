@@ -18,6 +18,10 @@ module.exports = async ( { strapi } ) => {
     const attr = layouts[ uid ];
     const value = data[ attr.name ];
 
+    /**
+     * @TODO - Move code below into it's own service method.
+     */
+
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( uid => {
       const { name } = layouts[ uid ];
