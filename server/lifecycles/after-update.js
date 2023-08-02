@@ -43,6 +43,10 @@ module.exports = async ( { strapi } ) => {
       return;
     }
 
+    /**
+     * @TODO - Move code below into it's own service method.
+     */
+
     // Sync children across all related content types.
     const uids = await configService.uids( uid );
     const promisedUpdates = uids.map( _uid => {
