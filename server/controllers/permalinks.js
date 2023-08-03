@@ -59,46 +59,15 @@ module.exports = {
   },
 
   async checkAvailability( ctx ) {
-    const { uid, value } = ctx.request.params;
-    const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
     const validationService = getService( 'validation' );
+    const { uid, value } = ctx.request.params;
 
+    // Validate UID.
     await validationService.validateUIDInput( uid );
 
-    const layouts = await configService.layouts();
-    const uids = await configService.uids( uid );
-
-    /**
-     * @START - Refactor logic below into `getAvailability()` service method.
-     */
-
-    // Check availability in each related collection.
-    const promisedAvailables = await Promise.all( uids.map( _uid => {
-      const { name } = layouts[ _uid ];
-
-      return pluginService
-        .checkAvailability( _uid, name, value )
-        .then( available => ( {
-          uid: _uid,
-          available,
-        } ) );
-    } ) );
-
-    const isAvailable = promisedAvailables.every( ( { available } ) => available );
-
-    /**
-     * @END
-     */
-
-    // Maybe provide a unique suggestion.
-    let suggestion = null;
-
-    if ( ! isAvailable ) {
-      const { uid: conflictUID } = promisedAvailables.find( ( { available } ) => ! available );
-
-      suggestion = await pluginService.findUniquePermalink( [ conflictUID ], value );
-    }
+    // Check availability and maybe provide a suggestion.
+    const { isAvailable, suggestion } = await pluginService.getAvailability( uid );
 
     ctx.body = {
       isAvailable,
@@ -107,10 +76,11 @@ module.exports = {
   },
 
   async checkConnection( ctx ) {
-    const { uid, id } = ctx.request.params;
     const configService = getService( 'config' );
     const validationService = getService( 'validation' );
+    const { uid, id } = ctx.request.params;
 
+    // Validate UID.
     await validationService.validateUIDInput( uid );
 
     /**
@@ -140,17 +110,16 @@ module.exports = {
   },
 
   async suggestion( ctx ) {
-    const { uid, value } = ctx.params;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
     const validationService = getService( 'validation' );
+    const { uid, value } = ctx.params;
 
+    // Validate UID.
     await validationService.validateUIDInput( uid );
 
-    const layouts = await configService.layouts();
-    const uids = await configService.uids( uid );
-
     // Provide a unique suggestion.
+    const uids = await configService.uids( uid );
     const suggestion = await pluginService.findUniquePermalink( uids, value );
 
     // Return final path.
