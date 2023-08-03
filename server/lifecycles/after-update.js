@@ -44,7 +44,7 @@ module.exports = async ( { strapi } ) => {
     }
 
     /**
-     * @TODO - Move code below into it's own service method.
+     * @START - Refactor logic below into `sync()` service method.
      */
 
     // Sync children across all related content types.
@@ -62,6 +62,10 @@ module.exports = async ( { strapi } ) => {
     } );
 
     await Promise.all( promisedUpdates );
+
+    /**
+     * @END
+     */
   };
 
   // Subscribe to lifecycle hook.

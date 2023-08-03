@@ -1,5 +1,7 @@
 'use strict';
 
+const get = require('lodash/get');
+
 const { getService } = require( '../utils' );
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
@@ -14,12 +16,12 @@ module.exports = async ( { strapi } ) => {
     const { model, params } = event;
     const { data, where } = params;
     const { uid } = model;
-    const { id } = where;
+    const id = get( where, 'id', null );
     const attr = layouts[ uid ];
     const value = data[ attr.name ];
 
     /**
-     * @TODO - Move code below into it's own service method.
+     * @START - Refactor logic below into `getParentEntity()` service method.
      */
 
     // Check availability in each related collection.
@@ -39,6 +41,10 @@ module.exports = async ( { strapi } ) => {
     if ( ! isAvailable ) {
       throw new ValidationError( `Permalink value must be unique.` );
     }
+
+    /**
+     * @END
+     */
   };
 
   // Subscribe to lifecycle hook.
