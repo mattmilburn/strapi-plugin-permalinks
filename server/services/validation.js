@@ -24,6 +24,21 @@ module.exports = ( { strapi } ) => ( {
     return false;
   },
 
+  async validateAvailability( uid, name, value, id = null ) {
+    let where = { [ name ]: value };
+
+    // If `id` is not null, omit it from the results so we aren't comparing against itself.
+    if ( id ) {
+      where.id = {
+        $ne: id,
+      };
+    }
+
+    const count = await strapi.db.query( uid ).count( { where } );
+
+    return count > 0 ? false : true;
+  },
+
   async validateSchema() {
     const configService = getService( 'config' );
     const { contentTypes } = await configService.get();

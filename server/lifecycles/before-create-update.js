@@ -8,6 +8,7 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 module.exports = async ( { strapi } ) => {
   const configService = getService( 'config' );
   const pluginService = getService( 'permalinks' );
+  const validationService = getService( 'validation' );
   const layouts = await configService.layouts();
   const uids = await configService.uids();
 
@@ -21,15 +22,15 @@ module.exports = async ( { strapi } ) => {
     const value = data[ attr.name ];
 
     /**
-     * @START - Refactor logic below into `getParentEntity()` service method.
+     * @START - Use `getAvailability()` service method instead of code below.
      */
 
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( uid => {
       const { name } = layouts[ uid ];
 
-      return pluginService
-        .checkAvailability( uid, name, value, id )
+      return validationService
+        .validateAvailability( uid, name, value, id )
         .then( available => ( {
           uid,
           available,

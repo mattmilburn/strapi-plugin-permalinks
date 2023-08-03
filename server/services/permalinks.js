@@ -7,21 +7,6 @@ const slugify = require( 'slugify' );
 const { getPermalinkSlug, getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async checkAvailability( uid, field, value, id = null ) {
-    let where = { [ field ]: value };
-
-    // If `id` is not null, omit it from the results so we aren't comparing against itself.
-    if ( id ) {
-      where.id = {
-        $ne: id,
-      };
-    }
-
-    const count = await strapi.db.query( uid ).count( { where } );
-
-    return count > 0 ? false : true;
-  },
-
   async getAncestor( uid, relationId ) {
     const { targetRelationUID } = await getService( 'config' ).layouts( uid );
     const relationEntity = await strapi.entityService.findOne( targetRelationUID, relationId );
@@ -36,6 +21,41 @@ module.exports = ( { strapi } ) => ( {
     const path = get( relationEntity, relationPermalinkName, '' );
 
     return path;
+  },
+
+  async getAvailability( uid, value ) {
+    const configService = getService( 'config' );
+    const pluginService = getService( 'permalinks' );
+    const validationService = getService( 'validation' );
+    const layouts = await configService.layouts();
+    const uids = await configService.uids( uid );
+
+    // Check availability in each related collection.
+    const promisedAvailables = await Promise.all( uids.map( _uid => {
+      const { name } = layouts[ _uid ];
+
+      return validationService
+        .validateAvailability( _uid, name, value )
+        .then( available => ( {
+          uid: _uid,
+          available,
+        } ) );
+    } ) );
+
+    const isAvailable = promisedAvailables.every( ( { available } ) => available );
+    let suggestion = null;
+
+    // Provide a unique suggestion if unavailable.
+    if ( ! isAvailable ) {
+      const { uid: conflictUID } = promisedAvailables.find( ( { available } ) => ! available );
+
+      suggestion = await pluginService.findUniquePermalink( [ conflictUID ], value );
+    }
+
+    return {
+      isAvailable,
+      suggestion: promisedAvailables,
+    };
   },
 
   async findUniquePermalink( uids, value ) {
