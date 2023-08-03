@@ -3,7 +3,7 @@
 const get = require( 'lodash/get' );
 
 const { default: defaultConfig } = require( '../config' );
-const { pluginId } = require( '../utils' );
+const { getPermalinkAttr, pluginId } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async get() {
@@ -12,36 +12,20 @@ module.exports = ( { strapi } ) => ( {
     return config;
   },
 
-  async layouts() {
+  async layouts( uid = null ) {
     const config = await strapi.config.get( `plugin.${pluginId}`, defaultConfig );
     const { contentTypes } = config;
     const uids = contentTypes.map( item => item.uids ).flat();
 
+    if ( uid ) {
+      return getPermalinkAttr( uid );
+    }
+
     // Add `layouts` data to config based on content types with a permalink field configured.
-    const layouts = uids.reduce( ( acc, uid ) => {
-      const model = strapi.getModel( uid );
-
-      const permalinkAttr = Object.entries( model.attributes ).find( ( [ _name, attr ] ) => {
-        return attr.customField === 'plugin::permalinks.permalink';
-      } );
-
-      if ( ! permalinkAttr ) {
-        return acc;
-      }
-
-      const [ name, attr ] = permalinkAttr;
-      const relationUID = get( model, [ 'attributes', attr.targetRelation, 'target' ] );
-
-      return {
-        ...acc,
-        [ uid ]: {
-          name,
-          targetField: attr.targetField,
-          targetRelation: attr.targetRelation,
-          targetRelationUID: relationUID,
-        },
-      };
-    }, {} );
+    const layouts = uids.reduce( ( acc, uid ) => ( {
+      ...acc,
+      [ uid ]: getPermalinkAttr( uid ),
+    } ), {} );
 
     return layouts;
   },
