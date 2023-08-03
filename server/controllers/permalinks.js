@@ -7,10 +7,6 @@ const { NotFoundError } = require( '@strapi/utils' ).errors;
 
 const { getService } = require( '../utils' );
 
-/**
- * @TODO - Refactor controllers' logic into service methods.
- */
-
 module.exports = {
   async config( ctx ) {
     const configService = getService( 'config' );
@@ -26,30 +22,28 @@ module.exports = {
   },
 
   async ancestorsPath( ctx ) {
-    const { uid, id, relationId, value } = ctx.params;
     const configService = getService( 'config' );
     const pluginService = getService( 'permalinks' );
     const validationService = getService( 'validation' );
+    const { uid, id, relationId, value } = ctx.params;
+    const isCreating = ! id;
 
+    // Validate UID.
     await validationService.validateUIDInput( uid );
 
-    const isCreating = ! id;
-    const layouts = await configService.layouts();
-    const { name, targetRelation, targetRelationUID } = layouts[ uid ];
-    const relationEntity = await strapi.entityService.findOne( targetRelationUID, relationId );
+    // Get ancestor's path.
+    const { name, targetRelationUID } = await configService.layouts( uid );
+    const ancestor = await pluginService.getAncestor( uid, relationId );
 
-    if ( ! relationEntity ) {
+    if ( ! ancestor ) {
       throw new NotFoundError( `The relation entity for ${name} was not found.` );
     }
 
-    // Get the permalink field in the relation field's model.
-    const { name: relationPermalinkName } = layouts[ targetRelationUID ];
-    const path = get( relationEntity, relationPermalinkName, '' );
+    const path = await pluginService.getAncestorPath( uid, id, ancestor );
 
     // If the UIDs are the same, check if the entity is being assigned as it's own descendant.
     if ( ! isCreating && uid === targetRelationUID ) {
-      const hasAncestorConflict = await pluginService.checkAncestorConflict(
-        id,
+      const hasAncestorConflict = await validationService.validateAncestorConflict(
         uid,
         path,
         name,
@@ -57,11 +51,10 @@ module.exports = {
       );
 
       if ( hasAncestorConflict ) {
-        return ctx.conflict( `Cannot assign the ${relationPermalinkName} relation as its own descendant.` );
+        return ctx.badRequest( `Cannot assign the ${relationPermalinkName} relation as its own descendant.` );
       }
     }
 
-    // Return final path.
     ctx.send( { path } );
   },
 
@@ -76,6 +69,10 @@ module.exports = {
     const layouts = await configService.layouts();
     const uids = await configService.uids( uid );
 
+    /**
+     * @START - Refactor logic below into `getAvailability()` service method.
+     */
+
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( _uid => {
       const { name } = layouts[ _uid ];
@@ -89,6 +86,10 @@ module.exports = {
     } ) );
 
     const isAvailable = promisedAvailables.every( ( { available } ) => available );
+
+    /**
+     * @END
+     */
 
     // Maybe provide a unique suggestion.
     let suggestion = null;
@@ -112,6 +113,9 @@ module.exports = {
 
     await validationService.validateUIDInput( uid );
 
+    /**
+     * @START - Refactor logic below into `getParentEntity()` service method.
+     */
     const layouts = await configService.layouts();
     const { name, targetRelation, targetRelationUID } = layouts[ uid ];
     const { name: relationPermalinkName } = layouts[ targetRelationUID ];
@@ -124,6 +128,10 @@ module.exports = {
     if ( ! entity ) {
       throw new NotFoundError( `The relation entity for ${name} was not found.` );
     }
+
+    /**
+     * @END
+     */
 
     const path = get( entity, [ targetRelation, relationPermalinkName ], '' );
 

@@ -5,6 +5,25 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 const { getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
+  async validateAncestorConflict( uid, path, name, value ) {
+    const parts = path ? path.split( '/' ) : [];
+
+    // Check for conflict.
+    if ( parts.includes( value ) ) {
+      const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( '/' );
+
+      const entity = await strapi.db.query( uid ).findOne( {
+        where: {
+          [ name ]: possibleConflict,
+        },
+      } );
+
+      return entity && entity.id === parseInt( id );
+    }
+
+    return false;
+  },
+
   async validateSchema() {
     const configService = getService( 'config' );
     const { contentTypes } = await configService.get();

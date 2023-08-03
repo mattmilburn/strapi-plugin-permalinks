@@ -7,25 +7,6 @@ const slugify = require( 'slugify' );
 const { getPermalinkSlug, getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async checkAncestorConflict( id, uid, path, field, value ) {
-    const parts = path ? path.split( '/' ) : [];
-
-    // Check for conflict.
-    if ( parts.includes( value ) ) {
-      const possibleConflict = parts.slice( 0, parts.indexOf( value ) + 1 ).join( '/' );
-
-      const entity = await strapi.db.query( uid ).findOne( {
-        where: {
-          [ field ]: possibleConflict,
-        },
-      } );
-
-      return entity && entity.id === parseInt( id );
-    }
-
-    return false;
-  },
-
   async checkAvailability( uid, field, value, id = null ) {
     let where = { [ field ]: value };
 
@@ -39,6 +20,22 @@ module.exports = ( { strapi } ) => ( {
     const count = await strapi.db.query( uid ).count( { where } );
 
     return count > 0 ? false : true;
+  },
+
+  async getAncestor( uid, relationId ) {
+    const { targetRelationUID } = await getService( 'config' ).layouts( uid );
+    const relationEntity = await strapi.entityService.findOne( targetRelationUID, relationId );
+
+    return relationEntity;
+  },
+
+  async getAncestorPath( uid, id, relationEntity ) {
+    const configService = getService( 'config' );
+    const { name, targetRelationUID } = await configService.layouts( uid );
+    const { name: relationPermalinkName } = await configService.layouts( targetRelationUID );
+    const path = get( relationEntity, relationPermalinkName, '' );
+
+    return path;
   },
 
   async findUniquePermalink( uids, value ) {
