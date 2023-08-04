@@ -9,9 +9,8 @@ const { getService } = require( '../utils' );
 
 module.exports = {
   async config( ctx ) {
-    const configService = getService( 'config' );
-    const config = await configService.get();
-    const layouts = await configService.layouts();
+    const config = await getService( 'config' ).get();
+    const layouts = await getService( 'config' ).layouts();
 
     ctx.send( {
       config: {
@@ -22,29 +21,27 @@ module.exports = {
   },
 
   async ancestorsPath( ctx ) {
-    const configService = getService( 'config' );
-    const pluginService = getService( 'permalinks' );
-    const validationService = getService( 'validation' );
     const { uid, id, relationId, value } = ctx.params;
     const isCreating = ! id;
 
     // Validate UID.
-    await validationService.validateUIDInput( uid );
+    await getService( 'validation' ).validateUIDInput( uid );
 
-    // Get ancestor's path.
-    const { name, targetRelationUID } = await configService.layouts( uid );
-    const ancestor = await pluginService.getAncestor( uid, relationId );
+    // Get connected relation.
+    const { name, targetRelationUID } = await getService( 'config' ).layouts( uid );
+    const ancestor = await getService( 'permalinks' ).getAncestor( uid, relationId );
 
     if ( ! ancestor ) {
-      throw new NotFoundError( `The relation entity for ${name} was not found.` );
+      throw new NotFoundError( `The relation entity ${targetRelationUID}/${relationId} for ${name} was not found.` );
     }
 
-    const path = await pluginService.getAncestorPath( uid, id, ancestor );
+    const path = await getService( 'permalinks' ).getAncestorPath( uid, id, ancestor );
 
     // If the UIDs are the same, check if the entity is being assigned as it's own descendant.
     if ( ! isCreating && uid === targetRelationUID ) {
-      const hasAncestorConflict = await validationService.validateAncestorConflict(
+      const hasAncestorConflict = await getService( 'validation' ).validateAncestorConflict(
         uid,
+        id,
         path,
         name,
         value
@@ -59,70 +56,59 @@ module.exports = {
   },
 
   async checkAvailability( ctx ) {
-    const pluginService = getService( 'permalinks' );
-    const validationService = getService( 'validation' );
     const { uid, value } = ctx.request.params;
 
     // Validate UID.
-    await validationService.validateUIDInput( uid );
+    await getService( 'validation' ).validateUIDInput( uid );
 
     // Check availability and maybe provide a suggestion.
-    const { isAvailable, suggestion } = await pluginService.getAvailability( uid );
+    const { isAvailable, suggestion } = await getService( 'permalinks' ).getAvailability( uid );
 
-    ctx.body = {
+    ctx.send( {
       isAvailable,
       suggestion,
-    };
+    } );
   },
 
   async checkConnection( ctx ) {
-    const configService = getService( 'config' );
-    const validationService = getService( 'validation' );
     const { uid, id } = ctx.request.params;
 
     // Validate UID.
-    await validationService.validateUIDInput( uid );
+    await getService( 'validation' ).validateUIDInput( uid );
 
-    /**
-     * @START - Refactor logic below into `getParentEntity()` service method.
-     */
-    const layouts = await configService.layouts();
-    const { name, targetRelation, targetRelationUID } = layouts[ uid ];
-    const { name: relationPermalinkName } = layouts[ targetRelationUID ];
-
-    // Check connection with `targetRelation`.
-    const entity = await strapi.entityService.findOne( uid, id, {
-      populate: [ targetRelation ],
-    } );
+    // Get connected relation.
+    const entity = await getService( 'permalinks' ).getPopulatedEntity( uid, id );
 
     if ( ! entity ) {
-      throw new NotFoundError( `The relation entity for ${name} was not found.` );
+      throw new NotFoundError( `The entity ${uid}/${id} was not found.` );
     }
 
-    /**
-     * @END
-     */
+    // Maybe get the connected ancestor's path.
+    const { targetRelation } = await getService( 'config' ).layouts( uid );
+    const relationId = get( entity, [ targetRelation, 'id' ] );
+    const ancestor = await getService( 'permalinks' ).getAncestor( uid, relationId );
 
-    const path = get( entity, [ targetRelation, relationPermalinkName ], '' );
+    if ( ! relationId || ! ancestor ) {
+      return ctx.send( { path: '' } );
+    }
+
+    const path = await getService( 'permalinks' ).getAncestorPath( uid, id, ancestor );
 
     // Return path.
     ctx.send( { path } );
   },
 
   async suggestion( ctx ) {
-    const configService = getService( 'config' );
-    const pluginService = getService( 'permalinks' );
-    const validationService = getService( 'validation' );
     const { uid, value } = ctx.params;
 
     // Validate UID.
-    await validationService.validateUIDInput( uid );
+    await getService( 'validation' ).validateUIDInput( uid );
 
     // Provide a unique suggestion.
-    const uids = await configService.uids( uid );
-    const suggestion = await pluginService.findUniquePermalink( uids, value );
+    const uids = await getService( 'config' ).uids( uid );
+    const suggestion = await getService( 'permalinks' ).getSuggestion( uids, value );
 
-    // Return final path.
+    // Return suggested path.
     ctx.send( { suggestion } );
   },
 };
