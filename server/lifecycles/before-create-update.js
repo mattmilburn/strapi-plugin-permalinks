@@ -21,10 +21,6 @@ module.exports = async ( { strapi } ) => {
     const attr = layouts[ uid ];
     const value = data[ attr.name ];
 
-    /**
-     * @START - Use `getAvailability()` service method instead of code below.
-     */
-
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( uid => {
       const { name } = layouts[ uid ];
@@ -42,10 +38,6 @@ module.exports = async ( { strapi } ) => {
     if ( ! isAvailable ) {
       throw new ValidationError( `Permalink value must be unique.` );
     }
-
-    /**
-     * @END
-     */
   };
 
   // Subscribe to lifecycle hook.

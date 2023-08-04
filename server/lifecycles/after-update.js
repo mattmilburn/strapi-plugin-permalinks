@@ -43,10 +43,6 @@ module.exports = async ( { strapi } ) => {
       return;
     }
 
-    /**
-     * @START - Refactor logic below into `sync()` service method.
-     */
-
     // Sync children across all related content types.
     const uids = await configService.uids( uid );
     const promisedUpdates = uids.map( _uid => {
@@ -62,10 +58,6 @@ module.exports = async ( { strapi } ) => {
     } );
 
     await Promise.all( promisedUpdates );
-
-    /**
-     * @END
-     */
   };
 
   // Subscribe to lifecycle hook.
