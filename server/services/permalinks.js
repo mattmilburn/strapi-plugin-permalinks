@@ -8,6 +8,10 @@ const { getPermalinkSlug, getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async getAncestor( uid, relationId ) {
+    if ( ! relationId ) {
+      return null;
+    }
+
     const { targetRelationUID } = await getService( 'config' ).layouts( uid );
     const relationEntity = await strapi.entityService.findOne( targetRelationUID, relationId );
 
@@ -15,26 +19,26 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async getAncestorPath( uid, id, relationEntity ) {
-    const configService = getService( 'config' );
-    const { name, targetRelationUID } = await configService.layouts( uid );
-    const { name: relationPermalinkName } = await configService.layouts( targetRelationUID );
+    if ( ! relationEntity ) {
+      return '';
+    }
+
+    const { name, targetRelationUID } = await getService( 'config' ).layouts( uid );
+    const { name: relationPermalinkName } = await getService( 'config' ).layouts( targetRelationUID );
     const path = get( relationEntity, relationPermalinkName, '' );
 
     return path;
   },
 
   async getAvailability( uid, value ) {
-    const configService = getService( 'config' );
-    const pluginService = getService( 'permalinks' );
-    const validationService = getService( 'validation' );
-    const layouts = await configService.layouts();
-    const uids = await configService.uids( uid );
+    const layouts = await getService( 'config' ).layouts();
+    const uids = await getService( 'config' ).uids( uid );
 
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( _uid => {
       const { name } = layouts[ _uid ];
 
-      return validationService
+      return getService( 'validation' )
         .validateAvailability( _uid, name, value )
         .then( available => ( {
           uid: _uid,
@@ -49,16 +53,26 @@ module.exports = ( { strapi } ) => ( {
     if ( ! isAvailable ) {
       const { uid: conflictUID } = promisedAvailables.find( ( { available } ) => ! available );
 
-      suggestion = await pluginService.findUniquePermalink( [ conflictUID ], value );
+      suggestion = await getService( 'permalinks' ).getSuggestion( [ conflictUID ], value );
     }
 
     return {
       isAvailable,
-      suggestion: promisedAvailables,
+      suggestion,
     };
   },
 
-  async findUniquePermalink( uids, value ) {
+  async getPopulatedEntity( uid, id ) {
+    const { targetRelation } = await getService( 'config' ).layouts( uid );
+
+    const entity = await strapi.entityService.findOne( uid, id, {
+      populate: [ targetRelation ],
+    } );
+
+    return entity;
+  },
+
+  async getSuggestion( uids, value ) {
     const layouts = await getService( 'config' ).layouts();
     const slugifyOptions = { lower: true };
     const slug = slugify( value, slugifyOptions );

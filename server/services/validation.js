@@ -5,7 +5,7 @@ const { ValidationError } = require( '@strapi/utils' ).errors;
 const { getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
-  async validateAncestorConflict( uid, path, name, value ) {
+  async validateAncestorConflict( uid, id, path, name, value ) {
     const parts = path ? path.split( '/' ) : [];
 
     // Check for conflict.
@@ -40,9 +40,8 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async validateSchema() {
-    const configService = getService( 'config' );
-    const { contentTypes } = await configService.get();
-    const uids = await configService.uids();
+    const { contentTypes } = await getService( 'config' ).get();
+    const uids = await getService( 'config' ).uids();
 
     uids.forEach( uid => {
       const model = strapi.db.metadata.get( uid );
