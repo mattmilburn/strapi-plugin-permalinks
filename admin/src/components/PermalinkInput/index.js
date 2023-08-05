@@ -141,6 +141,7 @@ const PermalinkInput = ( {
       } = await axiosInstance.get( endpoint );
 
       if ( ! newAncestorsPath ) {
+        setFieldState( ancestorsPath, slug, true );
         setIsOrphan( true );
         return;
       }
@@ -197,6 +198,7 @@ const PermalinkInput = ( {
     // Clear orphan state when refreshing.
     if ( isOrphan && !! relationError ) {
       setIsOrphan( false );
+      setAncestorsPath( null );
       setRelationError( null );
       return;
     }
