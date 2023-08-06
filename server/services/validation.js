@@ -46,16 +46,14 @@ module.exports = ( { strapi } ) => ( {
     const ancestorsPath = getPermalinkAncestors( value );
     const isConnecting = !! data[ targetRelation ].connect.length;
 
-    // Skip if there is nothing to validate.
-    if ( ! ancestorsPath && ! isConnecting ) {
-      return;
-    }
-
     // Attempt to get the connected entity or do nothing if there is none.
     const connectedEntity = await getService( 'permalinks' ).getConnectedEntity( uid, data, id );
 
-    if ( ancestorsPath && ! connectedEntity ) {
-      throw new ValidationError( `Invalid permalink connection. Please regenerate.` );
+    if (
+      ( ancestorsPath && ! connectedEntity ) ||
+      ( ! ancestorsPath && connectedEntity )
+    ) {
+      throw new ValidationError( `Invalid permalink connection. Check ${name} and ${targetRelation} fields.` );
     }
 
     // Compare the current ancestors path against the connected entity's path.

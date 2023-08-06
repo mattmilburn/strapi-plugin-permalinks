@@ -318,11 +318,7 @@ const PermalinkInput = ( {
   };
 
   useEffect( () => {
-    // If there is an existing ancestors path in the initial slug value, check
-    // this entity's orphan state.
-    if ( initialAncestorsPath ) {
-      checkConnection();
-    }
+    checkConnection();
   }, [] );
 
   useEffect( () => {
