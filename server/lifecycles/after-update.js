@@ -3,11 +3,9 @@
 const { getService } = require( '../utils' );
 
 module.exports = async ( { strapi } ) => {
-  const configService = getService( 'config' );
-  const pluginService = getService( 'permalinks' );
-  const { contentTypes } = await configService.get();
-  const layouts = await configService.layouts();
-  const models = await configService.uids();
+  const { contentTypes } = await getService( 'config' ).get();
+  const layouts = await getService( 'config' ).layouts();
+  const models = await getService( 'config' ).uids();
 
   // Lifecycle hook to set state before updating an entity. This will help know
   // whether or not the value changed in the `afterUpdate` lifecycle.
@@ -44,7 +42,7 @@ module.exports = async ( { strapi } ) => {
     }
 
     // Sync children across all related content types.
-    const uids = await configService.uids( uid );
+    const uids = await getService( 'config' ).uids( uid );
     const promisedUpdates = uids.map( _uid => {
       // Determine if this `_uid` can be a parent of `uid`.
       const thisAttr = layouts[ _uid ];
@@ -54,7 +52,13 @@ module.exports = async ( { strapi } ) => {
         return;
       }
 
-      return pluginService.syncChildren( _uid, id, nextValue, thisAttr.name, thisAttr.targetRelation );
+      return getService( 'permalinks' ).syncChildren(
+        _uid,
+        id,
+        nextValue,
+        thisAttr.name,
+        thisAttr.targetRelation
+      );
     } );
 
     await Promise.all( promisedUpdates );

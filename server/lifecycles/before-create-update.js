@@ -6,11 +6,8 @@ const { getService } = require( '../utils' );
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
 module.exports = async ( { strapi } ) => {
-  const configService = getService( 'config' );
-  const pluginService = getService( 'permalinks' );
-  const validationService = getService( 'validation' );
-  const layouts = await configService.layouts();
-  const uids = await configService.uids();
+  const layouts = await getService( 'config' ).layouts();
+  const uids = await getService( 'config' ).uids();
 
   // Lifecycle hook to validate permalink values before they are created or updated.
   const beforeCreateUpdate = async ( event ) => {
@@ -21,11 +18,13 @@ module.exports = async ( { strapi } ) => {
     const attr = layouts[ uid ];
     const value = data[ attr.name ];
 
+    await getService( 'validation' ).validateConnection( uid, data, id );
+
     // Check availability in each related collection.
     const promisedAvailables = await Promise.all( uids.map( uid => {
       const { name } = layouts[ uid ];
 
-      return validationService
+      return getService( 'validation' )
         .validateAvailability( uid, name, value, id )
         .then( available => ( {
           uid,

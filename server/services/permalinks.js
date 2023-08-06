@@ -18,7 +18,7 @@ module.exports = ( { strapi } ) => ( {
     return relationEntity;
   },
 
-  async getAncestorPath( uid, id, relationEntity ) {
+  async getAncestorPath( uid, relationEntity ) {
     if ( ! relationEntity ) {
       return '';
     }
@@ -60,6 +60,32 @@ module.exports = ( { strapi } ) => ( {
       isAvailable,
       suggestion,
     };
+  },
+
+  async getConnectedEntity( uid, data, id = null ) {
+    const { targetRelation } = await getService( 'config' ).layouts( uid );
+    const connectionId = get( data, [ targetRelation, 'connect', 0, 'id' ] );
+    const isCreating = ! id;
+    const isConnecting = !! connectionId;
+
+    // Skip if we are creating an entry with no connection.
+    if ( isCreating && ! isConnecting ) {
+      return null;
+    }
+
+    let entity, ancestor;
+
+    // Either get the ancestor from the connecting relation or look it up in the database.
+    if ( isConnecting ) {
+      ancestor = await getService( 'permalinks' ).getAncestor( uid, connectionId );
+    }
+
+    if ( ! isCreating && ! isConnecting ) {
+      entity = await getService( 'permalinks' ).getPopulatedEntity( uid, id );
+      ancestor = entity[ targetRelation ];
+    }
+
+    return ancestor;
   },
 
   async getPopulatedEntity( uid, id ) {

@@ -1,8 +1,9 @@
 'use strict';
 
+
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
-const { getService } = require( '../utils' );
+const { getPermalinkAncestors, getService } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async validateAncestorConflict( uid, id, path, name, value ) {
@@ -37,6 +38,32 @@ module.exports = ( { strapi } ) => ( {
     const count = await strapi.db.query( uid ).count( { where } );
 
     return count > 0 ? false : true;
+  },
+
+  async validateConnection( uid, data, id = null ) {
+    const { name, targetRelation } = await getService( 'config' ).layouts( uid );
+    const value = data[ name ];
+    const ancestorsPath = getPermalinkAncestors( value );
+    const isConnecting = !! data[ targetRelation ].connect.length;
+
+    // Skip if there is nothing to validate.
+    if ( ! ancestorsPath && ! isConnecting ) {
+      return;
+    }
+
+    // Attempt to get the connected entity or do nothing if there is none.
+    const connectedEntity = await getService( 'permalinks' ).getConnectedEntity( uid, data, id );
+
+    if ( ancestorsPath && ! connectedEntity ) {
+      throw new ValidationError( `Invalid permalink connection. Please regenerate.` );
+    }
+
+    // Compare the current ancestors path against the connected entity's path.
+    const connectedAncestorsPath = await getService( 'permalinks' ).getAncestorPath( uid, connectedEntity );
+
+    if ( ancestorsPath !== connectedAncestorsPath ) {
+      throw new ValidationError( `Invalid permalink connection. Paths do not match.` );
+    }
   },
 
   async validateSchema() {

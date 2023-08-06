@@ -35,7 +35,7 @@ module.exports = {
       throw new NotFoundError( `The relation entity ${targetRelationUID}/${relationId} for ${name} was not found.` );
     }
 
-    const path = await getService( 'permalinks' ).getAncestorPath( uid, id, ancestor );
+    const path = await getService( 'permalinks' ).getAncestorPath( uid, ancestor );
 
     // If the UIDs are the same, check if the entity is being assigned as it's own descendant.
     if ( ! isCreating && uid === targetRelationUID ) {
@@ -92,7 +92,7 @@ module.exports = {
       return ctx.send( { path: '' } );
     }
 
-    const path = await getService( 'permalinks' ).getAncestorPath( uid, id, ancestor );
+    const path = await getService( 'permalinks' ).getAncestorPath( uid, ancestor );
 
     // Return path.
     ctx.send( { path } );
