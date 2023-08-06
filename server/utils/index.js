@@ -1,5 +1,6 @@
 'use strict';
 
+const getPermalinkAncestors = require( './get-permalink-ancestors' );
 const getPermalinkAttr = require( './get-permalink-attr' );
 const getPermalinkSlug = require( './get-permalink-slug' );
 const getService = require( './get-service' );
@@ -10,6 +11,7 @@ const pluginId = require( './plugin-id' );
 const trimSlashes = require( './trim-slashes' );
 
 module.exports = {
+  getPermalinkAncestors,
   getPermalinkAttr,
   getPermalinkSlug,
   getService,
