@@ -22,6 +22,7 @@ module.exports = {
 
   async ancestorsPath( ctx ) {
     const { uid, id, relationId, value } = ctx.params;
+    const decodedValue = decodeURIComponent( value );
     const isCreating = ! id;
 
     // Validate UID.
@@ -45,7 +46,7 @@ module.exports = {
         id,
         path,
         name,
-        value
+        decodedValue
       );
 
       if ( hasAncestorConflict ) {
@@ -60,12 +61,13 @@ module.exports = {
 
   async checkAvailability( ctx ) {
     const { uid, value } = ctx.request.params;
+    const decodedValue = decodeURIComponent( value );
 
     // Validate UID.
     await getService( 'validation' ).validateUIDInput( uid );
 
     // Check availability and maybe provide a suggestion.
-    const { isAvailable, suggestion } = await getService( 'permalinks' ).getAvailability( uid, value );
+    const { isAvailable, suggestion } = await getService( 'permalinks' ).getAvailability( uid, decodedValue );
 
     ctx.send( {
       isAvailable,
@@ -103,13 +105,14 @@ module.exports = {
 
   async suggestion( ctx ) {
     const { uid, value } = ctx.params;
+    const decodedValue = decodeURIComponent( value );
 
     // Validate UID.
     await getService( 'validation' ).validateUIDInput( uid );
 
     // Provide a unique suggestion.
     const uids = await getService( 'config' ).uids( uid );
-    const suggestion = await getService( 'permalinks' ).getSuggestion( uids, value );
+    const suggestion = await getService( 'permalinks' ).getSuggestion( uids, decodedValue );
 
     // Return suggested path.
     ctx.send( { suggestion } );
