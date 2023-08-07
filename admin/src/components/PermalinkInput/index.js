@@ -113,7 +113,7 @@ const PermalinkInput = ( {
     } catch ( err ) {
       toggleNotification( {
         type: 'warning',
-        message: err?.response?.error?.message ?? formatMessage( {
+        message: err?.response?.data?.error?.message ?? formatMessage( {
           id: getTrad( 'notification.error' ),
           defaultMessage: 'An error occurred',
         } ),
@@ -136,11 +136,11 @@ const PermalinkInput = ( {
 
       const {
         data: {
-          path: newAncestorsPath,
+          path: connectedAncestorsPath,
         },
       } = await axiosInstance.get( endpoint );
 
-      if ( ! newAncestorsPath ) {
+      if ( ancestorsPath && ! connectedAncestorsPath ) {
         setFieldState( ancestorsPath, slug, true );
         setIsOrphan( true );
         return;
@@ -148,11 +148,11 @@ const PermalinkInput = ( {
 
       const newSlug = getPermalinkSlug( value );
 
-      setFieldState( newAncestorsPath, newSlug, true );
+      setFieldState( connectedAncestorsPath, newSlug, true );
     } catch ( err ) {
       toggleNotification( {
         type: 'warning',
-        message: err?.response?.error?.message ?? formatMessage( {
+        message: err?.response?.data?.error?.message ?? formatMessage( {
           id: getTrad( 'notification.error' ),
           defaultMessage: 'An error occurred',
         } ),
@@ -214,9 +214,13 @@ const PermalinkInput = ( {
     setFieldState( null, newSlug );
   };
 
-  const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false ) => {
+  const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false, shouldRemoveErrors = true ) => {
+    // Maybe remove errors.
+    if ( shouldRemoveErrors ) {
+      setRelationError( null );
+    }
+
     // Update field state.
-    setRelationError( null );
     setAncestorsPath( newAncestorsPath );
     setSlug( newSlug );
 
@@ -241,9 +245,10 @@ const PermalinkInput = ( {
       return;
     }
 
+    const newSlug = getPermalinkSlug( isCreatingEntry ? value : initialValue );
+
     // Maybe fetch a new ancestors path.
     try {
-      const newSlug = getPermalinkSlug( isCreatingEntry ? value : initialValue );
       const params = isCreatingEntry
         ? `${contentTypeUID}/${targetRelationValue.id}`
         : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${initialSlug}`;
@@ -251,17 +256,25 @@ const PermalinkInput = ( {
 
       const {
         data: {
-          path: newAncestorsPath,
+          path: connectedAncestorsPath,
         },
       } = await axiosInstance.get( endpoint );
 
-      setFieldState( newAncestorsPath, newSlug );
+      setFieldState( connectedAncestorsPath, newSlug );
     } catch ( err ) {
-      // Maybe set field error to incidate relationship conflict.
-      if ( err?.response?.status === 409 ) {
-        removeAncestorsPath();
+      const res = err?.response;
 
-        setRelationError( formatMessage( {
+      // Maybe set field error to incidate relationship conflict.
+      if ( res?.status === 409 ) {
+        const conflictAncestorsPath = res?.data?.error?.details?.path;
+
+        if ( conflictAncestorsPath ) {
+          setFieldState( conflictAncestorsPath, newSlug, false, false );
+        } else {
+          removeAncestorsPath();
+        }
+
+        setRelationError( res?.data?.error?.message ?? formatMessage( {
           id: getTrad( 'form.error.parent-child' ),
           defaultMessage: 'Cannot assign the {relation} relation as its own descendant.',
         }, {
@@ -273,7 +286,7 @@ const PermalinkInput = ( {
 
       toggleNotification( {
         type: 'warning',
-        message: err?.response?.error?.message ?? formatMessage( {
+        message: res?.data?.error?.message ?? formatMessage( {
           id: getTrad( 'notification.error' ),
           defaultMessage: 'An error occurred',
         } ),

@@ -1,9 +1,13 @@
 'use strict';
 
-
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
-const { getPermalinkAncestors, getService } = require( '../utils' );
+const {
+  getPermalinkAncestors,
+  getPermalinkSlug,
+  getService,
+  isConnecting,
+} = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
   async validateAncestorConflict( uid, id, path, name, value ) {
@@ -41,10 +45,21 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async validateConnection( uid, data, id = null ) {
-    const { name, targetRelation } = await getService( 'config' ).layouts( uid );
+    const { name, targetRelation, targetRelationUID } = await getService( 'config' ).layouts( uid );
+    const { name: relationPermalinkName } = await getService( 'config' ).layouts( targetRelationUID );
     const value = data[ name ];
     const ancestorsPath = getPermalinkAncestors( value );
-    const isConnecting = !! data[ targetRelation ].connect.length;
+    const slug = getPermalinkSlug( value );
+    const isCreating = ! id;
+
+    /**
+     * @TODO - Maybe check if `value` is not empty and cancel if nothing?
+     */
+
+    // Skip if there is nothing to validate.
+    if ( ! isCreating && ! ancestorsPath && ! isConnecting( data, targetRelation ) ) {
+      return;
+    }
 
     // Attempt to get the connected entity or do nothing if there is none.
     const connectedEntity = await getService( 'permalinks' ).getConnectedEntity( uid, data, id );
@@ -61,6 +76,21 @@ module.exports = ( { strapi } ) => ( {
 
     if ( ancestorsPath !== connectedAncestorsPath ) {
       throw new ValidationError( `Invalid permalink connection. Paths do not match.` );
+    }
+
+    // If the UIDs are the same, check if the entity is being assigned as it's own descendant.
+    if ( ! isCreating && uid === targetRelationUID ) {
+      const hasAncestorConflict = await getService( 'validation' ).validateAncestorConflict(
+        uid,
+        id,
+        connectedAncestorsPath,
+        name,
+        slug
+      );
+
+      if ( hasAncestorConflict ) {
+        throw new ValidationError(  `Cannot assign the ${relationPermalinkName} relation as its own descendant.` );
+      }
     }
   },
 
