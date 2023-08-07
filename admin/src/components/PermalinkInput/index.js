@@ -103,7 +103,7 @@ const PermalinkInput = ( {
 
     try {
       const newSlug = getPermalink( isOrphan ? null : ancestorsPath, slug, lowercase );
-      const params = `${contentTypeUID}/${newSlug}`;
+      const params = `${contentTypeUID}/${encodeURIComponent( newSlug )}`;
       const endpoint = getApiUrl( `${pluginId}/check-availability/${params}` );
 
       const { data } = await axiosInstance.get( endpoint );
@@ -251,7 +251,7 @@ const PermalinkInput = ( {
     try {
       const params = isCreatingEntry
         ? `${contentTypeUID}/${targetRelationValue.id}`
-        : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${initialSlug}`;
+        : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${encodeURIComponent( initialSlug )}`;
       const endpoint = getApiUrl( `${pluginId}/ancestors-path/${params}` );
 
       const {
@@ -302,7 +302,7 @@ const PermalinkInput = ( {
     setIsLoading( true );
 
     try {
-      const params = `${contentTypeUID}/${debouncedTargetValue}`;
+      const params = `${contentTypeUID}/${encodeURIComponent( debouncedTargetValue )}`;
       const endpoint = getApiUrl( `${pluginId}/suggestion/${params}` );
 
       const {
