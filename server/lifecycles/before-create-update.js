@@ -18,6 +18,7 @@ module.exports = async ( { strapi } ) => {
     const attr = layouts[ uid ];
     const value = data[ attr.name ];
 
+    await getService( 'validation' ).validateFormat( uid, value );
     await getService( 'validation' ).validateConnection( uid, data, id );
 
     // Check availability in each related collection.

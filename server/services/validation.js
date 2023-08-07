@@ -2,6 +2,7 @@
 
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
+const { URI_COMPONENT_REGEX } = require( '../constants' );
 const {
   getPermalinkAncestors,
   getPermalinkSlug,
@@ -91,6 +92,15 @@ module.exports = ( { strapi } ) => ( {
       if ( hasAncestorConflict ) {
         throw new ValidationError(  `Cannot assign the ${relationPermalinkName} relation as its own descendant.` );
       }
+    }
+  },
+
+  async validateFormat( uid, value ) {
+    const { name } = await getService( 'config' ).layouts( uid );
+    const isValid = URI_COMPONENT_REGEX.test( value );
+
+    if ( ! isValid ) {
+      throw new ValidationError( `Invalid characters for permalink in ${name} field.` );
     }
   },
 
