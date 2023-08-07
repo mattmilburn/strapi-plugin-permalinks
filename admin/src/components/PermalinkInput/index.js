@@ -22,6 +22,7 @@ import {
   getRelationValue,
   getTrad,
   pluginId,
+  sanitizeSlug,
 } from '../../utils';
 
 import AncestorsPath from './AncestorsPath';
@@ -72,7 +73,7 @@ const PermalinkInput = ( {
   const [ isCustomized, setIsCustomized ] = useState( false );
   const [ availability, setAvailability ] = useState( null );
   const [ regenerateLabel, setRegenerateLabel ] = useState( null );
-  const [ relationError, setRelationError ] = useState( null );
+  const [ fieldError, setFieldError ] = useState( null );
   const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
   const [ slug, setSlug ] = useState( initialSlug );
 
@@ -164,7 +165,7 @@ const PermalinkInput = ( {
 
   const handleChange = event => {
     // Remove slash characters from the input value because they are used as the path separator.
-    const newSlug = ( event.target.value ?? '' ).replace( '/', '' );
+    const newSlug = sanitizeSlug( event.target.value );
 
     if ( newSlug && isCreatingEntry ) {
       setIsCustomized( true );
@@ -196,10 +197,10 @@ const PermalinkInput = ( {
 
   const handleRefresh = () => {
     // Clear orphan state when refreshing.
-    if ( isOrphan && !! relationError ) {
+    if ( isOrphan && !! fieldError ) {
       setIsOrphan( false );
       setAncestorsPath( null );
-      setRelationError( null );
+      setFieldError( null );
       return;
     }
 
@@ -217,7 +218,7 @@ const PermalinkInput = ( {
   const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false, shouldRemoveErrors = true ) => {
     // Maybe remove errors.
     if ( shouldRemoveErrors ) {
-      setRelationError( null );
+      setFieldError( null );
     }
 
     // Update field state.
@@ -274,7 +275,7 @@ const PermalinkInput = ( {
           removeAncestorsPath();
         }
 
-        setRelationError( res?.data?.error?.message ?? formatMessage( {
+        setFieldError( res?.data?.error?.message ?? formatMessage( {
           id: getTrad( 'form.error.parent-child' ),
           defaultMessage: 'Cannot assign the {relation} relation as its own descendant.',
         }, {
@@ -336,7 +337,7 @@ const PermalinkInput = ( {
 
   useEffect( () => {
     if ( isOrphan ) {
-      setRelationError( formatMessage( {
+      setFieldError( formatMessage( {
         id: getTrad( 'form.error.orphan' ),
         defaultMessage: 'This value must be regenerated after being orphaned.',
       } ) );
@@ -410,7 +411,7 @@ const PermalinkInput = ( {
     if ( selectedSelfRelation ) {
       removeAncestorsPath();
 
-      setRelationError( formatMessage( {
+      setFieldError( formatMessage( {
         id: getTrad( 'form.error.parent-self' ),
         defaultMessage: 'Cannot assign the {relation} relation to itself.',
       }, {
@@ -435,7 +436,7 @@ const PermalinkInput = ( {
   return (
     <TextInput
       disabled={ disabled }
-      error={ relationError ?? formattedError }
+      error={ fieldError ?? formattedError }
       hint={ hint }
       label={ label }
       labelAction={ labelAction }
@@ -447,7 +448,7 @@ const PermalinkInput = ( {
       startAction={ ancestorsPath ? (
         <AncestorsPath
           path={ ancestorsPath }
-          hasError={ !! relationError || !! error }
+          hasError={ !! fieldError || !! error }
         />
       ) : null }
       endAction={
