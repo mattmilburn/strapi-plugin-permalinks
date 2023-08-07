@@ -29,6 +29,7 @@ module.exports = {
 
     // Get connected relation.
     const { name, targetRelationUID } = await getService( 'config' ).layouts( uid );
+    const { name: relationPermalinkName } = await getService( 'config' ).layouts( targetRelationUID );
     const ancestor = await getService( 'permalinks' ).getAncestor( uid, relationId );
 
     if ( ! ancestor ) {
@@ -48,7 +49,9 @@ module.exports = {
       );
 
       if ( hasAncestorConflict ) {
-        return ctx.badRequest( `Cannot assign the ${relationPermalinkName} relation as its own descendant.` );
+        return ctx.conflict( `Cannot assign the ${relationPermalinkName} relation as its own descendant.`, {
+          path,
+        } );
       }
     }
 

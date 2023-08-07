@@ -23,9 +23,9 @@ module.exports = ( { strapi } ) => ( {
       return '';
     }
 
-    const { name, targetRelationUID } = await getService( 'config' ).layouts( uid );
-    const { name: relationPermalinkName } = await getService( 'config' ).layouts( targetRelationUID );
-    const path = get( relationEntity, relationPermalinkName, '' );
+    const { targetRelationUID } = await getService( 'config' ).layouts( uid );
+    const { name } = await getService( 'config' ).layouts( targetRelationUID );
+    const path = get( relationEntity, name, '' );
 
     return path;
   },
