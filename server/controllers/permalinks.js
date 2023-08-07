@@ -62,7 +62,7 @@ module.exports = {
     await getService( 'validation' ).validateUIDInput( uid );
 
     // Check availability and maybe provide a suggestion.
-    const { isAvailable, suggestion } = await getService( 'permalinks' ).getAvailability( uid );
+    const { isAvailable, suggestion } = await getService( 'permalinks' ).getAvailability( uid, value );
 
     ctx.send( {
       isAvailable,
