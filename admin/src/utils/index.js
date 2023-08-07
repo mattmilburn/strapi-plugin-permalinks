@@ -9,4 +9,5 @@ export { default as interpolate } from './interpolate';
 export { default as parseUrl } from './parse-url';
 export { default as pluginId } from './plugin-id';
 export { default as pluginName } from './plugin-name';
+export { default as sanitizeSlug } from './sanitize-slug';
 export { default as trimSlashes } from './trim-slashes';
