@@ -23,7 +23,7 @@ export default {
     app.customFields.register( {
       pluginId,
       name: 'permalink',
-      type: 'uid',
+      type: 'string',
       icon: null,
       intlLabel: {
         id: getTrad( 'register.label' ),
