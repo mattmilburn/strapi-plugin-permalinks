@@ -243,17 +243,15 @@ module.exports = ( { env } ) => ( {
 
 module.exports = {
   async up( knex ) {
-    const entries = await knex( 'pages' );
+    const rows = await knex( 'pages' );
 
-    const promisedUpdates = entries.map( entry => {
+    await Promise.all( rows.map( row => {
       return knex( uid )
-        .where( { id: entry.id } )
+        .where( { id: row.id } )
         .update( {
-          slug: entry.slug.toLowerCase(),
+          slug: row.slug.toLowerCase(),
         } );
-    } );
-
-    await Promise.all( promisedUpdates );
+    } ) );
   },
 
   down() {},
