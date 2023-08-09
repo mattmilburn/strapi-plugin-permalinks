@@ -11,6 +11,11 @@ const usePluginConfig = () => {
   const { config, isLoading } = useSelector( state => state[ `${pluginId}_config` ] );
 
   useEffect( () => {
+    // Do nothing if we have already loaded the data.
+    if (!isLoading && !!config) {
+      return;
+    }
+
     fetchClient.get( `/${pluginId}/config` ).then( res => {
       dispatch( {
         type: ACTION_RESOLVE_CONFIG,
