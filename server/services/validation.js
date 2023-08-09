@@ -147,12 +147,20 @@ module.exports = ( { strapi } ) => ( {
       // Ensure that permalink attributes target an actual string type field.
       const targetFieldAttr = attributes[ pluginOptions.targetField ];
 
+      if ( ! targetFieldAttr ) {
+        throw new ValidationError( `Missing targetField attribute for ${name} in ${uid}.` );
+      }
+
       if ( targetFieldAttr.type !== 'string' && targetFieldAttr.type !== 'text' ) {
         throw new ValidationError( `Must use a valid string type for ${name} targetField in ${uid}. Found ${targetFieldAttr.type}.` );
       }
 
       // Ensure that permalink attributes target an actual relation field type that uses a oneToOne relation.
       const targetRelationAttr = attributes[ pluginOptions.targetRelation ];
+
+      if ( ! targetRelationAttr ) {
+        throw new ValidationError( `Missing targetRelation attribute for ${name} in ${uid}.` );
+      }
 
       if ( targetRelationAttr.type !== 'relation' ) {
         throw new ValidationError( `Must use a valid relation type for ${name} targetRelation in ${uid}. Found ${targetRelationAttr.type}.` );
