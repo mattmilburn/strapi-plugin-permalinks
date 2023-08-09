@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import get from 'lodash/get';
 import { TextInput } from '@strapi/design-system/TextInput';
 import { Typography } from '@strapi/design-system/Typography';
-import { useCMEditViewDataManager, useNotification } from '@strapi/helper-plugin';
+import { useCMEditViewDataManager, useFetchClient, useNotification } from '@strapi/helper-plugin';
 import CheckCircle from '@strapi/icons/CheckCircle';
 import ExclamationMarkCircle from '@strapi/icons/ExclamationMarkCircle';
 import Loader from '@strapi/icons/Loader';
@@ -14,7 +14,6 @@ import Refresh from '@strapi/icons/Refresh';
 import { URI_COMPONENT_REGEX } from '../../constants';
 import { useDebounce } from '../../hooks';
 import {
-  axiosInstance,
   getApiUrl,
   getPermalink,
   getPermalinkAncestors,
@@ -47,6 +46,7 @@ const PermalinkInput = ( {
   required,
   value,
 } ) => {
+  const fetchClient = useFetchClient();
   const { formatMessage } = useIntl();
   const { initialData, isCreatingEntry, layout, modifiedData } = useCMEditViewDataManager();
   const { layouts, lowercase } = useSelector( state => state[ `${pluginId}_config` ].config );
@@ -107,7 +107,7 @@ const PermalinkInput = ( {
       const params = `${contentTypeUID}/${encodeURIComponent( newSlug )}`;
       const endpoint = getApiUrl( `${pluginId}/check-availability/${params}` );
 
-      const { data } = await axiosInstance.get( endpoint );
+      const { data } = await fetchClient.get( endpoint );
 
       setAvailability( data );
       setIsLoading( false );
@@ -139,7 +139,7 @@ const PermalinkInput = ( {
         data: {
           path: connectedAncestorsPath,
         },
-      } = await axiosInstance.get( endpoint );
+      } = await fetchClient.get( endpoint );
 
       if ( ancestorsPath && ! connectedAncestorsPath ) {
         setFieldState( ancestorsPath, slug, true );
@@ -259,7 +259,7 @@ const PermalinkInput = ( {
         data: {
           path: connectedAncestorsPath,
         },
-      } = await axiosInstance.get( endpoint );
+      } = await fetchClient.get( endpoint );
 
       setFieldState( connectedAncestorsPath, newSlug );
     } catch ( err ) {
@@ -310,7 +310,7 @@ const PermalinkInput = ( {
         data: {
           suggestion: newSlug,
         },
-      } = await axiosInstance.get( endpoint );
+      } = await fetchClient.get( endpoint );
 
       const newAncestorsPath = isOrphan ? null : ancestorsPath;
 
