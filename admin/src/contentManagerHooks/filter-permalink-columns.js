@@ -1,4 +1,5 @@
 import React from 'react';
+import get from 'lodash/get';
 import { Typography } from '@strapi/design-system/Typography';
 
 import { ListViewTableCell  } from '../components';
@@ -20,8 +21,9 @@ const filterPermalinkColumns = ( { displayedHeaders, layout } ) => {
         const ancestorsPath = getPermalinkAncestors( value );
         const slug = getPermalinkSlug( value );
 
-        // Check if this entity has been orphaned due to its parent being deleted.
-        const targetRelationValue = props[ header.fieldSchema.targetRelation ];
+        // Check if this entity has been orphaned due to a broken parent connection.
+        const targetRelationName = get( header, [ 'fieldSchema', 'pluginOptions', pluginId, 'targetRelation' ] );
+        const targetRelationValue = get( props, targetRelationName );
         const isOrphan = !! ancestorsPath && ! targetRelationValue;
 
         return (

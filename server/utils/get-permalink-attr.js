@@ -2,6 +2,8 @@
 
 const get = require( 'lodash/get' );
 
+const pluginId = require( './plugin-id' );
+
 const getPermalinkAttr = uid => {
   const model = strapi.getModel( uid );
 
@@ -14,13 +16,14 @@ const getPermalinkAttr = uid => {
   }
 
   const [ name, attr ] = permalinkAttr;
-  const relationUID = get( model, [ 'attributes', attr.targetRelation, 'target' ] );
+  const { targetField, targetRelation } = get( attr, [ 'pluginOptions', pluginId ] );
+  const targetRelationUID = get( model, [ 'attributes', targetRelation, 'target' ] );
 
   return {
     name,
-    targetField: attr.targetField,
-    targetRelation: attr.targetRelation,
-    targetRelationUID: relationUID,
+    targetField,
+    targetRelation,
+    targetRelationUID,
   };
 };
 
