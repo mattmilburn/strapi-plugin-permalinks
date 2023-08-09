@@ -7,7 +7,7 @@ import { parseUrl } from '../utils';
 
 const useParsedUrl = ( uid, data, isCreatingEntry ) => {
   const { runHookWaterfall } = useStrapiApp();
-  const { config, isLoading } = usePluginConfig();
+  const { data: config, isLoading } = usePluginConfig();
   const [ url, setUrl ] = useState( null );
   const [ canCopy, setCopy ] = useState( true );
 
