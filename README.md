@@ -67,9 +67,13 @@ After adding a permalink field through the content type builder, there are addit
     "slug": {
       "type": "customField",
       "customField": "plugin::permalinks.permalink",
-      "targetField": "title",
-      "targetRelation": "parent",
-      "required": true
+      "required": true,
+      "pluginOptions": {
+        "permalinks": {
+          "targetField": "title",
+          "targetRelation": "parent"
+        }
+      }
     },
     "content": {
       "type": "richtext"
