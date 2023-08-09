@@ -1,4 +1,3 @@
-export { default as axiosInstance } from './axios-instance';
 export { default as getApiUrl } from './get-api-url';
 export { default as getPermalink } from './get-permalink';
 export { default as getPermalinkAncestors } from './get-permalink-ancestors';
