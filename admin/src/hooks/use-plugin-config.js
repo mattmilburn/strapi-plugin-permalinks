@@ -1,39 +1,28 @@
 import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { request, useNotification } from '@strapi/helper-plugin';
+import { useDispatch, useSelector } from 'react-redux';
+import { useFetchClient } from '@strapi/helper-plugin';
 
 import { ACTION_RESOLVE_CONFIG } from '../constants';
 import { pluginId } from '../utils';
 
-const fetchConfig = async ( toggleNotification ) => {
-  try {
-    const endpoint = `/${pluginId}/config`;
-    const data = await request( endpoint, { method: 'GET' } );
-
-    return data?.config ?? {};
-  } catch ( err ) {
-    toggleNotification( {
-      type: 'warning',
-      message: { id: 'notification.error' },
-    } );
-
-    return err;
-  }
-};
-
 const usePluginConfig = () => {
   const dispatch = useDispatch();
-  const toggleNotification = useNotification();
-  const config = useSelector( state => state[ `${pluginId}_config` ].config );
-  const isLoading = useSelector( state => state[ `${pluginId}_config` ].isLoading );
+  const fetchClient = useFetchClient();
+  const { config, isLoading } = useSelector( state => state[ `${pluginId}_config` ] );
 
   useEffect( () => {
-    fetchConfig( toggleNotification ).then( data => {
-      dispatch( { type: ACTION_RESOLVE_CONFIG, data } );
+    fetchClient.get( `/${pluginId}/config` ).then( res => {
+      dispatch( {
+        type: ACTION_RESOLVE_CONFIG,
+        data: res?.data?.config ?? {},
+      } );
     } );
-  }, [ dispatch, toggleNotification ] );
+  }, [] );
 
-  return { config, isLoading };
+  return {
+    data: config,
+    isLoading,
+  };
 };
 
 export default usePluginConfig;
