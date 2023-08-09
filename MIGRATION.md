@@ -13,6 +13,33 @@ Previously, the plugin was using a custom `uid` field to manage the permalink va
 
 > Nothing should be required to accommodate this update in your app.
 
+### Use `pluginOptions` for attribute configuration
+Previously, the `targetField` and `targetRelation` props were added directly to a model attribute. Going forward, those props will need to be added to the `pluginOptions.permalinks` prop for a model attribute. See example below.
+
+```js
+// Incorrect.
+"slug": {
+  "type": "customField",
+  "customField": "plugin::permalinks.permalink",
+  "targetField": "title",
+  "targetRelation": "parent",
+  "required": true
+},
+
+// Correct.
+"slug": {
+  "type": "customField",
+  "customField": "plugin::permalinks.permalink",
+  "required": true,
+  "pluginOptions": {
+    "permalinks": {
+      "targetField": "title",
+      "targetRelation": "parent"
+    }
+  }
+},
+```
+
 ### Remove tilde characters (~) from permalinks
 Because the plugin was previously using a `uid` field, the slash `/` characters were not allowed to be used. Instead, the tilde `~` character was sacrificed as a replacement for slashes to allow the value to validate properly according to the database schema.
 
