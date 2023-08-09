@@ -1,5 +1,6 @@
 'use strict';
 
+const get = require( 'lodash/get' );
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
 const { URI_COMPONENT_REGEX } = require( '../constants' );
@@ -8,6 +9,7 @@ const {
   getPermalinkSlug,
   getService,
   isConnecting,
+  pluginId,
 } = require( '../utils' );
 
 module.exports = ( { strapi } ) => ( {
@@ -126,33 +128,38 @@ module.exports = ( { strapi } ) => ( {
         throw new ValidationError( `Must have exactly one permalink attribute defined in ${uid}.` );
       }
 
-      // Ensure that permalink attributes have required props defined.
+      // Ensure that permalink attributes have required plugin options defined.
       const [ name, attr ] = permalinkAttrs[ 0 ];
+      const pluginOptions = get( attr, [ 'pluginOptions', pluginId ] );
 
-      if ( ! attr.targetField ) {
-        throw new ValidationError( `Missing ${name}.targetField in ${uid}.` );
+      if ( ! pluginOptions ) {
+        throw new ValidationError( `Missing pluginOptions for ${name} field in ${uid}.` );
       }
 
-      if ( ! attr.targetRelation ) {
-        throw new ValidationError( `Missing ${name}.targetRelation in ${uid}.` );
+      if ( ! pluginOptions.targetField ) {
+        throw new ValidationError( `Missing targetField for ${name} field in ${uid}.` );
+      }
+
+      if ( ! pluginOptions.targetRelation ) {
+        throw new ValidationError( `Missing targetRelation for ${name} field in ${uid}.` );
       }
 
       // Ensure that permalink attributes target an actual string type field.
-      const targetFieldAttr = attributes[ attr.targetField ];
+      const targetFieldAttr = attributes[ pluginOptions.targetField ];
 
       if ( targetFieldAttr.type !== 'string' && targetFieldAttr.type !== 'text' ) {
-        throw new ValidationError( `Must use a valid string type for ${name}.targetField in ${uid}. Found ${targetFieldAttr.type}.` );
+        throw new ValidationError( `Must use a valid string type for ${name} targetField in ${uid}. Found ${targetFieldAttr.type}.` );
       }
 
       // Ensure that permalink attributes target an actual relation field type that uses a oneToOne relation.
-      const targetRelationAttr = attributes[ attr.targetRelation ];
+      const targetRelationAttr = attributes[ pluginOptions.targetRelation ];
 
       if ( targetRelationAttr.type !== 'relation' ) {
-        throw new ValidationError( `Must use a valid relation type for ${name}.targetRelation in ${uid}. Found ${targetRelationAttr.type}.` );
+        throw new ValidationError( `Must use a valid relation type for ${name} targetRelation in ${uid}. Found ${targetRelationAttr.type}.` );
       }
 
       if ( targetRelationAttr.relation !== 'oneToOne' ) {
-        throw new ValidationError( `Must use a oneToOne relation for ${name}.targetRelation in ${uid}.` );
+        throw new ValidationError( `Must use a oneToOne relation for ${name} targetRelation in ${uid}.` );
       }
     } );
   },
