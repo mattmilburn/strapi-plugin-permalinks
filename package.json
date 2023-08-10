@@ -24,6 +24,7 @@
     "npm": ">=6.0.0"
   },
   "scripts": {
+    "prepare": "husky install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -64,6 +65,8 @@
     "eslint-plugin-prettier": "5.0.0",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "4.6.0",
+    "husky": "8.0.3",
+    "lint-staged": "13.2.3",
     "prettier": "2.8.8"
   },
   "repository": {
