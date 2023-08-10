@@ -9,12 +9,22 @@
     "description": "Enable a URL path field for content types with nested relationships.",
     "kind": "plugin"
   },
-  "peerDependencies": {
-    "@strapi/design-system": "^1.5.0",
-    "@strapi/helper-plugin": "^4.6.0",
-    "@strapi/icons": "^1.5.0",
-    "@strapi/strapi": "^4.6.0",
-    "@strapi/utils": "^4.6.0"
+  "author": {
+    "name": "Matt Milburn",
+    "url": "https://github.com/mattmilburn"
+  },
+  "maintainers": [
+    {
+      "name": "Matt Milburn",
+      "url": "https://github.com/mattmilburn"
+    }
+  ],
+  "engines": {
+    "node": ">=14.19.1 <=18.x.x",
+    "npm": ">=6.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "immer": "^9.0.12",
@@ -28,22 +38,12 @@
     "slugify": "^1.6.5",
     "styled-components": "5.3.3"
   },
-  "engines": {
-    "node": ">=14.19.1 <=18.x.x",
-    "npm": ">=6.0.0"
-  },
-  "author": {
-    "name": "Matt Milburn",
-    "url": "https://github.com/mattmilburn"
-  },
-  "maintainers": [
-    {
-      "name": "Matt Milburn",
-      "url": "https://github.com/mattmilburn"
-    }
-  ],
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "peerDependencies": {
+    "@strapi/design-system": "^1.5.0",
+    "@strapi/helper-plugin": "^4.6.0",
+    "@strapi/icons": "^1.5.0",
+    "@strapi/strapi": "^4.6.0",
+    "@strapi/utils": "^4.6.0"
   },
   "repository": {
     "type": "git",
@@ -53,12 +53,14 @@
     "strapi",
     "plugin",
     "permalink",
+    "absolute",
     "nested",
     "path",
     "parent",
     "related",
     "relation",
     "relationship",
+    "relative",
     "slug",
     "uid",
     "url"
