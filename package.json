@@ -39,11 +39,11 @@
     "styled-components": "5.3.3"
   },
   "peerDependencies": {
-    "@strapi/design-system": "^1.5.0",
-    "@strapi/helper-plugin": "^4.6.0",
-    "@strapi/icons": "^1.5.0",
-    "@strapi/strapi": "^4.6.0",
-    "@strapi/utils": "^4.6.0"
+    "@strapi/design-system": "^1.6.0",
+    "@strapi/helper-plugin": "^4.9.0",
+    "@strapi/icons": "^1.6.0",
+    "@strapi/strapi": "^4.9.0",
+    "@strapi/utils": "^4.9.0"
   },
   "repository": {
     "type": "git",
