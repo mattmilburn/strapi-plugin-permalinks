@@ -27,15 +27,15 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "immer": "^9.0.12",
+    "immer": "^9.0.21",
     "lodash": "4.17.21",
     "prop-types": "^15.8.1",
-    "qs": "^6.10.3",
+    "qs": "^6.11.2",
     "react": "^17.0.2",
     "react-copy-to-clipboard": "^5.1.0",
-    "react-intl": "^5.24.6",
-    "react-redux": "^7.2.6",
-    "slugify": "^1.6.5",
+    "react-intl": "^6.4.4",
+    "react-redux": "^8.0.5",
+    "slugify": "^1.6.6",
     "styled-components": "5.3.3"
   },
   "peerDependencies": {
