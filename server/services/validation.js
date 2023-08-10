@@ -1,6 +1,7 @@
 'use strict';
 
 const get = require( 'lodash/get' );
+const has = require( 'lodash/has' );
 const { ValidationError } = require( '@strapi/utils' ).errors;
 
 const { URI_COMPONENT_REGEX } = require( '../constants' );
@@ -26,7 +27,7 @@ module.exports = ( { strapi } ) => ( {
         },
       } );
 
-      return entity && entity.id === parseInt( id );
+      return entity && entity.id === parseInt( id, 10 );
     }
 
     return false;
@@ -107,7 +108,6 @@ module.exports = ( { strapi } ) => ( {
   },
 
   async validateSchema() {
-    const { contentTypes } = await getService( 'config' ).get();
     const uids = await getService( 'config' ).uids();
 
     uids.forEach( uid => {
@@ -120,7 +120,7 @@ module.exports = ( { strapi } ) => ( {
       const { attributes } = model;
 
       // Ensure that exactly one permalink attribute is defined for this model.
-      const permalinkAttrs = Object.entries( attributes ).filter( ( [ _name, attr ] ) => {
+      const permalinkAttrs = Object.entries( attributes ).filter( ( [ , attr ] ) => {
         return attr.customField === 'plugin::permalinks.permalink';
       } );
 
@@ -183,7 +183,7 @@ module.exports = ( { strapi } ) => ( {
     }
 
     // Verify this UID is supported in the plugin config.
-    const isSupported = layouts.hasOwnProperty( uid );
+    const isSupported = has( layouts, uid );
 
     if ( ! isSupported ) {
       throw new ValidationError( `The model ${uid} is not supported in the permalinks plugin config.` );

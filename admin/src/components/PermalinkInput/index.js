@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
-import { useSelector } from 'react-redux';
 import get from 'lodash/get';
 import { TextInput } from '@strapi/design-system/TextInput';
 import { Typography } from '@strapi/design-system/Typography';
@@ -12,7 +11,7 @@ import Loader from '@strapi/icons/Loader';
 import Refresh from '@strapi/icons/Refresh';
 
 import { URI_COMPONENT_REGEX } from '../../constants';
-import { useDebounce } from '../../hooks';
+import { useDebounce, usePluginConfig } from '../../hooks';
 import {
   getApiUrl,
   getPermalink,
@@ -33,7 +32,6 @@ import {
 } from './styled';
 
 const PermalinkInput = ( {
-  attribute,
   contentTypeUID,
   disabled,
   error,
@@ -48,18 +46,22 @@ const PermalinkInput = ( {
 } ) => {
   const fetchClient = useFetchClient();
   const { formatMessage } = useIntl();
-  const { initialData, isCreatingEntry, layout, modifiedData } = useCMEditViewDataManager();
-  const { layouts, lowercase } = useSelector( state => state[ `${pluginId}_config` ].config );
   const toggleNotification = useNotification();
+  const { initialData, isCreatingEntry, layout, modifiedData } = useCMEditViewDataManager();
+  const { data: config } = usePluginConfig();
   const generateUID = useRef();
 
-  const targetFieldConfig = layouts[ contentTypeUID ];
+  const lowercase = get( config, 'lowercase', true );
+  const targetFieldConfig = get( config, [ 'layouts', contentTypeUID ], {} );
   const targetRelationUID = get( layout, [ 'attributes', targetFieldConfig.targetRelation, 'targetModel' ], null );
-  const targetRelationConfig = layouts[ targetRelationUID ];
   const targetRelationValue = getRelationValue( modifiedData, targetFieldConfig.targetRelation );
 
   const hasDifferentRelationUID = targetRelationUID && contentTypeUID !== targetRelationUID;
-  const selectedSelfRelation = ! isCreatingEntry && ! hasDifferentRelationUID && targetRelationValue?.id === modifiedData.id;
+  const selectedSelfRelation = (
+    ! isCreatingEntry &&
+    ! hasDifferentRelationUID &&
+    targetRelationValue?.id === modifiedData.id
+  );
 
   const initialValue = initialData[ name ];
   const initialRelationValue = getRelationValue( initialData, targetFieldConfig.targetRelation );
@@ -334,6 +336,7 @@ const PermalinkInput = ( {
   useEffect( () => {
     checkConnection();
   }, [] );
+  // }, [ checkConnection ] );
 
   useEffect( () => {
     if ( isOrphan ) {
@@ -354,6 +357,7 @@ const PermalinkInput = ( {
       } );
     }
   }, [ isOrphan ] );
+  // }, [ isOrphan, layout, formatMessage, setFieldError, toggleNotification ] );
 
   useEffect( () => {
     if (
@@ -367,7 +371,8 @@ const PermalinkInput = ( {
     if ( ! debouncedValue || debouncedValue === initialValue ) {
       setAvailability( null );
     }
-  }, [ debouncedValue, initialValue ] );
+  }, [ initialValue, debouncedValue ] );
+  // }, [ initialValue, debouncedValue, checkAvailability, setAvailability ] );
 
   useEffect( () => {
     let timer;
@@ -384,6 +389,7 @@ const PermalinkInput = ( {
       }
     };
   }, [ availability ] );
+  // }, [ availability, setAvailability ] );
 
   useEffect( () => {
     if (
@@ -396,6 +402,7 @@ const PermalinkInput = ( {
       generateUID.current( true );
     }
   }, [ debouncedTargetValue, isCreatingEntry, isCustomized ] );
+  // }, [ isCreatingEntry, isCustomized, value, debouncedTargetValue, targetFieldConfig, modifiedData ] );
 
   useEffect( () => {
     // This is required for scenarios like switching between locales to ensure
@@ -405,6 +412,7 @@ const PermalinkInput = ( {
 
     setFieldState( newAncestorsPath, newSlug, true );
   }, [ initialData.id ] );
+  // }, [ initialData.id, initialValue, setFieldState ] );
 
   useEffect( () => {
     // Remove ancestors path if we have selected the current entity as the parent.
@@ -431,7 +439,18 @@ const PermalinkInput = ( {
     if ( targetRelationValue && targetRelationValue !== initialRelationValue ) {
       updateAncestorsPath();
     }
-  }, [ targetRelationValue, initialRelationValue ] );
+  }, [ initialRelationValue, targetRelationValue ] );
+  // }, [
+  //   isOrphan,
+  //   initialRelationValue,
+  //   targetRelationValue,
+  //   selectedSelfRelation,
+  //   targetFieldConfig,
+  //   formatMessage,
+  //   setFieldError,
+  //   removeAncestorsPath,
+  //   updateAncestorsPath,
+  // ] );
 
   return (
     <TextInput

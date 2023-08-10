@@ -1,6 +1,5 @@
 import React from 'react';
 import get from 'lodash/get';
-import { Typography } from '@strapi/design-system/Typography';
 
 import { ListViewTableCell  } from '../components';
 import { getPermalinkAncestors, getPermalinkSlug, pluginId } from '../utils';

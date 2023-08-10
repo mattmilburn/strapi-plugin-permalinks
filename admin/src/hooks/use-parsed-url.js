@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import get from 'lodash/get';
+import has from 'lodash/has';
 import { useStrapiApp } from '@strapi/helper-plugin';
 
 import { HOOK_BEFORE_BUILD_URL } from '../constants';
-import { usePluginConfig } from '../hooks';
+import usePluginConfig from './use-plugin-config';
 import { parseUrl } from '../utils';
 
 const useParsedUrl = ( uid, data, isCreatingEntry ) => {
@@ -11,34 +13,45 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
   const [ url, setUrl ] = useState( null );
   const [ canCopy, setCopy ] = useState( true );
 
-  const { contentTypes, layouts } = config;
-  const attr = layouts[ uid ];
+  const contentTypes = get( config, 'contentTypes' );
+  const layouts = get( config, 'layouts' );
+  const isSupported = has( layouts, uid );
 
-  useEffect( () => {
-    if ( isLoading || isCreatingEntry || ! attr ) {
-      return;
-    }
-
+  const complete = useCallback(async () => {
     const uidConfig = contentTypes.find( item => item.uids.includes( uid ) );
     const stateFromConfig = {
       ...uidConfig,
       url: uidConfig.url ?? null,
     };
-    const { state } = runHookWaterfall( HOOK_BEFORE_BUILD_URL, { state: stateFromConfig, data } );
-    const parsedUrl = parseUrl( state, data );
 
-    if ( ! parsedUrl ) {
+    // Run async hook then set state.
+    const { state } = await runHookWaterfall(
+      HOOK_BEFORE_BUILD_URL,
+      { state: stateFromConfig, data },
+      true
+    );
+    const url = parseUrl(state, data);
+
+    if (!url) {
       return;
     }
 
-    setUrl( parsedUrl );
-    setCopy( state?.copy === false ? false : true );
-  }, [ isCreatingEntry, isLoading, data ] );
+    setUrl(url);
+    setCopy(state?.copy === false ? false : true);
+  }, [contentTypes, data, uid, setCopy, setUrl, runHookWaterfall]);
+
+  useEffect( () => {
+    if ( isLoading || isCreatingEntry || ! isSupported ) {
+      return;
+    }
+
+    complete();
+  }, [ isLoading, isCreatingEntry, isSupported, complete ] );
 
   return {
     canCopy,
     isLoading,
-    isSupported: !! attr,
+    isSupported,
     url,
   };
 };

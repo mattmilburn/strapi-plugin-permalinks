@@ -7,13 +7,20 @@ const AncestorsPath = ( { hasError, path } ) => {
   return (
     <PathLabel hasError={ hasError }>
       { path.split( '/' ).map( ( part, i ) => (
-        <Fragment key={ i }>
+        <Fragment key={
+          /* eslint-disable-next-line react/no-array-index-key */
+          `${part}-${i}`
+        }>
           { part }
           <Delimiter hasError={ hasError }>/</Delimiter>
         </Fragment>
       ) ) }
     </PathLabel>
   );
+};
+
+AncestorsPath.defaultProps = {
+  hasError: false,
 };
 
 AncestorsPath.propTypes = {

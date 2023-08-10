@@ -1,8 +1,6 @@
 'use strict';
 
 const get = require( 'lodash/get' );
-const has = require( 'lodash/has' );
-const uniq = require( 'lodash/uniq' );
 const { NotFoundError } = require( '@strapi/utils' ).errors;
 
 const { getService } = require( '../utils' );

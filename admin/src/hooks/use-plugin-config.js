@@ -18,14 +18,15 @@ const usePluginConfig = () => {
     }
 
     fetchClient.get( `/${pluginId}/config` )
-      .then( res => {
+      .then( ( { data } ) => {
         dispatch( {
           type: ACTION_RESOLVE_CONFIG,
-          data: res?.data?.config ?? {},
+          data,
         } );
       } )
       .catch( err => {
         if ( 'code' in err && err?.code === 'ERR_CANCELED' ) {
+          console.log( 'CANCELLED', err );
           return;
         }
 
@@ -34,7 +35,7 @@ const usePluginConfig = () => {
           message: { id: 'notification.error' },
         } );
       } );
-  }, [] );
+  }, [ isLoading, config, dispatch, fetchClient, toggleNotification ] );
 
   return {
     data: config,

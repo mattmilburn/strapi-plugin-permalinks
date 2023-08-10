@@ -1,9 +1,10 @@
 'use strict';
 
+const has = require( 'lodash/has' );
+
 const { getService } = require( '../utils' );
 
 module.exports = async ( { strapi } ) => {
-  const { contentTypes } = await getService( 'config' ).get();
   const layouts = await getService( 'config' ).layouts();
   const models = await getService( 'config' ).uids();
 
@@ -25,10 +26,10 @@ module.exports = async ( { strapi } ) => {
     const { uid } = model;
     const { id } = where;
     const attr = layouts[ uid ];
-    const { name, targetRelation, targetRelationUID } = attr;
+    const { name } = attr;
 
     // Do nothing if this data does not contain the `[name]` prop.
-    if ( ! data.hasOwnProperty( name ) ) {
+    if ( ! has( data, name ) ) {
       return;
     }
 
