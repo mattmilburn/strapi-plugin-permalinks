@@ -2,8 +2,7 @@ import React from 'react';
 import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 
 import { useParsedUrl } from '../../hooks';
-import { pluginId } from '../../utils';
-import { CopyLinkButton } from '../';
+import CopyLinkButton from '../CopyLinkButton';
 
 const EditViewRightLinks = () => {
   const {

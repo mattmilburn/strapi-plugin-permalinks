@@ -1,5 +1,3 @@
-import qs from 'qs';
-
 import interpolate from './interpolate';
 import trimSlashes from './trim-slashes';
 

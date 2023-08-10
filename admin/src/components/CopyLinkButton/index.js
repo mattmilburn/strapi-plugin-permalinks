@@ -4,7 +4,7 @@ import { useIntl } from 'react-intl';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Button } from '@strapi/design-system';
 import { useNotification } from '@strapi/helper-plugin';
-import { Link } from '@strapi/icons';
+import { Link as LinkIcon } from '@strapi/icons';
 
 import { getTrad } from '../../utils';
 
@@ -27,7 +27,7 @@ const CopyLinkButton = ( { url } ) => {
     >
       <Button
         size="S"
-        startIcon={ <Link /> }
+        startIcon={ <LinkIcon /> }
         variant="secondary"
         style={ { width: '100%' } }
       >

@@ -1,4 +1,3 @@
-import React from 'react';
 import { prefixPluginTranslations } from '@strapi/helper-plugin';
 
 import { EditViewRightLinks, Initializer } from './components';

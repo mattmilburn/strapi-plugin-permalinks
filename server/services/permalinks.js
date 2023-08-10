@@ -1,7 +1,6 @@
 'use strict';
 
 const get = require( 'lodash/get' );
-const isEmpty = require( 'lodash/isEmpty' );
 const slugify = require( 'slugify' );
 
 const { getPermalinkSlug, getService } = require( '../utils' );
@@ -129,7 +128,7 @@ module.exports = ( { strapi } ) => ( {
     let i = 1;
     let tmpUID = `${slug}-${i}`;
     while ( possibleConflicts.includes( tmpUID ) ) {
-      i++;
+      i += 1;
       tmpUID = `${slug}-${i}`;
     }
 

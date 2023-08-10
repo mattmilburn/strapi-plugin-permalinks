@@ -1,7 +1,5 @@
 'use strict';
 
-const get = require( 'lodash/get' );
-
 const { default: defaultConfig } = require( '../config' );
 const { getPermalinkAttr, pluginId } = require( '../utils' );
 

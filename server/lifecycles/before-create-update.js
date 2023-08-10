@@ -1,9 +1,9 @@
 'use strict';
 
 const get = require('lodash/get');
+const { ValidationError } = require( '@strapi/utils' ).errors;
 
 const { getService } = require( '../utils' );
-const { ValidationError } = require( '@strapi/utils' ).errors;
 
 module.exports = async ( { strapi } ) => {
   const layouts = await getService( 'config' ).layouts();

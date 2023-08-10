@@ -34,6 +34,10 @@ const ListViewTableCell = ( {
   );
 };
 
+ListViewTableCell.defaultProps = {
+  ancestorsPath: null,
+};
+
 ListViewTableCell.propTypes = {
   ancestorsPath: PropTypes.string,
   isOrphan: PropTypes.bool.isRequired,
