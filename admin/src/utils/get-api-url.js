@@ -1,3 +1,3 @@
-const getApiUrl = path => `${strapi.backendURL}/${path}`;
+const getApiUrl = (path) => `${strapi.backendURL}/${path}`;
 
 export default getApiUrl;

@@ -1,8 +1,8 @@
-const getRelationValue = ( data, key ) => {
-  const value = data[ key ];
+const getRelationValue = (data, key) => {
+  const value = data[key];
 
-  if ( Array.isArray( value ) ) {
-    return value[ 0 ];
+  if (Array.isArray(value)) {
+    return value[0];
   }
 
   return value ?? null;

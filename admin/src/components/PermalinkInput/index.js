@@ -24,14 +24,9 @@ import {
 } from '../../utils';
 
 import AncestorsPath from './AncestorsPath';
-import {
-  EndActionWrapper,
-  FieldActionWrapper,
-  LoadingWrapper,
-  TextValidation,
-} from './styled';
+import { EndActionWrapper, FieldActionWrapper, LoadingWrapper, TextValidation } from './styled';
 
-const PermalinkInput = ( {
+const PermalinkInput = ({
   contentTypeUID,
   disabled,
   error,
@@ -43,7 +38,7 @@ const PermalinkInput = ( {
   placeholder,
   required,
   value,
-} ) => {
+}) => {
   const fetchClient = useFetchClient();
   const { formatMessage } = useIntl();
   const toggleNotification = useNotification();
@@ -51,33 +46,34 @@ const PermalinkInput = ( {
   const { data: config } = usePluginConfig();
   const generateUID = useRef();
 
-  const lowercase = get( config, 'lowercase', true );
-  const targetFieldConfig = get( config, [ 'layouts', contentTypeUID ], {} );
-  const targetRelationUID = get( layout, [ 'attributes', targetFieldConfig.targetRelation, 'targetModel' ], null );
-  const targetRelationValue = getRelationValue( modifiedData, targetFieldConfig.targetRelation );
+  const lowercase = get(config, 'lowercase', true);
+  const targetFieldConfig = get(config, ['layouts', contentTypeUID], {});
+  const targetRelationUID = get(
+    layout,
+    ['attributes', targetFieldConfig.targetRelation, 'targetModel'],
+    null
+  );
+  const targetRelationValue = getRelationValue(modifiedData, targetFieldConfig.targetRelation);
 
   const hasDifferentRelationUID = targetRelationUID && contentTypeUID !== targetRelationUID;
-  const selectedSelfRelation = (
-    ! isCreatingEntry &&
-    ! hasDifferentRelationUID &&
-    targetRelationValue?.id === modifiedData.id
-  );
+  const selectedSelfRelation =
+    !isCreatingEntry && !hasDifferentRelationUID && targetRelationValue?.id === modifiedData.id;
 
-  const initialValue = initialData[ name ];
-  const initialRelationValue = getRelationValue( initialData, targetFieldConfig.targetRelation );
-  const initialAncestorsPath = getPermalinkAncestors( initialValue );
-  const initialSlug = getPermalinkSlug( initialValue );
-  const debouncedValue = useDebounce( value, 300 );
-  const debouncedTargetValue = useDebounce( modifiedData[ targetFieldConfig.targetField ], 300 );
+  const initialValue = initialData[name];
+  const initialRelationValue = getRelationValue(initialData, targetFieldConfig.targetRelation);
+  const initialAncestorsPath = getPermalinkAncestors(initialValue);
+  const initialSlug = getPermalinkSlug(initialValue);
+  const debouncedValue = useDebounce(value, 300);
+  const debouncedTargetValue = useDebounce(modifiedData[targetFieldConfig.targetField], 300);
 
-  const [ isLoading, setIsLoading ] = useState( false );
-  const [ isOrphan, setIsOrphan ] = useState( false );
-  const [ isCustomized, setIsCustomized ] = useState( false );
-  const [ availability, setAvailability ] = useState( null );
-  const [ regenerateLabel, setRegenerateLabel ] = useState( null );
-  const [ fieldError, setFieldError ] = useState( null );
-  const [ ancestorsPath, setAncestorsPath ] = useState( initialAncestorsPath );
-  const [ slug, setSlug ] = useState( initialSlug );
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOrphan, setIsOrphan] = useState(false);
+  const [isCustomized, setIsCustomized] = useState(false);
+  const [availability, setAvailability] = useState(null);
+  const [regenerateLabel, setRegenerateLabel] = useState(null);
+  const [fieldError, setFieldError] = useState(null);
+  const [ancestorsPath, setAncestorsPath] = useState(initialAncestorsPath);
+  const [slug, setSlug] = useState(initialSlug);
 
   const label = intlLabel.id
     ? formatMessage(
@@ -93,116 +89,116 @@ const PermalinkInput = ( {
       )
     : '';
 
-  const formattedError = error
-    ? formatMessage( { id: error, defaultMessage: error } )
-    : undefined;
+  const formattedError = error ? formatMessage({ id: error, defaultMessage: error }) : undefined;
 
   const checkAvailability = async () => {
-    if ( ! value || selectedSelfRelation ) {
+    if (!value || selectedSelfRelation) {
       return;
     }
 
-    setIsLoading( true );
+    setIsLoading(true);
 
     try {
-      const newSlug = getPermalink( isOrphan ? null : ancestorsPath, slug, lowercase );
-      const params = `${contentTypeUID}/${encodeURIComponent( newSlug )}`;
-      const endpoint = getApiUrl( `${pluginId}/check-availability/${params}` );
+      const newSlug = getPermalink(isOrphan ? null : ancestorsPath, slug, lowercase);
+      const params = `${contentTypeUID}/${encodeURIComponent(newSlug)}`;
+      const endpoint = getApiUrl(`${pluginId}/check-availability/${params}`);
 
-      const { data } = await fetchClient.get( endpoint );
+      const { data } = await fetchClient.get(endpoint);
 
-      setAvailability( data );
-      setIsLoading( false );
-    } catch ( err ) {
-      toggleNotification( {
+      setAvailability(data);
+      setIsLoading(false);
+    } catch (err) {
+      toggleNotification({
         type: 'warning',
-        message: err?.response?.data?.error?.message ?? formatMessage( {
-          id: getTrad( 'notification.error' ),
-          defaultMessage: 'An error occurred',
-        } ),
-      } );
+        message:
+          err?.response?.data?.error?.message ??
+          formatMessage({
+            id: getTrad('notification.error'),
+            defaultMessage: 'An error occurred',
+          }),
+      });
 
-      setIsLoading( false );
+      setIsLoading(false);
 
-      console.error( err );
+      console.error(err);
     }
   };
 
   const checkConnection = async () => {
-    if ( ! value || isCreatingEntry ) {
+    if (!value || isCreatingEntry) {
       return;
     }
 
     try {
       const params = `${contentTypeUID}/${modifiedData.id}`;
-      const endpoint = getApiUrl( `${pluginId}/check-connection/${params}` );
+      const endpoint = getApiUrl(`${pluginId}/check-connection/${params}`);
 
       const {
-        data: {
-          path: connectedAncestorsPath,
-        },
-      } = await fetchClient.get( endpoint );
+        data: { path: connectedAncestorsPath },
+      } = await fetchClient.get(endpoint);
 
-      if ( ancestorsPath && ! connectedAncestorsPath ) {
-        setFieldState( ancestorsPath, slug, true );
-        setIsOrphan( true );
+      if (ancestorsPath && !connectedAncestorsPath) {
+        setFieldState(ancestorsPath, slug, true);
+        setIsOrphan(true);
         return;
       }
 
-      const newSlug = getPermalinkSlug( value );
+      const newSlug = getPermalinkSlug(value);
 
-      setFieldState( connectedAncestorsPath, newSlug, true );
-    } catch ( err ) {
-      toggleNotification( {
+      setFieldState(connectedAncestorsPath, newSlug, true);
+    } catch (err) {
+      toggleNotification({
         type: 'warning',
-        message: err?.response?.data?.error?.message ?? formatMessage( {
-          id: getTrad( 'notification.error' ),
-          defaultMessage: 'An error occurred',
-        } ),
-      } );
+        message:
+          err?.response?.data?.error?.message ??
+          formatMessage({
+            id: getTrad('notification.error'),
+            defaultMessage: 'An error occurred',
+          }),
+      });
 
-      console.error( err );
+      console.error(err);
     }
   };
 
-  const handleChange = event => {
+  const handleChange = (event) => {
     // Remove slash characters from the input value because they are used as the path separator.
-    const newSlug = sanitizeSlug( event.target.value );
+    const newSlug = sanitizeSlug(event.target.value);
 
-    if ( newSlug && isCreatingEntry ) {
-      setIsCustomized( true );
+    if (newSlug && isCreatingEntry) {
+      setIsCustomized(true);
     }
 
-    setSlug( newSlug );
+    setSlug(newSlug);
 
-    onChange( {
+    onChange({
       target: {
         name,
-        value: getPermalink( ancestorsPath, newSlug, lowercase ),
+        value: getPermalink(ancestorsPath, newSlug, lowercase),
         type: 'text',
       },
-    } );
+    });
   };
 
   const handleGenerateMouseEnter = () => {
     setRegenerateLabel(
-      formatMessage( {
+      formatMessage({
         id: 'content-manager.components.uid.regenerate',
         defaultMessage: 'Regenerate',
-      } )
+      })
     );
   };
 
   const handleGenerateMouseLeave = () => {
-    setRegenerateLabel( null );
+    setRegenerateLabel(null);
   };
 
   const handleRefresh = () => {
     // Clear orphan state when refreshing.
-    if ( isOrphan && !! fieldError ) {
-      setIsOrphan( false );
-      setAncestorsPath( null );
-      setFieldError( null );
+    if (isOrphan && !!fieldError) {
+      setIsOrphan(false);
+      setAncestorsPath(null);
+      setFieldError(null);
       return;
     }
 
@@ -210,237 +206,262 @@ const PermalinkInput = ( {
   };
 
   const removeAncestorsPath = () => {
-    const newSlug = getPermalinkSlug( value );
+    const newSlug = getPermalinkSlug(value);
 
     // Update field state.
-    setIsOrphan( false );
-    setFieldState( null, newSlug );
+    setIsOrphan(false);
+    setFieldState(null, newSlug);
   };
 
-  const setFieldState = ( newAncestorsPath, newSlug, shouldSetInitialValue = false, shouldRemoveErrors = true ) => {
+  const setFieldState = (
+    newAncestorsPath,
+    newSlug,
+    shouldSetInitialValue = false,
+    shouldRemoveErrors = true
+  ) => {
     // Maybe remove errors.
-    if ( shouldRemoveErrors ) {
-      setFieldError( null );
+    if (shouldRemoveErrors) {
+      setFieldError(null);
     }
 
     // Update field state.
-    setAncestorsPath( newAncestorsPath );
-    setSlug( newSlug );
+    setAncestorsPath(newAncestorsPath);
+    setSlug(newSlug);
 
     // Update field value with ancestors path included.
-    onChange( {
-      target: {
-        name,
-        value: getPermalink( newAncestorsPath, newSlug, lowercase ),
-        type: 'text',
+    onChange(
+      {
+        target: {
+          name,
+          value: getPermalink(newAncestorsPath, newSlug, lowercase),
+          type: 'text',
+        },
       },
-    }, shouldSetInitialValue );
+      shouldSetInitialValue
+    );
   };
 
   const updateAncestorsPath = async () => {
-    setIsLoading( true );
-    setIsOrphan( false );
+    setIsLoading(true);
+    setIsOrphan(false);
 
     // Maybe remove ancestors path.
-    if ( ! targetRelationValue ) {
+    if (!targetRelationValue) {
       removeAncestorsPath();
-      setIsLoading( false );
+      setIsLoading(false);
       return;
     }
 
-    const newSlug = getPermalinkSlug( isCreatingEntry ? value : initialValue );
+    const newSlug = getPermalinkSlug(isCreatingEntry ? value : initialValue);
 
     // Maybe fetch a new ancestors path.
     try {
+      const encodedSlug = encodeURIComponent(initialSlug);
       const params = isCreatingEntry
         ? `${contentTypeUID}/${targetRelationValue.id}`
-        : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${encodeURIComponent( initialSlug )}`;
-      const endpoint = getApiUrl( `${pluginId}/ancestors-path/${params}` );
+        : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${encodedSlug}`;
+      const endpoint = getApiUrl(`${pluginId}/ancestors-path/${params}`);
 
       const {
-        data: {
-          path: connectedAncestorsPath,
-        },
-      } = await fetchClient.get( endpoint );
+        data: { path: connectedAncestorsPath },
+      } = await fetchClient.get(endpoint);
 
-      setFieldState( connectedAncestorsPath, newSlug );
-    } catch ( err ) {
+      setFieldState(connectedAncestorsPath, newSlug);
+    } catch (err) {
       const res = err?.response;
 
       // Maybe set field error to incidate relationship conflict.
-      if ( res?.status === 409 ) {
+      if (res?.status === 409) {
         const conflictAncestorsPath = res?.data?.error?.details?.path;
 
-        if ( conflictAncestorsPath ) {
-          setFieldState( conflictAncestorsPath, newSlug, false, false );
-          setAvailability( null );
+        if (conflictAncestorsPath) {
+          setFieldState(conflictAncestorsPath, newSlug, false, false);
+          setAvailability(null);
         } else {
           removeAncestorsPath();
         }
 
-        setFieldError( res?.data?.error?.message ?? formatMessage( {
-          id: getTrad( 'form.error.parent-child' ),
-          defaultMessage: 'Cannot assign the {relation} relation as its own descendant.',
-        }, {
-          relation: targetFieldConfig.targetRelation,
-        } ) );
+        setFieldError(
+          res?.data?.error?.message ??
+            formatMessage(
+              {
+                id: getTrad('form.error.parent-child'),
+                defaultMessage: 'Cannot assign the {relation} relation as its own descendant.',
+              },
+              {
+                relation: targetFieldConfig.targetRelation,
+              }
+            )
+        );
 
         return;
       }
 
-      toggleNotification( {
+      toggleNotification({
         type: 'warning',
-        message: res?.data?.error?.message ?? formatMessage( {
-          id: getTrad( 'notification.error' ),
-          defaultMessage: 'An error occurred',
-        } ),
-      } );
+        message:
+          res?.data?.error?.message ??
+          formatMessage({
+            id: getTrad('notification.error'),
+            defaultMessage: 'An error occurred',
+          }),
+      });
 
-      console.error( err );
+      console.error(err);
     }
 
-    setIsLoading( false );
+    setIsLoading(false);
   };
 
-  generateUID.current = async ( shouldSetInitialValue = false ) => {
-    setIsLoading( true );
+  generateUID.current = async (shouldSetInitialValue = false) => {
+    setIsLoading(true);
 
     try {
-      const params = `${contentTypeUID}/${encodeURIComponent( debouncedTargetValue )}`;
-      const endpoint = getApiUrl( `${pluginId}/suggestion/${params}` );
+      const params = `${contentTypeUID}/${encodeURIComponent(debouncedTargetValue)}`;
+      const endpoint = getApiUrl(`${pluginId}/suggestion/${params}`);
 
       const {
-        data: {
-          suggestion: newSlug,
-        },
-      } = await fetchClient.get( endpoint );
+        data: { suggestion: newSlug },
+      } = await fetchClient.get(endpoint);
 
       const newAncestorsPath = isOrphan ? null : ancestorsPath;
 
-      setFieldState( newAncestorsPath, newSlug, shouldSetInitialValue );
-      setIsLoading( false );
-    } catch ( err ) {
-      toggleNotification( {
+      setFieldState(newAncestorsPath, newSlug, shouldSetInitialValue);
+      setIsLoading(false);
+    } catch (err) {
+      toggleNotification({
         type: 'warning',
-        message: err?.response?.error?.message ?? formatMessage( {
-          id: getTrad( 'notification.error' ),
-          defaultMessage: 'An error occurred',
-        } ),
-      } );
+        message:
+          err?.response?.error?.message ??
+          formatMessage({
+            id: getTrad('notification.error'),
+            defaultMessage: 'An error occurred',
+          }),
+      });
 
-      setIsLoading( false );
+      setIsLoading(false);
 
-      console.error( err );
+      console.error(err);
     }
   };
 
-  useEffect( () => {
+  useEffect(() => {
     checkConnection();
-  }, [] );
+  }, []);
   // }, [ checkConnection ] );
 
-  useEffect( () => {
-    if ( isOrphan ) {
-      setFieldError( formatMessage( {
-        id: getTrad( 'form.error.orphan' ),
-        defaultMessage: 'This value must be regenerated after being orphaned.',
-      } ) );
+  useEffect(() => {
+    if (isOrphan) {
+      setFieldError(
+        formatMessage({
+          id: getTrad('form.error.orphan'),
+          defaultMessage: 'This value must be regenerated after being orphaned.',
+        })
+      );
 
-      toggleNotification( {
+      toggleNotification({
         type: 'warning',
-        message: formatMessage( {
-          id: getTrad( 'notification.warning.orphan' ),
-          defaultMessage: 'This {singularName} has been orphaned since it was last saved.',
-        }, {
-          singularName: layout.info.singularName,
-        } ),
+        message: formatMessage(
+          {
+            id: getTrad('notification.warning.orphan'),
+            defaultMessage: 'This {singularName} has been orphaned since it was last saved.',
+          },
+          {
+            singularName: layout.info.singularName,
+          }
+        ),
         timeout: 3500,
-      } );
+      });
     }
-  }, [ isOrphan ] );
+  }, [isOrphan]);
   // }, [ isOrphan, layout, formatMessage, setFieldError, toggleNotification ] );
 
-  useEffect( () => {
+  useEffect(() => {
     if (
       debouncedValue &&
       debouncedValue !== initialValue &&
-      URI_COMPONENT_REGEX.test( debouncedValue )
+      URI_COMPONENT_REGEX.test(debouncedValue)
     ) {
       checkAvailability();
     }
 
-    if ( ! debouncedValue || debouncedValue === initialValue ) {
-      setAvailability( null );
+    if (!debouncedValue || debouncedValue === initialValue) {
+      setAvailability(null);
     }
-  }, [ initialValue, debouncedValue ] );
+  }, [initialValue, debouncedValue]);
   // }, [ initialValue, debouncedValue, checkAvailability, setAvailability ] );
 
-  useEffect( () => {
+  useEffect(() => {
     let timer;
 
-    if ( availability && availability.isAvailable ) {
-      timer = setTimeout( () => {
-        setAvailability( null );
-      }, 4000 );
+    if (availability && availability.isAvailable) {
+      timer = setTimeout(() => {
+        setAvailability(null);
+      }, 4000);
     }
 
     return () => {
-      if ( timer ) {
-        clearTimeout( timer );
+      if (timer) {
+        clearTimeout(timer);
       }
     };
-  }, [ availability ] );
+  }, [availability]);
   // }, [ availability, setAvailability ] );
 
-  useEffect( () => {
+  useEffect(() => {
     if (
-      ! isCustomized &&
+      !isCustomized &&
       isCreatingEntry &&
       debouncedTargetValue &&
-      modifiedData[ targetFieldConfig.targetField ] &&
-      ! value
+      modifiedData[targetFieldConfig.targetField] &&
+      !value
     ) {
-      generateUID.current( true );
+      generateUID.current(true);
     }
-  }, [ debouncedTargetValue, isCreatingEntry, isCustomized ] );
+  }, [debouncedTargetValue, isCreatingEntry, isCustomized]);
   // }, [ isCreatingEntry, isCustomized, value, debouncedTargetValue, targetFieldConfig, modifiedData ] );
 
-  useEffect( () => {
+  useEffect(() => {
     // This is required for scenarios like switching between locales to ensure
     // the field value updates with the locale change.
-    const newAncestorsPath = getPermalinkAncestors( initialValue );
-    const newSlug = getPermalinkSlug( initialValue );
+    const newAncestorsPath = getPermalinkAncestors(initialValue);
+    const newSlug = getPermalinkSlug(initialValue);
 
-    setFieldState( newAncestorsPath, newSlug, true );
-  }, [ initialData.id ] );
+    setFieldState(newAncestorsPath, newSlug, true);
+  }, [initialData.id]);
   // }, [ initialData.id, initialValue, setFieldState ] );
 
-  useEffect( () => {
+  useEffect(() => {
     // Remove ancestors path if we have selected the current entity as the parent.
-    if ( selectedSelfRelation ) {
+    if (selectedSelfRelation) {
       removeAncestorsPath();
 
-      setFieldError( formatMessage( {
-        id: getTrad( 'form.error.parent-self' ),
-        defaultMessage: 'Cannot assign the {relation} relation to itself.',
-      }, {
-        relation: targetFieldConfig.targetRelation,
-      } ) );
+      setFieldError(
+        formatMessage(
+          {
+            id: getTrad('form.error.parent-self'),
+            defaultMessage: 'Cannot assign the {relation} relation to itself.',
+          },
+          {
+            relation: targetFieldConfig.targetRelation,
+          }
+        )
+      );
 
       return;
     }
 
     // Maybe update the input value. If this entity is an orphan, we need to
     // leave the ancestors path visible until a new value is set.
-    if ( ! targetRelationValue && ! isOrphan ) {
+    if (!targetRelationValue && !isOrphan) {
       removeAncestorsPath();
     }
 
     // Maybe set new ancestors path.
-    if ( targetRelationValue && targetRelationValue !== initialRelationValue ) {
+    if (targetRelationValue && targetRelationValue !== initialRelationValue) {
       updateAncestorsPath();
     }
-  }, [ initialRelationValue, targetRelationValue ] );
+  }, [initialRelationValue, targetRelationValue]);
   // }, [
   //   isOrphan,
   //   initialRelationValue,
@@ -455,66 +476,65 @@ const PermalinkInput = ( {
 
   return (
     <TextInput
-      disabled={ disabled }
-      error={ fieldError ?? formattedError }
-      hint={ hint }
-      label={ label }
-      labelAction={ labelAction }
-      name={ name }
-      onChange={ handleChange }
-      placeholder={ formattedPlaceholder }
-      value={ slug ? getPermalink( null, slug, lowercase ) : '' }
-      required={ required }
-      startAction={ ancestorsPath ? (
-        <AncestorsPath
-          path={ ancestorsPath }
-          hasError={ !! fieldError || !! error }
-        />
-      ) : null }
+      disabled={disabled}
+      error={fieldError ?? formattedError}
+      hint={hint}
+      label={label}
+      labelAction={labelAction}
+      name={name}
+      onChange={handleChange}
+      placeholder={formattedPlaceholder}
+      value={slug ? getPermalink(null, slug, lowercase) : ''}
+      required={required}
+      startAction={
+        ancestorsPath ? (
+          <AncestorsPath path={ancestorsPath} hasError={!!fieldError || !!error} />
+        ) : null
+      }
       endAction={
         <EndActionWrapper>
-          { ! regenerateLabel && availability && availability?.isAvailable && (
+          {!regenerateLabel && availability && availability?.isAvailable && (
             <TextValidation alignItems="center" justifyContent="flex-end">
               <CheckCircle />
               <Typography textColor="success600" variant="pi">
-                { formatMessage( {
+                {formatMessage({
                   id: 'content-manager.components.uid.available',
                   defaultMessage: 'Available',
-                } ) }
+                })}
               </Typography>
             </TextValidation>
-          ) }
-          { ! regenerateLabel && availability && ! availability?.isAvailable && (
+          )}
+          {!regenerateLabel && availability && !availability?.isAvailable && (
             <TextValidation alignItems="center" justifyContent="flex-end" notAvailable>
               <ExclamationMarkCircle />
               <Typography textColor="danger600" variant="pi">
-                { formatMessage( {
+                {formatMessage({
                   id: 'content-manager.components.uid.unavailable',
                   defaultMessage: 'Unavailable',
-                } ) }
+                })}
               </Typography>
             </TextValidation>
-          ) }
-          { regenerateLabel && (
+          )}
+          {regenerateLabel && (
             <TextValidation alignItems="center" justifyContent="flex-end">
               <Typography textColor="primary600" variant="pi">
-                { regenerateLabel }
+                {regenerateLabel}
               </Typography>
             </TextValidation>
-          ) }
+          )}
           <FieldActionWrapper
             label="regenerate"
-            onClick={ handleRefresh }
-            onMouseEnter={ handleGenerateMouseEnter }
-            onMouseLeave={ handleGenerateMouseLeave }
+            onClick={handleRefresh}
+            onMouseEnter={handleGenerateMouseEnter}
+            onMouseLeave={handleGenerateMouseLeave}
           >
-            { isLoading ? (
+            {isLoading ? (
               <LoadingWrapper>
                 <Loader />
               </LoadingWrapper>
             ) : (
               <Refresh />
-            ) }
+            )}
           </FieldActionWrapper>
         </EndActionWrapper>
       }
@@ -533,30 +553,27 @@ PermalinkInput.defaultProps = {
 };
 
 PermalinkInput.propTypes = {
-  attribute: PropTypes.shape( {
+  attribute: PropTypes.shape({
     targetField: PropTypes.string,
     required: PropTypes.bool,
-  } ).isRequired,
+  }).isRequired,
   contentTypeUID: PropTypes.string.isRequired,
   disabled: PropTypes.bool,
   error: PropTypes.string,
-  hint: PropTypes.oneOfType( [
-    PropTypes.string,
-    PropTypes.array,
-  ] ),
-  intlLabel: PropTypes.shape( {
+  hint: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+  intlLabel: PropTypes.shape({
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
-  } ).isRequired,
+  }).isRequired,
   labelAction: PropTypes.element,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
-  placeholder: PropTypes.shape( {
+  placeholder: PropTypes.shape({
     id: PropTypes.string.isRequired,
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
-  } ),
+  }),
   required: PropTypes.bool,
   value: PropTypes.string,
 };

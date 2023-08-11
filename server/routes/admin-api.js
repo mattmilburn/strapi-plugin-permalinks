@@ -8,7 +8,7 @@ module.exports = {
       path: '/config',
       handler: 'permalinks.config',
       config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
     {
@@ -16,7 +16,7 @@ module.exports = {
       path: '/ancestors-path/:uid/:id/:relationId/:value',
       handler: 'permalinks.ancestorsPath',
       config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
     {
@@ -24,7 +24,7 @@ module.exports = {
       path: '/ancestors-path/:uid/:relationId',
       handler: 'permalinks.ancestorsPath',
       config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
     {
@@ -32,7 +32,7 @@ module.exports = {
       path: '/check-availability/:uid/:value',
       handler: 'permalinks.checkAvailability',
       config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
     {
@@ -40,7 +40,7 @@ module.exports = {
       path: '/check-connection/:uid/:id',
       handler: 'permalinks.checkConnection',
       config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
     {
@@ -48,7 +48,7 @@ module.exports = {
       path: '/suggestion/:uid/:value',
       handler: 'permalinks.suggestion',
       config: {
-        policies: [ 'admin::isAuthenticatedAdmin' ],
+        policies: ['admin::isAuthenticatedAdmin'],
       },
     },
   ],

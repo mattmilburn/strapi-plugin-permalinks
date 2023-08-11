@@ -7,18 +7,18 @@ import { HOOK_BEFORE_BUILD_URL } from '../constants';
 import usePluginConfig from './use-plugin-config';
 import { parseUrl } from '../utils';
 
-const useParsedUrl = ( uid, data, isCreatingEntry ) => {
+const useParsedUrl = (uid, data, isCreatingEntry) => {
   const { runHookWaterfall } = useStrapiApp();
   const { data: config, isLoading } = usePluginConfig();
-  const [ url, setUrl ] = useState( null );
-  const [ canCopy, setCopy ] = useState( true );
+  const [url, setUrl] = useState(null);
+  const [canCopy, setCopy] = useState(true);
 
-  const contentTypes = get( config, 'contentTypes' );
-  const layouts = get( config, 'layouts' );
-  const isSupported = has( layouts, uid );
+  const contentTypes = get(config, 'contentTypes');
+  const layouts = get(config, 'layouts');
+  const isSupported = has(layouts, uid);
 
   const complete = useCallback(async () => {
-    const uidConfig = contentTypes.find( item => item.uids.includes( uid ) );
+    const uidConfig = contentTypes.find((item) => item.uids.includes(uid));
     const stateFromConfig = {
       ...uidConfig,
       url: uidConfig.url ?? null,
@@ -40,13 +40,13 @@ const useParsedUrl = ( uid, data, isCreatingEntry ) => {
     setCopy(state?.copy === false ? false : true);
   }, [contentTypes, data, uid, setCopy, setUrl, runHookWaterfall]);
 
-  useEffect( () => {
-    if ( isLoading || isCreatingEntry || ! isSupported ) {
+  useEffect(() => {
+    if (isLoading || isCreatingEntry || !isSupported) {
       return;
     }
 
     complete();
-  }, [ isLoading, isCreatingEntry, isSupported, complete ] );
+  }, [isLoading, isCreatingEntry, isSupported, complete]);
 
   return {
     canCopy,
