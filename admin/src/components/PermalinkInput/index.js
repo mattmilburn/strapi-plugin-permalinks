@@ -273,6 +273,7 @@ const PermalinkInput = ( {
 
         if ( conflictAncestorsPath ) {
           setFieldState( conflictAncestorsPath, newSlug, false, false );
+          setAvailability( null );
         } else {
           removeAncestorsPath();
         }
@@ -315,6 +316,10 @@ const PermalinkInput = ( {
       } = await fetchClient.get( endpoint );
 
       const newAncestorsPath = isOrphan ? null : ancestorsPath;
+
+      /**
+       * @TODO - Handle path in suggestion.
+       */
 
       setFieldState( newAncestorsPath, newSlug, shouldSetInitialValue );
       setIsLoading( false );
