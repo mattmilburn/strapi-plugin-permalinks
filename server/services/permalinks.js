@@ -100,7 +100,8 @@ module.exports = ( { strapi } ) => ( {
   async getSuggestion( uids, value ) {
     const layouts = await getService( 'config' ).layouts();
     const slugifyOptions = { lower: true };
-    const slug = slugify( value, slugifyOptions );
+    const slugValue = getPermalinkSlug( value );
+    const slug = slugify( slugValue, slugifyOptions );
 
     const promisedConflicts = await Promise.all( uids.map( uid => {
       const { name } = layouts[ uid ];

@@ -317,10 +317,6 @@ const PermalinkInput = ( {
 
       const newAncestorsPath = isOrphan ? null : ancestorsPath;
 
-      /**
-       * @TODO - Handle path in suggestion.
-       */
-
       setFieldState( newAncestorsPath, newSlug, shouldSetInitialValue );
       setIsLoading( false );
     } catch ( err ) {
