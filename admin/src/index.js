@@ -7,35 +7,34 @@ import reducers from './reducers';
 import { getTrad, pluginId, pluginName } from './utils';
 
 export default {
-  register( app ) {
-    app.addReducers( reducers );
+  register(app) {
+    app.addReducers(reducers);
 
-    app.createHook( HOOK_BEFORE_BUILD_URL );
+    app.createHook(HOOK_BEFORE_BUILD_URL);
 
-    app.registerPlugin( {
+    app.registerPlugin({
       id: pluginId,
       name: pluginName,
       initializer: Initializer,
       isReady: false,
-    } );
+    });
 
-    app.customFields.register( {
+    app.customFields.register({
       pluginId,
       name: 'permalink',
       type: 'string',
       icon: null,
       intlLabel: {
-        id: getTrad( 'register.label' ),
+        id: getTrad('register.label'),
         defaultMessage: 'Permalink',
       },
       intlDescription: {
-        id: getTrad( 'register.description' ),
+        id: getTrad('register.description'),
         defaultMessage: 'URL path field with relationship bindings.',
       },
       components: {
-        Input: async () => import(
-          /* webpackChunkName: "permalink-input" */ './components/PermalinkInput'
-        ),
+        Input: async () =>
+          import(/* webpackChunkName: "permalink-input" */ './components/PermalinkInput'),
       },
 
       /**
@@ -101,44 +100,44 @@ export default {
                 },
                 description: {
                   id: 'content-type-builder.form.attribute.item.requiredField.description',
-                  defaultMessage: 'You won\'t be able to create an entry if this field is empty',
+                  defaultMessage: "You won't be able to create an entry if this field is empty",
                 },
               },
             ],
           },
         ],
       },
-    } );
+    });
   },
 
-  bootstrap( app ) {
-    app.registerHook( 'Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkColumns );
+  bootstrap(app) {
+    app.registerHook('Admin/CM/pages/ListView/inject-column-in-table', filterPermalinkColumns);
 
-    app.injectContentManagerComponent( 'editView', 'right-links', {
+    app.injectContentManagerComponent('editView', 'right-links', {
       name: pluginId,
       Component: EditViewRightLinks,
-    } );
+    });
   },
 
-  async registerTrads( { locales } ) {
+  async registerTrads({ locales }) {
     const importedTrads = await Promise.all(
-      locales.map( locale => {
-        return import( `./translations/${locale}.json` )
-          .then( ( { default: data } ) => {
+      locales.map((locale) => {
+        return import(`./translations/${locale}.json`)
+          .then(({ default: data }) => {
             return {
-              data: prefixPluginTranslations( data, pluginId ),
+              data: prefixPluginTranslations(data, pluginId),
               locale,
             };
-          } )
-          .catch( () => {
+          })
+          .catch(() => {
             return {
               data: {},
               locale,
             };
-          } );
-      } )
+          });
+      })
     );
 
-    return Promise.resolve( importedTrads );
+    return Promise.resolve(importedTrads);
   },
 };

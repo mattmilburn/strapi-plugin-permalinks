@@ -1,24 +1,24 @@
 import interpolate from './interpolate';
 import trimSlashes from './trim-slashes';
 
-const parseUrl = ( config, data ) => {
-  if ( ! config?.url || ! data ) {
+const parseUrl = (config, data) => {
+  if (!config?.url || !data) {
     return null;
   }
 
-  const supportedTypes = [ 'number', 'string' ];
-  const replacements = Object.entries( data ).reduce( ( acc, [ key, val ] ) => {
-    if ( ! supportedTypes.includes( typeof val ) ) {
+  const supportedTypes = ['number', 'string'];
+  const replacements = Object.entries(data).reduce((acc, [key, val]) => {
+    if (!supportedTypes.includes(typeof val)) {
       return acc;
     }
 
     return {
       ...acc,
-      [ key ]: val,
+      [key]: val,
     };
-  }, {} );
+  }, {});
 
-  const url = interpolate( trimSlashes( config.url ), replacements );
+  const url = interpolate(trimSlashes(config.url), replacements);
 
   return url;
 };

@@ -1,11 +1,11 @@
-const getPermalink = ( ancestorsPath, slug, lowercase = true ) => {
+const getPermalink = (ancestorsPath, slug, lowercase = true) => {
   // Only lowercase the slug because the rest of the path belongs to another entity.
-  const parts = [
-    ancestorsPath,
-    slug && lowercase ? slug.toLowerCase() : slug,
-  ];
+  const parts = [ancestorsPath, slug && lowercase ? slug.toLowerCase() : slug];
 
-  return parts.filter( i => i ).join( '/' ).trim();
+  return parts
+    .filter((i) => i)
+    .join('/')
+    .trim();
 };
 
 export default getPermalink;

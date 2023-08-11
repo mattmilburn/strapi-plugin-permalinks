@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = ( { strapi } ) => {
-  strapi.customFields.register( {
+module.exports = ({ strapi }) => {
+  strapi.customFields.register({
     plugin: 'permalinks',
     name: 'permalink',
     type: 'string',
@@ -9,5 +9,5 @@ module.exports = ( { strapi } ) => {
       default: 6,
       isResizable: true,
     },
-  } );
+  });
 };
