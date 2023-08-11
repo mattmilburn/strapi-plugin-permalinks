@@ -68,6 +68,7 @@ const PermalinkInput = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isOrphan, setIsOrphan] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [isCustomized, setIsCustomized] = useState(false);
   const [availability, setAvailability] = useState(null);
   const [regenerateLabel, setRegenerateLabel] = useState(null);
@@ -90,6 +91,34 @@ const PermalinkInput = ({
     : '';
 
   const formattedError = error ? formatMessage({ id: error, defaultMessage: error }) : undefined;
+
+  const setFieldState = (
+    newAncestorsPath,
+    newSlug,
+    shouldSetInitialValue = false,
+    shouldRemoveErrors = true
+  ) => {
+    // Maybe remove errors.
+    if (shouldRemoveErrors) {
+      setFieldError(null);
+    }
+
+    // Update field state.
+    setAncestorsPath(newAncestorsPath);
+    setSlug(newSlug);
+
+    // Update field value with ancestors path included.
+    onChange(
+      {
+        target: {
+          name,
+          value: getPermalink(newAncestorsPath, newSlug, lowercase),
+          type: 'text',
+        },
+      },
+      shouldSetInitialValue
+    );
+  };
 
   const checkAvailability = async () => {
     if (!value || selectedSelfRelation) {
@@ -140,12 +169,11 @@ const PermalinkInput = ({
       if (ancestorsPath && !connectedAncestorsPath) {
         setFieldState(ancestorsPath, slug, true);
         setIsOrphan(true);
-        return;
+      } else {
+        setFieldState(connectedAncestorsPath, getPermalinkSlug(value), true);
       }
 
-      const newSlug = getPermalinkSlug(value);
-
-      setFieldState(connectedAncestorsPath, newSlug, true);
+      setIsConnected(true);
     } catch (err) {
       toggleNotification({
         type: 'warning',
@@ -161,84 +189,12 @@ const PermalinkInput = ({
     }
   };
 
-  const handleChange = (event) => {
-    // Remove slash characters from the input value because they are used as the path separator.
-    const newSlug = sanitizeSlug(event.target.value);
-
-    if (newSlug && isCreatingEntry) {
-      setIsCustomized(true);
-    }
-
-    setSlug(newSlug);
-
-    onChange({
-      target: {
-        name,
-        value: getPermalink(ancestorsPath, newSlug, lowercase),
-        type: 'text',
-      },
-    });
-  };
-
-  const handleGenerateMouseEnter = () => {
-    setRegenerateLabel(
-      formatMessage({
-        id: 'content-manager.components.uid.regenerate',
-        defaultMessage: 'Regenerate',
-      })
-    );
-  };
-
-  const handleGenerateMouseLeave = () => {
-    setRegenerateLabel(null);
-  };
-
-  const handleRefresh = () => {
-    // Clear orphan state when refreshing.
-    if (isOrphan && !!fieldError) {
-      setIsOrphan(false);
-      setAncestorsPath(null);
-      setFieldError(null);
-      return;
-    }
-
-    generateUID.current();
-  };
-
   const removeAncestorsPath = () => {
     const newSlug = getPermalinkSlug(value);
 
     // Update field state.
     setIsOrphan(false);
     setFieldState(null, newSlug);
-  };
-
-  const setFieldState = (
-    newAncestorsPath,
-    newSlug,
-    shouldSetInitialValue = false,
-    shouldRemoveErrors = true
-  ) => {
-    // Maybe remove errors.
-    if (shouldRemoveErrors) {
-      setFieldError(null);
-    }
-
-    // Update field state.
-    setAncestorsPath(newAncestorsPath);
-    setSlug(newSlug);
-
-    // Update field value with ancestors path included.
-    onChange(
-      {
-        target: {
-          name,
-          value: getPermalink(newAncestorsPath, newSlug, lowercase),
-          type: 'text',
-        },
-      },
-      shouldSetInitialValue
-    );
   };
 
   const updateAncestorsPath = async () => {
@@ -313,6 +269,50 @@ const PermalinkInput = ({
     setIsLoading(false);
   };
 
+  const handleChange = (event) => {
+    // Remove slash characters from the input value because they are used as the path separator.
+    const newSlug = sanitizeSlug(event.target.value);
+
+    if (newSlug && isCreatingEntry) {
+      setIsCustomized(true);
+    }
+
+    setSlug(newSlug);
+
+    onChange({
+      target: {
+        name,
+        value: getPermalink(ancestorsPath, newSlug, lowercase),
+        type: 'text',
+      },
+    });
+  };
+
+  const handleGenerateMouseEnter = () => {
+    setRegenerateLabel(
+      formatMessage({
+        id: 'content-manager.components.uid.regenerate',
+        defaultMessage: 'Regenerate',
+      })
+    );
+  };
+
+  const handleGenerateMouseLeave = () => {
+    setRegenerateLabel(null);
+  };
+
+  const handleRefresh = () => {
+    // Clear orphan state when refreshing.
+    if (isOrphan && !!fieldError) {
+      setIsOrphan(false);
+      setAncestorsPath(null);
+      setFieldError(null);
+      return;
+    }
+
+    generateUID.current();
+  };
+
   generateUID.current = async (shouldSetInitialValue = false) => {
     setIsLoading(true);
 
@@ -346,9 +346,12 @@ const PermalinkInput = ({
   };
 
   useEffect(() => {
+    if (isConnected) {
+      return;
+    }
+
     checkConnection();
   }, []);
-  // }, [ checkConnection ] );
 
   useEffect(() => {
     if (isOrphan) {
@@ -374,7 +377,6 @@ const PermalinkInput = ({
       });
     }
   }, [isOrphan]);
-  // }, [ isOrphan, layout, formatMessage, setFieldError, toggleNotification ] );
 
   useEffect(() => {
     if (
@@ -389,7 +391,6 @@ const PermalinkInput = ({
       setAvailability(null);
     }
   }, [initialValue, debouncedValue]);
-  // }, [ initialValue, debouncedValue, checkAvailability, setAvailability ] );
 
   useEffect(() => {
     let timer;
@@ -405,8 +406,8 @@ const PermalinkInput = ({
         clearTimeout(timer);
       }
     };
-  }, [availability]);
-  // }, [ availability, setAvailability ] );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availability?.isAvailable]);
 
   useEffect(() => {
     if (
@@ -418,8 +419,7 @@ const PermalinkInput = ({
     ) {
       generateUID.current(true);
     }
-  }, [debouncedTargetValue, isCreatingEntry, isCustomized]);
-  // }, [ isCreatingEntry, isCustomized, value, debouncedTargetValue, targetFieldConfig, modifiedData ] );
+  }, [isCreatingEntry, isCustomized, debouncedTargetValue]);
 
   useEffect(() => {
     // This is required for scenarios like switching between locales to ensure
@@ -429,7 +429,6 @@ const PermalinkInput = ({
 
     setFieldState(newAncestorsPath, newSlug, true);
   }, [initialData.id]);
-  // }, [ initialData.id, initialValue, setFieldState ] );
 
   useEffect(() => {
     // Remove ancestors path if we have selected the current entity as the parent.
@@ -462,17 +461,6 @@ const PermalinkInput = ({
       updateAncestorsPath();
     }
   }, [initialRelationValue, targetRelationValue]);
-  // }, [
-  //   isOrphan,
-  //   initialRelationValue,
-  //   targetRelationValue,
-  //   selectedSelfRelation,
-  //   targetFieldConfig,
-  //   formatMessage,
-  //   setFieldError,
-  //   removeAncestorsPath,
-  //   updateAncestorsPath,
-  // ] );
 
   return (
     <TextInput
