@@ -2,13 +2,14 @@
 
 const get = require('lodash/get');
 
+const { UID_PERMALINK_FIELD } = require('../constants');
 const pluginId = require('./plugin-id');
 
 const getPermalinkAttr = (uid) => {
   const model = strapi.getModel(uid);
 
   const permalinkAttr = Object.entries(model.attributes).find(([, attr]) => {
-    return attr.customField === 'plugin::permalinks.permalink';
+    return attr.customField === UID_PERMALINK_FIELD;
   });
 
   if (!permalinkAttr) {
