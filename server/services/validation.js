@@ -4,7 +4,7 @@ const get = require('lodash/get');
 const has = require('lodash/has');
 const { ValidationError } = require('@strapi/utils').errors;
 
-const { URI_COMPONENT_REGEX } = require('../constants');
+const { UID_PERMALINK_FIELD, URI_COMPONENT_REGEX } = require('../constants');
 const {
   getPermalinkAncestors,
   getPermalinkSlug,
@@ -125,7 +125,7 @@ module.exports = ({ strapi }) => ({
 
       // Ensure that exactly one permalink attribute is defined for this model.
       const permalinkAttrs = Object.entries(attributes).filter(([, attr]) => {
-        return attr.customField === 'plugin::permalinks.permalink';
+        return attr.customField === UID_PERMALINK_FIELD;
       });
 
       if (permalinkAttrs.length !== 1) {
