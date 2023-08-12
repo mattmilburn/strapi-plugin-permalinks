@@ -209,11 +209,11 @@ const PermalinkInput = ({
       return;
     }
 
-    const newSlug = getPermalinkSlug(isCreatingEntry ? value : initialValue);
+    const newSlug = getPermalinkSlug(value);
 
     // Maybe fetch a new ancestors path.
     try {
-      const encodedSlug = encodeURIComponent(initialSlug);
+      const encodedSlug = encodeURIComponent(newSlug);
       const params = isCreatingEntry
         ? `${contentTypeUID}/${targetRelationValue.id}`
         : `${contentTypeUID}/${modifiedData.id}/${targetRelationValue.id}/${encodedSlug}`;
