@@ -1,8 +1,16 @@
 'use strict';
 
 module.exports = {
-  extends: ['airbnb-base', 'eslint:recommended', 'prettier', 'plugin:import/recommended'],
-  plugins: [],
+  extends: [
+    'airbnb-base',
+    'eslint:recommended',
+    'prettier',
+    'plugin:import/recommended',
+    'plugin:jest/recommended',
+    'plugin:jest/style',
+    'plugin:jest-formatting/recommended',
+  ],
+  plugins: ['jest', 'jest-formatting'],
   env: {
     es6: true,
     jest: true,
