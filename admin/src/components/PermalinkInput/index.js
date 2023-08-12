@@ -167,6 +167,7 @@ const PermalinkInput = ({
       } = await fetchClient.get(endpoint);
 
       if (ancestorsPath && !connectedAncestorsPath) {
+        // This entity must be an orphan if it has an ancestors path but no connection.
         setFieldState(ancestorsPath, slug, true);
         setIsOrphan(true);
       } else {
@@ -351,6 +352,7 @@ const PermalinkInput = ({
     }
 
     checkConnection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -376,6 +378,7 @@ const PermalinkInput = ({
         timeout: 3500,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOrphan]);
 
   useEffect(() => {
@@ -390,6 +393,7 @@ const PermalinkInput = ({
     if (!debouncedValue || debouncedValue === initialValue) {
       setAvailability(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialValue, debouncedValue]);
 
   useEffect(() => {
@@ -419,6 +423,7 @@ const PermalinkInput = ({
     ) {
       generateUID.current(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCreatingEntry, isCustomized, debouncedTargetValue]);
 
   useEffect(() => {
@@ -428,6 +433,7 @@ const PermalinkInput = ({
     const newSlug = getPermalinkSlug(initialValue);
 
     setFieldState(newAncestorsPath, newSlug, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData.id]);
 
   useEffect(() => {
@@ -460,6 +466,7 @@ const PermalinkInput = ({
     if (targetRelationValue && targetRelationValue !== initialRelationValue) {
       updateAncestorsPath();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialRelationValue, targetRelationValue]);
 
   return (
