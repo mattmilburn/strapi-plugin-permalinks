@@ -7,7 +7,7 @@ const sanitizeSlug = (value) => {
 
   // Additionally remove the `/` character because this function should be used
   // for sanitizing user input.
-  return value.replace(URI_COMPONENT_REGEX_DENY, '').replace('/', '');
+  return value.replace(URI_COMPONENT_REGEX_DENY, '').replace('/', '').trim();
 };
 
 export default sanitizeSlug;
