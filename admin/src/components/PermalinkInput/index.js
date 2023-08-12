@@ -26,6 +26,11 @@ import {
 import AncestorsPath from './AncestorsPath';
 import { EndActionWrapper, FieldActionWrapper, LoadingWrapper, TextValidation } from './styled';
 
+/**
+ * @TODO - Refactor this component to NOT rely on disabling the eslint rule for
+ * react-hooks/exhaustive-deps.
+ */
+
 const PermalinkInput = ({
   contentTypeUID,
   disabled,
