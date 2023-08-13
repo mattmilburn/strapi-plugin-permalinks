@@ -134,6 +134,12 @@ const PermalinkInput = ({
 
     try {
       const newSlug = getPermalink(isOrphan ? null : ancestorsPath, slug, lowercase);
+
+      if (!newSlug) {
+        setIsLoading(false);
+        return;
+      }
+
       const params = `${contentTypeUID}/${encodeURIComponent(newSlug)}`;
       const endpoint = getApiUrl(`${pluginId}/check-availability/${params}`);
 
