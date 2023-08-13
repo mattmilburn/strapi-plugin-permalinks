@@ -7,6 +7,7 @@ const getService = require('./get-service');
 const interpolate = require('./interpolate');
 const isApiRequest = require('./is-api-request');
 const isConnecting = require('./is-connecting');
+const parseUrl = require('./parse-url');
 const pluginId = require('./plugin-id');
 const trimSlashes = require('./trim-slashes');
 
@@ -18,6 +19,7 @@ module.exports = {
   interpolate,
   isApiRequest,
   isConnecting,
+  parseUrl,
   pluginId,
   trimSlashes,
 };
