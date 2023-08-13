@@ -4,7 +4,7 @@ const interpolate = require('./interpolate');
 const trimSlashes = require('./trim-slashes');
 
 const parseUrl = (config, data) => {
-  if (!config?.url || !data) {
+  if (!config.url || !data) {
     return null;
   }
 
