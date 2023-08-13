@@ -41,7 +41,7 @@ Use the "Custom" tab in the content type builder to add the permalink field to t
 
 After adding a permalink field through the content type builder, there are additional `targetField` and `targetRelation` props that will need to be manually added to the permalink schema attribute.
 
-> **NOTE:** Strapi does not currently provide the necessary params to dynamically render a list containing the other field names as select menu options in the content type builder, which is why `targetField` and `targetRelation` need to be added manually for now.
+> **NOTE:** Strapi does not currently provide the necessary params to dynamically render a list containing the other field names as select menu options in the content type builder, which is why `targetField` and `targetRelation` need to be added manually for now. This will be updated in the future.
 
 #### Schema for `Page`
 ```js
@@ -115,7 +115,7 @@ Let's add our `Page` content type to the plugin config, which will enable it in 
 'use strict';
 
 module.exports = {
-  'permalinks': {
+  permalinks: {
     config: {
       contentTypes: [
         {
@@ -137,7 +137,7 @@ We will want to keep them all in sync with unique permalinks. Our config might l
 'use strict';
 
 module.exports = {
-  'permalinks': {
+  permalinks: {
     config: {
       contentTypes: [
         {
@@ -173,7 +173,7 @@ In order to use the full permalink URL for the "Copy permalink" feature or to us
 'use strict';
 
 module.exports = ( { env } ) => ( {
-  'permalinks': {
+  permalinks: {
     config: {
       contentTypes: [
         {
@@ -193,17 +193,57 @@ module.exports = ( { env } ) => ( {
 } );
 ```
 
+#### Example with localization
+
+With `i18n` enabled for the `slug` field, you can insert the `locale` into the permalink value using the `url` config option.
+
+> Currently this does not keep the locale with the value in the database. In a future release, a change may be introduced where the locale value is optionally saved with the slug value in the database.
+
+```js
+// config/plugins.js
+'use strict';
+
+module.exports = ( { env } ) => ( {
+  permalinks: {
+    config: {
+      contentTypes: [
+        // Include `locale` in the localized slug.
+        {
+          uids: [
+            'api::page.page',
+            'api::product-page.product-page',
+          ],
+          url: '{locale}/{slug}',
+        },
+
+        // Example with localized absolute URL and env vars.
+        {
+          uids: [ 'api::help-page.help-page' ],
+          url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{locale}/help/{slug}`,
+        },
+
+        // Another example with a different locale position.
+        {
+          uids: [ 'api::example.example' ],
+          url: 'https://{locale}.example.com/{slug}',
+        },
+      ],
+    },
+  },
+} );
+```
+
 > Notice how the `HelpPage` example has `/help/` prepending it's slug value, which already makes it unique against `Page` and `ProductPage`.
 
 #### Mapping values from entry data into permalink URLs
-By using `{curly_braces}`, you can map values from the entry data into your permalink URLs to customize the URL however you like.
+By using `{curly_braces}`, you can map values from the entry data into your permalink URLs to customize the URL however you like. Unmatched values will be replaced with an empty string.
 
-> **Unmatched values** will be replaced with an empty string.
+> **Relation fields** are not currently supported but that will change in a future update which will allow the `url` option to use something like `{category.slug}` to inject a category slug into the path.
 
 ```js
 {
   uids: [ 'api::product-page.product-page' ],
-  url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{category}/{slug}`,
+  url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{locale}/{slug}`,
 }
 ```
 
@@ -228,7 +268,7 @@ Defaults to `true`. It will ensure the permalink value is always lowercased.
 'use strict';
 
 module.exports = ( { env } ) => ( {
-  'permalinks': {
+  permalinks: {
     config: {
       lowercase: false,
       contentTypes: [
@@ -294,8 +334,9 @@ yarn develop
 If you are enjoying this plugin and feel extra appreciative, you can [buy me a beer or 3 🍺🍺🍺](https://www.buymeacoffee.com/mattmilburn).
 
 ## <a id="roadmap"></a>🚧 Roadmap
-* Config option to prevent using reserved slugs
-* Config option to limit nesting depth
-* Better conflict resolution for orphaned pages
-* Better method for handling complicated localized URLs (currently requires plugin with custom hook and middleware)
-* Use same content-type builder options as `uid` field, then deprecate it in plugin config (not currently possible)
+* Better support for localization and relation field data populating into the URL.
+* Config option to prevent using reserved slugs.
+* Config option to limit nesting depth.
+* Better conflict resolution for orphaned pages.
+* Better method for handling complicated localized URLs (currently requires plugin with custom hook and middleware).
+* Use same content-type builder options as `uid` field, then deprecate it in plugin config (not currently possible).
