@@ -46,7 +46,7 @@ const transform = (data, uid, config) => {
     return data.map((item) => transform(item, uid, config));
   }
 
-  const uidConfig = config.contentTypes.find(item => item.uids.includes(uid));
+  const uidConfig = config.contentTypes.find((item) => item.uids.includes(uid));
   const { name, targetRelation, targetRelationUID } = config.layouts[uid];
 
   // Transform permalink field.
@@ -65,7 +65,7 @@ const transform = (data, uid, config) => {
 
   // Transform localizations array.
   if (has(data, 'localizations')) {
-    data.localizations = data.localizations.map((item) => transform(item, uid, config));
+    data.localizations = transform(data.localizations, uid, config);
   }
 
   return data;
@@ -84,7 +84,7 @@ module.exports = ({ strapi }) => {
     const { contentTypes } = await getService('config').get();
     const layouts = await getService('config').layouts();
     const uids = await getService('config').uids();
-    const uid = uids.find(_uid => ctx.state.route.handler.includes(_uid));
+    const uid = uids.find((_uid) => ctx.state.route.handler.includes(_uid));
 
     if (!uid) {
       return;
