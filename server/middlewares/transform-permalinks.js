@@ -1,6 +1,5 @@
 'use strict';
 
-const get = require('lodash/get');
 const has = require('lodash/has');
 const head = require('lodash/head');
 const omit = require('lodash/omit');
@@ -52,7 +51,11 @@ const transform = (data, uid, config) => {
 
   // Transform permalink field.
   if (has(data, name)) {
-    data[name] = parseUrl(uidConfig, data);
+    const parsedValue = parseUrl(uidConfig, data);
+
+    if (parsedValue) {
+      data[name] = parsedValue;
+    }
   }
 
   // Transform target relation field.
