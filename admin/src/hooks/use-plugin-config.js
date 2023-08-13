@@ -27,7 +27,6 @@ const usePluginConfig = () => {
       })
       .catch((err) => {
         if ('code' in err && err?.code === 'ERR_CANCELED') {
-          console.log('CANCELLED', err);
           return;
         }
 
