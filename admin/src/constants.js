@@ -2,7 +2,7 @@ import pluginId from './utils/plugin-id';
 
 export const ACTION_RESOLVE_CONFIG = `${pluginId}/resolve-config`;
 
-export const HOOK_BEFORE_BUILD_URL = 'plugin/permalinks/before-build-url';
+export const HOOK_BEFORE_BUILD_URL = `plugin/${pluginId}/before-build-url`;
 
 export const UID_PERMALINK_FIELD = 'plugin::permalinks.permalink';
 
