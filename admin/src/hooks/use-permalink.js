@@ -7,17 +7,17 @@ import { HOOK_BEFORE_BUILD_URL } from '../constants';
 import usePluginConfig from './use-plugin-config';
 import { parseUrl } from '../utils';
 
-const useParsedUrl = (uid, data, isCreatingEntry) => {
+const usePermalink = (uid, data, isCreatingEntry) => {
   const { runHookWaterfall } = useStrapiApp();
   const { data: config, isLoading } = usePluginConfig();
   const [url, setUrl] = useState(null);
-  const [canCopy, setCopy] = useState(true);
+  const [copy, setCopy] = useState(true);
 
   const contentTypes = get(config, 'contentTypes');
   const layouts = get(config, 'layouts');
   const isSupported = has(layouts, uid);
 
-  const complete = useCallback(async () => {
+  const compileWithHook = useCallback(async () => {
     const uidConfig = contentTypes.find((item) => item.uids.includes(uid));
     const stateFromConfig = {
       ...uidConfig,
@@ -45,15 +45,15 @@ const useParsedUrl = (uid, data, isCreatingEntry) => {
       return;
     }
 
-    complete();
-  }, [isLoading, isCreatingEntry, isSupported, complete]);
+    compileWithHook();
+  }, [isLoading, isCreatingEntry, isSupported, compileWithHook]);
 
   return {
-    canCopy,
     isLoading,
     isSupported,
+    copy,
     url,
   };
 };
 
-export default useParsedUrl;
+export default usePermalink;

@@ -1,15 +1,15 @@
 import React from 'react';
 import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 
-import { useParsedUrl } from '../../hooks';
+import { usePermalink } from '../../hooks';
 import CopyLinkButton from '../CopyLinkButton';
 
 const EditViewRightLinks = () => {
   const { allLayoutData, isCreatingEntry, modifiedData } = useCMEditViewDataManager();
   const { uid } = allLayoutData.contentType;
-  const { isLoading, isSupported, canCopy, url } = useParsedUrl(uid, modifiedData, isCreatingEntry);
+  const { isLoading, isSupported, copy, url } = usePermalink(uid, modifiedData, isCreatingEntry);
 
-  if (!isSupported || isLoading || isCreatingEntry || !canCopy || !url) {
+  if (!isSupported || isLoading || isCreatingEntry || !copy || !url) {
     return null;
   }
 
