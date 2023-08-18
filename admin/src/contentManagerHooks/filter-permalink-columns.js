@@ -1,14 +1,14 @@
 import React from 'react';
 import get from 'lodash/get';
 
-import { ListViewTableCell } from '../components';
+import { ListViewColumn } from '../components';
 import { UID_PERMALINK_FIELD } from '../constants';
 import { getPermalinkAncestors, getPermalinkSlug, pluginId } from '../utils';
 
 const filterPermalinkColumns = ({ displayedHeaders, layout }) => {
   // For any columns that have permalink enabled, replace ~ with / in the value.
   const filteredHeaders = displayedHeaders.map((header) => {
-    const isPermalink = header.fieldSchema.customField === UID_PERMALINK_FIELD;
+    const isPermalink = get(header, ['fieldSchema', 'customField']) === UID_PERMALINK_FIELD;
 
     if (!isPermalink) {
       return header;
@@ -31,7 +31,7 @@ const filterPermalinkColumns = ({ displayedHeaders, layout }) => {
         const targetRelationValue = get(props, targetRelationName);
         const isOrphan = !!ancestorsPath && !targetRelationValue;
 
-        return <ListViewTableCell isOrphan={isOrphan} ancestorsPath={ancestorsPath} slug={slug} />;
+        return <ListViewColumn isOrphan={isOrphan} ancestorsPath={ancestorsPath} slug={slug} />;
       },
     };
   });
