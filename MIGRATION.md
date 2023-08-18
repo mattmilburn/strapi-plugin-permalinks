@@ -4,7 +4,13 @@
   <p>Follow our migration guides to keep your permalinks plugin up-to-date.</p>
 </div>
 
-## Migrate from v1 to v2
+## Get Started
+
+* [Migrate from v1 to v2](#migrate-from-v1-to-v2)
+
+---
+
+## <a id="migrate-from-v1-to-v2"></a>Migrate from v1 to v2
 
 ### New `string` type field instead of `uid`
 The permalink field type is now `string`.
@@ -16,8 +22,9 @@ Previously, the plugin was using a custom `uid` field to manage the permalink va
 ### Use `pluginOptions` for attribute configuration
 Previously, the `targetField` and `targetRelation` props were added directly to a model attribute. Going forward, those props will need to be added to the `pluginOptions.permalinks` prop for a model attribute. See example below.
 
+#### ❌ Not correct
 ```js
-// Incorrect.
+// ./src/api/page/content-types/page/schema.js
 "slug": {
   "type": "customField",
   "customField": "plugin::permalinks.permalink",
@@ -25,8 +32,11 @@ Previously, the `targetField` and `targetRelation` props were added directly to 
   "targetRelation": "parent",
   "required": true
 },
+```
 
-// Correct.
+#### ✅ Correct
+```js
+// ./src/api/page/content-types/page/schema.js
 "slug": {
   "type": "customField",
   "customField": "plugin::permalinks.permalink",
