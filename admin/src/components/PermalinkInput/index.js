@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
 import get from 'lodash/get';
@@ -31,19 +31,21 @@ import { EndActionWrapper, FieldActionWrapper, LoadingWrapper, TextValidation } 
  * react-hooks/exhaustive-deps.
  */
 
-const PermalinkInput = ({
-  contentTypeUID,
-  disabled,
-  error,
-  hint,
-  intlLabel,
-  labelAction,
-  name,
-  onChange,
-  placeholder,
-  required,
-  value,
-}) => {
+const PermalinkInput = forwardRef((props, ref) => {
+  const {
+    contentTypeUID,
+    disabled,
+    error,
+    hint,
+    intlLabel,
+    labelAction,
+    name,
+    onChange,
+    placeholder,
+    required,
+    value,
+  } = props;
+
   const fetchClient = useFetchClient();
   const { formatMessage } = useIntl();
   const toggleNotification = useNotification();
@@ -482,6 +484,7 @@ const PermalinkInput = ({
 
   return (
     <TextInput
+      ref={ref}
       disabled={disabled}
       error={fieldError ?? formattedError}
       hint={hint}
@@ -546,7 +549,7 @@ const PermalinkInput = ({
       }
     />
   );
-};
+});
 
 PermalinkInput.defaultProps = {
   disabled: false,
@@ -554,6 +557,7 @@ PermalinkInput.defaultProps = {
   hint: '',
   labelAction: undefined,
   placeholder: undefined,
+  ref: undefined,
   required: false,
   value: '',
 };
@@ -580,6 +584,7 @@ PermalinkInput.propTypes = {
     defaultMessage: PropTypes.string.isRequired,
     values: PropTypes.object,
   }),
+  ref: PropTypes.shape({ current: PropTypes.any }),
   required: PropTypes.bool,
   value: PropTypes.string,
 };
