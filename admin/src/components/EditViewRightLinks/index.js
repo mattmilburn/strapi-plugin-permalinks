@@ -7,9 +7,9 @@ import CopyLinkButton from '../CopyLinkButton';
 const EditViewRightLinks = () => {
   const { allLayoutData, isCreatingEntry, modifiedData } = useCMEditViewDataManager();
   const { uid } = allLayoutData.contentType;
-  const { canCopy, isLoading, isSupported, url } = useParsedUrl(uid, modifiedData, isCreatingEntry);
+  const { isLoading, isSupported, canCopy, url } = useParsedUrl(uid, modifiedData, isCreatingEntry);
 
-  if (isLoading || isCreatingEntry || !isSupported || !canCopy || !url) {
+  if (!isSupported || isLoading || isCreatingEntry || !canCopy || !url) {
     return null;
   }
 
