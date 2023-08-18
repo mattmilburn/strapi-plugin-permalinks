@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box } from '@strapi/design-system/Box';
 import { Typography } from '@strapi/design-system/Typography';
 
-const ListViewTableCell = ({ ancestorsPath, isOrphan, slug }) => {
+const ListViewColumn = ({ ancestorsPath, isOrphan, slug }) => {
   return isOrphan ? (
     <Box
       background="danger100"
@@ -26,14 +26,14 @@ const ListViewTableCell = ({ ancestorsPath, isOrphan, slug }) => {
   );
 };
 
-ListViewTableCell.defaultProps = {
+ListViewColumn.defaultProps = {
   ancestorsPath: null,
 };
 
-ListViewTableCell.propTypes = {
+ListViewColumn.propTypes = {
   ancestorsPath: PropTypes.string,
   isOrphan: PropTypes.bool.isRequired,
   slug: PropTypes.string.isRequired,
 };
 
-export default ListViewTableCell;
+export default ListViewColumn;
