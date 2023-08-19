@@ -62,16 +62,16 @@ Now that the field is a `string` field, the slash character is saved with the va
 'use strict';
 
 module.exports = {
-  async up( knex ) {
-    const rows = await knex( 'pages' );
+  async up(knex) {
+    const rows = await knex('pages');
 
-    await Promise.all( rows.map( row => {
-      return knex( uid )
-        .where( { id: row.id } )
-        .update( {
-          slug: row.slug.replace( /~/g, '/' ),
-        } );
-    } ) );
+    const promisedUpdates = rows.map(row => {
+      return knex(uid)
+        .where({ id: row.id })
+        .update({ slug: row.slug.replace(/~/g, '/') });
+    });
+
+    await Promise.all(promisedUpdates);
   },
 
   down() {},

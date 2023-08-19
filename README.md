@@ -33,11 +33,15 @@ yarn add strapi-plugin-permalinks@latest
 ## <a id="custom-field"></a>✏️ Custom Field
 To get started, let's create a simple `Page` collection that uses a permalink field.
 
-<img style="width: 960px; height: auto;" src="public/screenshot-page-schema.png" alt="Screenshot for Strapi permalinks plugin" />
+<div align="center">
+  <img style="width: 960px; height: auto;" src="public/screenshot-page-schema.png" alt="Screenshot for Strapi permalinks plugin" />
+</div>
 
 Use the "Custom" tab in the content type builder to add the permalink field to the model.
 
-<img style="width: 960px; height: auto;" src="public/screenshot-content-type-builder.png" alt="Screenshot for Strapi permalinks plugin" />
+<div align="center">
+  <img style="width: 960px; height: auto;" src="public/screenshot-content-type-builder.png" alt="Screenshot for Strapi permalinks plugin" />
+</div>
 
 After adding a permalink field through the content type builder, there are additional `targetField` and `targetRelation` props that will need to be manually added to the permalink schema attribute.
 
@@ -46,7 +50,6 @@ After adding a permalink field through the content type builder, there are addit
 #### Schema for `Page`
 ```js
 // src/api/page/content-types/page/schema.json
-
 {
   "kind": "collectionType",
   "collectionName": "pages",
@@ -119,7 +122,7 @@ module.exports = {
     config: {
       contentTypes: [
         {
-          uids: [ 'api::page.page' ],
+          uids: ['api::page.page'],
         },
       ],
     },
@@ -147,7 +150,7 @@ module.exports = {
           ],
         },
         {
-          uids: [ 'api::help-page.help-page' ],
+          uids: ['api::help-page.help-page'],
         },
       ],
     },
@@ -172,7 +175,7 @@ In order to use the full permalink URL for the "Copy permalink" feature or to us
 // config/plugins.js
 'use strict';
 
-module.exports = ( { env } ) => ( {
+module.exports = ({ env }) => ({
   permalinks: {
     config: {
       contentTypes: [
@@ -181,16 +184,16 @@ module.exports = ( { env } ) => ( {
             'api::page.page',
             'api::product-page.product-page',
           ],
-          url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{slug}`,
+          url: `${env('STRAPI_PERMALINKS_BASE_URL')}/{slug}`,
         },
         {
-          uids: [ 'api::help-page.help-page' ],
-          url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/help/{slug}`,
+          uids: ['api::help-page.help-page'],
+          url: `${env('STRAPI_PERMALINKS_BASE_URL')}/help/{slug}`,
         },
       ],
     },
   },
-} );
+});
 ```
 
 #### Example with localization
@@ -203,7 +206,7 @@ With `i18n` enabled for the `slug` field, you can insert the `locale` into the p
 // config/plugins.js
 'use strict';
 
-module.exports = ( { env } ) => ( {
+module.exports = ({ env }) => ({
   permalinks: {
     config: {
       contentTypes: [
@@ -218,19 +221,19 @@ module.exports = ( { env } ) => ( {
 
         // Example with localized absolute URL and env vars.
         {
-          uids: [ 'api::help-page.help-page' ],
-          url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{locale}/help/{slug}`,
+          uids: ['api::help-page.help-page'],
+          url: `${env('STRAPI_PERMALINKS_BASE_URL')}/{locale}/help/{slug}`,
         },
 
         // Another example with a different locale position.
         {
-          uids: [ 'api::example.example' ],
+          uids: ['api::example.example'],
           url: 'https://{locale}.example.com/{slug}',
         },
       ],
     },
   },
-} );
+});
 ```
 
 > Notice how the `HelpPage` example has `/help/` prepending it's slug value, which already makes it unique against `Page` and `ProductPage`.
@@ -242,8 +245,8 @@ By using `{curly_braces}`, you can map values from the entry data into your perm
 
 ```js
 {
-  uids: [ 'api::product-page.product-page' ],
-  url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{locale}/{slug}`,
+  uids: ['api::product-page.product-page'],
+  url: `${env('STRAPI_PERMALINKS_BASE_URL')}/{locale}/{slug}`,
 }
 ```
 
@@ -252,8 +255,8 @@ The "Copy permalink" button located in the edit view sidebar can be disabled wit
 
 ```js
 {
-  uids: [ 'api::page.page' ],
-  url: `${env( 'STRAPI_PERMALINKS_BASE_URL' )}/{slug}`,
+  uids: ['api::page.page'],
+  url: `${env('STRAPI_PERMALINKS_BASE_URL')}/{slug}`,
   copy: false,
 }
 ```
@@ -267,7 +270,7 @@ Defaults to `true`. It will ensure the permalink value is always lowercased.
 // config/plugins.js
 'use strict';
 
-module.exports = ( { env } ) => ( {
+module.exports = ({ env }) => ({
   permalinks: {
     config: {
       lowercase: false,
@@ -276,7 +279,7 @@ module.exports = ( { env } ) => ( {
       ],
     },
   },
-} );
+});
 ```
 
 #### Example migration script to lowercase existing permalinks
@@ -286,16 +289,16 @@ module.exports = ( { env } ) => ( {
 'use strict';
 
 module.exports = {
-  async up( knex ) {
-    const rows = await knex( 'pages' );
+  async up(knex) {
+    const rows = await knex('pages');
 
-    await Promise.all( rows.map( row => {
-      return knex( uid )
-        .where( { id: row.id } )
-        .update( {
-          slug: row.slug.toLowerCase(),
-        } );
-    } ) );
+    const promisedUpdates = rows.map(row => {
+      return knex(uid)
+        .where({ id: row.id })
+        .update({ slug: row.slug.toLowerCase() });
+    });
+
+    await Promise.all(promisedUpdates);
   },
 
   down() {},
@@ -313,11 +316,15 @@ Deleting an entity that has children will **orphan** those children. Strapi will
 
 **If orphaned pages exist**, you will see their slug value in the content manager list view as a red label instead of plain text.
 
-<img style="width: 960px; height: auto;" src="public/screenshot-orphan-index.png" alt="Screenshot for Strapi permalinks plugin" />
+<div align="center">
+  <img style="width: 960px; height: auto;" src="public/screenshot-orphan-index.png" alt="Screenshot for Strapi permalinks plugin" />
+</div>
 
 Editing the orphaned page will display a warning and an error message on the permalink field. From here you can assign a new parent or no parent at all. Upon saving, any children of the entity will also update their target fields to reflect to new parent permalinks.
 
-<img style="width: 960px; height: auto;" src="public/screenshot-orphan-edit.png" alt="Screenshot for Strapi permalinks plugin" />
+<div align="center">
+  <img style="width: 960px; height: auto;" src="public/screenshot-orphan-edit.png" alt="Screenshot for Strapi permalinks plugin" />
+</div>
 
 ## <a id="troubleshooting"></a>💩 Troubleshooting
 
