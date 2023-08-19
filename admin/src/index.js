@@ -1,6 +1,6 @@
 import { prefixPluginTranslations } from '@strapi/helper-plugin';
 
-import { EditViewRightLinks } from './components';
+import { CustomFieldIcon, EditViewRightLinks } from './components';
 import { HOOK_BEFORE_BUILD_URL } from './constants';
 import { filterPermalinkColumns } from './contentManagerHooks';
 import reducers from './reducers';
@@ -21,7 +21,7 @@ export default {
       pluginId,
       name: 'permalink',
       type: 'string',
-      icon: null,
+      icon: CustomFieldIcon,
       intlLabel: {
         id: getTrad('register.label'),
         defaultMessage: 'Permalink',
