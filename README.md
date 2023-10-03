@@ -30,6 +30,8 @@
 yarn add strapi-plugin-permalinks@latest
 ```
 
+Don't forget to **restart or rebuild** your Strapi app when installing a new plugin.
+
 ## <a id="custom-field"></a>✏️ Custom Field
 To get started, let's create a simple `Page` collection that uses a permalink field.
 
