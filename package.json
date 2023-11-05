@@ -40,7 +40,7 @@
   "dependencies": {
     "immer": "9.0.21",
     "react-copy-to-clipboard": "5.1.0",
-    "react-redux": "8.0.5",
+    "react-redux": "8.1.1",
     "slugify": "1.6.6"
   },
   "peerDependencies": {
@@ -51,8 +51,8 @@
     "@strapi/utils": "^4.13.1",
     "lodash": "4.17.21",
     "prop-types": "^15.8.1",
-    "react": "^17.0.0 || ^18.0.0",
-    "react-intl": "^6.4.4",
+    "react": "^18.0.0",
+    "react-intl": "^6.4.1",
     "styled-components": "5.3.3"
   },
   "devDependencies": {
@@ -85,8 +85,8 @@
     "lodash": "4.17.21",
     "prettier": "2.8.8",
     "prop-types": "^15.8.1",
-    "react": "^17.0.0 || ^18.0.0",
-    "react-intl": "^6.4.4",
+    "react": "^18.0.0",
+    "react-intl": "^6.4.1",
     "styled-components": "5.3.3"
   },
   "repository": {
