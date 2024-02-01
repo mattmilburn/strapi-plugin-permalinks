@@ -1,0 +1,13 @@
+{
+  "register.label": "Постоянная ссылка",
+  "register.description": "Поле пути URL с привязкой связи.",
+
+  "form.button.copy-permalink": "Копировать ссылку",
+  "form.error.orphan": "Это значение должно быть восстановлено после того, как оно потерялось.",
+  "form.error.parent-child": "Невозможно добавить связь {relation} как потомку.",
+  "form.error.parent-self": "Невозможно добавить связь {relation} самому себе.",
+
+  "notification.error": "Произошла ошибка",
+  "notification.success.permalink-copied": "Ссылка скопирована в буфер",
+  "notification.warning.orphan": "Это {singularName} стало ненужным с момента его последнего сохранения."
+}
