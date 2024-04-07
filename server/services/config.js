@@ -5,13 +5,13 @@ const { getPermalinkAttr, pluginId } = require('../utils');
 
 module.exports = ({ strapi }) => ({
   async get() {
-    const config = await strapi.config.get(`plugin.${pluginId}`, defaultConfig);
+    const config = await strapi.config.get(`plugin::${pluginId}`, defaultConfig);
 
     return config;
   },
 
   async layouts(uid = null) {
-    const config = await strapi.config.get(`plugin.${pluginId}`, defaultConfig);
+    const config = await strapi.config.get(`plugin::${pluginId}`, defaultConfig);
     const { contentTypes } = config;
     const uids = contentTypes.map((item) => item.uids).flat();
 
