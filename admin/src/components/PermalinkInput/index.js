@@ -76,6 +76,7 @@ const PermalinkInput = forwardRef((props, ref) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOrphan, setIsOrphan] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [ancestorID, setAncestorID] = useState(null);
   const [isCustomized, setIsCustomized] = useState(false);
   const [availability, setAvailability] = useState(null);
   const [regenerateLabel, setRegenerateLabel] = useState(null);
@@ -359,6 +360,17 @@ const PermalinkInput = forwardRef((props, ref) => {
     }
   };
 
+  /* 
+    This uses the ancestor id as a trigger to re-render the 
+    ancestors path When a user changes locales.
+  */
+  useEffect(() => {
+    if (initialData.id) {
+      setAncestorID(initialData.id);
+    }
+  }, [initialData.id]);
+
+  // added dataId as dependency, so this check will happen when the dataId changes
   useEffect(() => {
     if (isConnected) {
       return;
@@ -366,7 +378,7 @@ const PermalinkInput = forwardRef((props, ref) => {
 
     checkConnection();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ancestorID, isConnected]);
 
   useEffect(() => {
     if (isOrphan) {
@@ -439,15 +451,23 @@ const PermalinkInput = forwardRef((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCreatingEntry, isCustomized, debouncedTargetValue]);
 
-  useEffect(() => {
-    // This is required for scenarios like switching between locales to ensure
-    // the field value updates with the locale change.
-    const newAncestorsPath = getPermalinkAncestors(initialValue);
-    const newSlug = getPermalinkSlug(initialValue);
+  /*
+    This use effect clashes with the check connection use effect, 
+    effectively overwriting the ancestors path when changing locales.
+    I am leaving this here for now as I dont know what other potential
+    side effects this has, but it is not needed for the ancestors path 
+    to be correctly set.
+  */
 
-    setFieldState(newAncestorsPath, newSlug, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData.id]);
+  // useEffect(() => {
+  //   // This is required for scenarios like switching between locales to ensure
+  //   // the field value updates with the locale change.
+  //   const newAncestorsPath = getPermalinkAncestors(initialValue);
+  //   const newSlug = getPermalinkSlug(initialValue);
+
+  //   setFieldState(newAncestorsPath, newSlug, true);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [initialData.id]);
 
   useEffect(() => {
     // Remove ancestors path if we have selected the current entity as the parent.
