@@ -1,6 +1,6 @@
 {
   "name": "strapi-plugin-permalinks",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A plugin for Strapi CMS to enable a URL path field for content types with nested relationships.",
   "license": "MIT",
   "strapi": {
