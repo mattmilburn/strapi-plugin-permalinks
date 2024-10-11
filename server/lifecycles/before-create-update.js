@@ -17,6 +17,12 @@ module.exports = async ({ strapi }) => {
     const id = get(where, 'id', null);
     const attr = layouts[uid];
     const value = data[attr.name];
+    let locale = data.locale || undefined;
+
+    if (id && !locale && model.attributes.locale) {
+      const entity = await strapi.db.query(uid).findOne({ where: { id } });
+      locale = entity.locale;
+    }
 
     await getService('validation').validateFormat(uid, value);
     await getService('validation').validateConnection(uid, data, id);
@@ -27,7 +33,7 @@ module.exports = async ({ strapi }) => {
         const { name } = layouts[uid];
 
         return getService('validation')
-          .validateAvailability(uid, name, value, id)
+          .validateAvailability(uid, name, value, id, locale)
           .then((available) => ({
             uid,
             available,

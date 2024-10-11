@@ -29,7 +29,7 @@ module.exports = ({ strapi }) => ({
     return path;
   },
 
-  async getAvailability(uid, value) {
+  async getAvailability(uid, value, locale) {
     const layouts = await getService('config').layouts();
     const uids = await getService('config').uids(uid);
 
@@ -37,9 +37,8 @@ module.exports = ({ strapi }) => ({
     const promisedAvailables = await Promise.all(
       uids.map((_uid) => {
         const { name } = layouts[_uid];
-
         return getService('validation')
-          .validateAvailability(_uid, name, value)
+          .validateAvailability(_uid, name, value, null, locale)
           .then((available) => ({
             uid: _uid,
             available,
@@ -74,7 +73,8 @@ module.exports = ({ strapi }) => ({
       return null;
     }
 
-    let entity, ancestor;
+    let entity;
+    let ancestor;
 
     // Either get the ancestor from the connecting relation or look it up in the database.
     if (isConnecting) {

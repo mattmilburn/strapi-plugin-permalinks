@@ -16,7 +16,7 @@ const filterPermalinkColumns = ({ displayedHeaders, layout }) => {
 
     return {
       ...header,
-      cellFormatter: (props) => {
+      cellFormatter(props) {
         const value = props[header.name];
         const ancestorsPath = getPermalinkAncestors(value);
         const slug = getPermalinkSlug(value);

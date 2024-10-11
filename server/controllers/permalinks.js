@@ -63,16 +63,16 @@ module.exports = {
   },
 
   async checkAvailability(ctx) {
-    const { uid, value } = ctx.request.params;
+    const { uid, value, locale } = ctx.request.params;
     const decodedValue = decodeURIComponent(value);
-
     // Validate UID.
     await getService('validation').validateUIDInput(uid);
 
     // Check availability and maybe provide a suggestion.
     const { isAvailable, suggestion } = await getService('permalinks').getAvailability(
       uid,
-      decodedValue
+      decodedValue,
+      locale
     );
 
     ctx.send({

@@ -67,6 +67,7 @@ const PermalinkInput = forwardRef((props, ref) => {
     !isCreatingEntry && !hasDifferentRelationUID && targetRelationValue?.id === modifiedData.id;
 
   const initialValue = initialData[name];
+  const locale = initialData.locale;
   const initialRelationValue = getRelationValue(initialData, targetFieldConfig.targetRelation);
   const initialAncestorsPath = getPermalinkAncestors(initialValue);
   const initialSlug = getPermalinkSlug(initialValue);
@@ -140,10 +141,14 @@ const PermalinkInput = forwardRef((props, ref) => {
 
       if (!newSlug) {
         setIsLoading(false);
+
         return;
       }
 
-      const params = `${contentTypeUID}/${encodeURIComponent(newSlug)}`;
+      const params = `${contentTypeUID}/${encodeURIComponent(newSlug)}${
+        locale ? `/${locale}` : ''
+      }`;
+
       const endpoint = getApiUrl(`${pluginId}/check-availability/${params}`);
 
       const { data } = await fetchClient.get(endpoint);
@@ -220,6 +225,7 @@ const PermalinkInput = forwardRef((props, ref) => {
     if (!targetRelationValue) {
       removeAncestorsPath();
       setIsLoading(false);
+
       return;
     }
 
@@ -322,6 +328,7 @@ const PermalinkInput = forwardRef((props, ref) => {
       setIsOrphan(false);
       setAncestorsPath(null);
       setFieldError(null);
+
       return;
     }
 
@@ -450,24 +457,6 @@ const PermalinkInput = forwardRef((props, ref) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCreatingEntry, isCustomized, debouncedTargetValue]);
-
-  /*
-    This use effect clashes with the check connection use effect, 
-    effectively overwriting the ancestors path when changing locales.
-    I am leaving this here for now as I dont know what other potential
-    side effects this has, but it is not needed for the ancestors path 
-    to be correctly set.
-  */
-
-  // useEffect(() => {
-  //   // This is required for scenarios like switching between locales to ensure
-  //   // the field value updates with the locale change.
-  //   const newAncestorsPath = getPermalinkAncestors(initialValue);
-  //   const newSlug = getPermalinkSlug(initialValue);
-
-  //   setFieldState(newAncestorsPath, newSlug, true);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [initialData.id]);
 
   useEffect(() => {
     // Remove ancestors path if we have selected the current entity as the parent.
