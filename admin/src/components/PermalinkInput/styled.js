@@ -2,6 +2,7 @@ import styled, { keyframes } from 'styled-components';
 import { Box } from '@strapi/design-system/Box';
 import { FieldAction } from '@strapi/design-system/Field';
 import { Flex } from '@strapi/design-system/Flex';
+import { Button, IconButton } from '@strapi/design-system';
 
 const rotation = keyframes`
   from {
@@ -16,14 +17,34 @@ export const LoadingWrapper = styled(Flex)`
   animation: ${rotation} 2s infinite linear;
 `;
 
+export const ExpandButton = styled(IconButton)`
+  height: 1rem;
+  width: 1.5rem;
+  border: none;
+  background: ${({ theme, hasError }) => theme.colors[hasError ? 'danger100' : 'primary100']};
+  color: ${({ theme, hasError }) => theme.colors[hasError ? 'danger700' : 'primary700']};
+`;
+
+export const HideButton = styled(Button)`
+  padding: 0;
+  height: fit-content;
+  background-color: transparent;
+  color: transparent;
+  border: none;
+
+  :hover {
+    border: none;
+  }
+`;
+
 export const PathLabel = styled.span`
   margin-right: -4px;
   padding: 1px 4px 2px 4px;
   background: ${({ theme, hasError }) => theme.colors[hasError ? 'danger100' : 'primary100']};
   border-radius: ${({ theme }) => theme.borderRadius};
   color: ${({ theme, hasError }) => theme.colors[hasError ? 'danger700' : 'primary700']};
-  font-weight: ${({ theme }) => theme.fontWeights.normal};
   font-size: ${({ theme }) => theme.fontSizes[2]};
+  font-weight: ${({ theme }) => theme.fontWeights.regular};
   line-height: normal;
   white-space: nowrap;
   display: inline-flex;
@@ -40,9 +61,13 @@ export const Delimiter = styled.span`
   }
 `;
 
-export const EndActionWrapper = styled(Box)`
+export const RelativeInputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   position: relative;
 `;
+
+export const EndActionWrapper = styled(Box)``;
 
 export const FieldActionWrapper = styled(FieldAction)`
   svg {
@@ -62,7 +87,8 @@ export const FieldActionWrapper = styled(FieldAction)`
 
 export const TextValidation = styled(Flex)`
   position: absolute;
-  right: ${({ theme }) => theme.spaces[6]};
+  right: 0;
+  top: 0;
   width: 100px;
   pointer-events: none;
 

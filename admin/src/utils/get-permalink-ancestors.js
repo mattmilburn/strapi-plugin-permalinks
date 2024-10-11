@@ -3,7 +3,7 @@ const getPermalinkAncestors = (path) => {
     return null;
   }
 
-  const parts = path.split('/').filter((i) => i);
+  const parts = path.split(/(?:\/|~)+/).filter((i) => i);
   const len = parts.length - 1;
 
   if (!len) {

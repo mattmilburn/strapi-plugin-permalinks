@@ -24,7 +24,13 @@ import {
 } from '../../utils';
 
 import AncestorsPath from './AncestorsPath';
-import { EndActionWrapper, FieldActionWrapper, LoadingWrapper, TextValidation } from './styled';
+import {
+  EndActionWrapper,
+  FieldActionWrapper,
+  LoadingWrapper,
+  RelativeInputWrapper,
+  TextValidation,
+} from './styled';
 
 /**
  * @TODO - Refactor this component to NOT rely on disabling the eslint rule for
@@ -67,6 +73,7 @@ const PermalinkInput = forwardRef((props, ref) => {
     !isCreatingEntry && !hasDifferentRelationUID && targetRelationValue?.id === modifiedData.id;
 
   const initialValue = initialData[name];
+  const locale = initialData.locale;
   const initialRelationValue = getRelationValue(initialData, targetFieldConfig.targetRelation);
   const initialAncestorsPath = getPermalinkAncestors(initialValue);
   const initialSlug = getPermalinkSlug(initialValue);
@@ -140,10 +147,14 @@ const PermalinkInput = forwardRef((props, ref) => {
 
       if (!newSlug) {
         setIsLoading(false);
+
         return;
       }
 
-      const params = `${contentTypeUID}/${encodeURIComponent(newSlug)}`;
+      const params = `${contentTypeUID}/${encodeURIComponent(newSlug)}${
+        locale ? `/${locale}` : ''
+      }`;
+
       const endpoint = getApiUrl(`${pluginId}/check-availability/${params}`);
 
       const { data } = await fetchClient.get(endpoint);
@@ -220,6 +231,7 @@ const PermalinkInput = forwardRef((props, ref) => {
     if (!targetRelationValue) {
       removeAncestorsPath();
       setIsLoading(false);
+
       return;
     }
 
@@ -322,6 +334,7 @@ const PermalinkInput = forwardRef((props, ref) => {
       setIsOrphan(false);
       setAncestorsPath(null);
       setFieldError(null);
+
       return;
     }
 
@@ -451,24 +464,6 @@ const PermalinkInput = forwardRef((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCreatingEntry, isCustomized, debouncedTargetValue]);
 
-  /*
-    This use effect clashes with the check connection use effect, 
-    effectively overwriting the ancestors path when changing locales.
-    I am leaving this here for now as I dont know what other potential
-    side effects this has, but it is not needed for the ancestors path 
-    to be correctly set.
-  */
-
-  // useEffect(() => {
-  //   // This is required for scenarios like switching between locales to ensure
-  //   // the field value updates with the locale change.
-  //   const newAncestorsPath = getPermalinkAncestors(initialValue);
-  //   const newSlug = getPermalinkSlug(initialValue);
-
-  //   setFieldState(newAncestorsPath, newSlug, true);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [initialData.id]);
-
   useEffect(() => {
     // Remove ancestors path if we have selected the current entity as the parent.
     if (selectedSelfRelation) {
@@ -503,71 +498,73 @@ const PermalinkInput = forwardRef((props, ref) => {
   }, [initialRelationValue, targetRelationValue]);
 
   return (
-    <TextInput
-      ref={ref}
-      disabled={disabled}
-      error={fieldError ?? formattedError}
-      hint={hint}
-      label={label}
-      labelAction={labelAction}
-      name={name}
-      onChange={handleChange}
-      placeholder={formattedPlaceholder}
-      value={slug ? getPermalink(null, slug, lowercase) : ''}
-      required={required}
-      startAction={
-        ancestorsPath ? (
-          <AncestorsPath path={ancestorsPath} hasError={!!fieldError || !!error} />
-        ) : null
-      }
-      endAction={
-        <EndActionWrapper>
-          {!regenerateLabel && availability && availability?.isAvailable && (
-            <TextValidation alignItems="center" justifyContent="flex-end">
-              <CheckCircle />
-              <Typography textColor="success600" variant="pi">
-                {formatMessage({
-                  id: 'content-manager.components.uid.available',
-                  defaultMessage: 'Available',
-                })}
-              </Typography>
-            </TextValidation>
-          )}
-          {!regenerateLabel && availability && !availability?.isAvailable && (
-            <TextValidation alignItems="center" justifyContent="flex-end" notAvailable>
-              <ExclamationMarkCircle />
-              <Typography textColor="danger600" variant="pi">
-                {formatMessage({
-                  id: 'content-manager.components.uid.unavailable',
-                  defaultMessage: 'Unavailable',
-                })}
-              </Typography>
-            </TextValidation>
-          )}
-          {regenerateLabel && (
-            <TextValidation alignItems="center" justifyContent="flex-end">
-              <Typography textColor="primary600" variant="pi">
-                {regenerateLabel}
-              </Typography>
-            </TextValidation>
-          )}
-          <FieldActionWrapper
-            label="regenerate"
-            onClick={handleRefresh}
-            onMouseEnter={handleGenerateMouseEnter}
-            onMouseLeave={handleGenerateMouseLeave}
-          >
-            {isLoading ? (
-              <LoadingWrapper>
-                <Loader />
-              </LoadingWrapper>
-            ) : (
-              <Refresh />
+    <RelativeInputWrapper>
+      <TextInput
+        ref={ref}
+        disabled={disabled}
+        error={fieldError ?? formattedError}
+        hint={hint}
+        label={label}
+        labelAction={labelAction}
+        name={name}
+        onChange={handleChange}
+        placeholder={formattedPlaceholder}
+        value={slug ? getPermalink(null, slug, lowercase) : ''}
+        required={required}
+        startAction={
+          ancestorsPath ? (
+            <AncestorsPath path={ancestorsPath} hasError={!!fieldError || !!error} />
+          ) : null
+        }
+        endAction={
+          <EndActionWrapper>
+            {!regenerateLabel && availability && availability?.isAvailable && (
+              <TextValidation alignItems="center" justifyContent="flex-end">
+                <CheckCircle />
+                <Typography textColor="success600" variant="pi">
+                  {formatMessage({
+                    id: 'content-manager.components.uid.available',
+                    defaultMessage: 'Available',
+                  })}
+                </Typography>
+              </TextValidation>
             )}
-          </FieldActionWrapper>
-        </EndActionWrapper>
-      }
-    />
+            {!regenerateLabel && availability && !availability?.isAvailable && (
+              <TextValidation alignItems="center" justifyContent="flex-end" notAvailable>
+                <ExclamationMarkCircle />
+                <Typography textColor="danger600" variant="pi">
+                  {formatMessage({
+                    id: 'content-manager.components.uid.unavailable',
+                    defaultMessage: 'Unavailable',
+                  })}
+                </Typography>
+              </TextValidation>
+            )}
+            {regenerateLabel && (
+              <TextValidation alignItems="center" justifyContent="flex-end">
+                <Typography textColor="primary600" variant="pi">
+                  {regenerateLabel}
+                </Typography>
+              </TextValidation>
+            )}
+            <FieldActionWrapper
+              label="regenerate"
+              onClick={handleRefresh}
+              onMouseEnter={handleGenerateMouseEnter}
+              onMouseLeave={handleGenerateMouseLeave}
+            >
+              {isLoading ? (
+                <LoadingWrapper>
+                  <Loader />
+                </LoadingWrapper>
+              ) : (
+                <Refresh />
+              )}
+            </FieldActionWrapper>
+          </EndActionWrapper>
+        }
+      />
+    </RelativeInputWrapper>
   );
 });
 
