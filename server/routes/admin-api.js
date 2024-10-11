@@ -29,7 +29,7 @@ module.exports = {
     },
     {
       method: 'GET',
-      path: '/check-availability/:uid/:value',
+      path: '/check-availability/:uid/:value/:locale?',
       handler: 'permalinks.checkAvailability',
       config: {
         policies: ['admin::isAuthenticatedAdmin'],

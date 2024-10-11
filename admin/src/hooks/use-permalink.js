@@ -37,7 +37,7 @@ const usePermalink = (uid, data, isCreatingEntry) => {
     }
 
     setUrl(url);
-    setCopy(state?.copy === false ? false : true);
+    setCopy(state?.copy !== false);
   }, [contentTypes, data, uid, setCopy, setUrl, runHookWaterfall]);
 
   useEffect(() => {

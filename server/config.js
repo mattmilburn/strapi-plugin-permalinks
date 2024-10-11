@@ -7,7 +7,7 @@ module.exports = {
     contentTypes: [],
     lowercase: true,
   },
-  validator: (config) => {
+  validator(config) {
     if (!config.contentTypes) {
       return;
     }

@@ -33,9 +33,11 @@ module.exports = ({ strapi }) => ({
     return false;
   },
 
-  async validateAvailability(uid, name, value, id = null) {
-    let where = { [name]: value };
+  async validateAvailability(uid, name, value, id = null, locale = undefined) {
+    const model = strapi.db.metadata.get(uid);
+    const isLocalized = model.pluginOptions.i18n.localized || false;
 
+    const where = { [name]: value };
     // If `id` is not null, omit it from the results so we aren't comparing against itself.
     if (id) {
       where.id = {
@@ -43,9 +45,16 @@ module.exports = ({ strapi }) => ({
       };
     }
 
+    // takes the locale into consideration for uniqueness, if the locale is present, and the model is localized
+    if (locale && isLocalized) {
+      where.locale = {
+        $eq: locale,
+      };
+    }
+
     const count = await strapi.db.query(uid).count({ where });
 
-    return count > 0 ? false : true;
+    return !(count > 0);
   },
 
   async validateConnection(uid, data, id = null) {
@@ -124,9 +133,9 @@ module.exports = ({ strapi }) => ({
       const { attributes } = model;
 
       // Ensure that exactly one permalink attribute is defined for this model.
-      const permalinkAttrs = Object.entries(attributes).filter(([, attr]) => {
-        return attr.customField === UID_PERMALINK_FIELD;
-      });
+      const permalinkAttrs = Object.entries(attributes).filter(
+        ([, attr]) => attr.customField === UID_PERMALINK_FIELD
+      );
 
       if (permalinkAttrs.length !== 1) {
         throw new ValidationError(`Must have exactly one permalink attribute defined in ${uid}.`);

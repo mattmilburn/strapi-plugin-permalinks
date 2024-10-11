@@ -8,9 +8,9 @@ const pluginId = require('./plugin-id');
 const getPermalinkAttr = (uid) => {
   const model = strapi.getModel(uid);
 
-  const permalinkAttr = Object.entries(model.attributes).find(([, attr]) => {
-    return attr.customField === UID_PERMALINK_FIELD;
-  });
+  const permalinkAttr = Object.entries(model.attributes).find(
+    ([, attr]) => attr.customField === UID_PERMALINK_FIELD
+  );
 
   if (!permalinkAttr) {
     return null;
