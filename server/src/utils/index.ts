@@ -1,0 +1,9 @@
+export { default as getPermalinkAncestors } from './getPermalinkAncestors';
+export { default as getPermalinkAttr } from './getPermalinkAttr';
+export { default as getPermalinkSlug } from './getPermalinkSlug';
+export { default as getService } from './getService';
+export { default as interpolate } from './interpolate';
+export { default as isApiRequest } from './isApiRequest';
+export { default as isConnecting } from './isConnecting';
+export { default as parseUrl } from './parseUrl';
+export { default as trimSlashes } from './trimSlashes';
